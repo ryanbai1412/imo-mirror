@@ -1,11 +1,3 @@
-const DATA_BASE = '/data';
-
-async function fetchJson<T>(path: string): Promise<T> {
-  const resp = await fetch(`${DATA_BASE}/${path}`);
-  if (!resp.ok) throw new Error(`Failed to fetch ${path}: ${resp.status}`);
-  return resp.json();
-}
-
 export interface TimelineEntry {
   edition: number;
   year: number;
@@ -178,59 +170,27 @@ export interface ResultsMatrixData {
   };
 }
 
-export function loadTimeline(): Promise<TimelineEntry[]> {
-  return fetchJson('timeline.json');
-}
-
-export function loadCountries(): Promise<Country[]> {
-  return fetchJson('countries.json');
-}
-
-export function loadCountryResultsByYear(): Promise<Record<string, CountryResult[]>> {
-  return fetchJson('country_results_by_year.json');
-}
-
-export function loadIndividualResultsByYear(): Promise<Record<string, IndividualResult[]>> {
-  return fetchJson('individual_results_by_year.json');
-}
-
-export function loadYearInfo(): Promise<Record<string, YearInfo>> {
-  return fetchJson('year_info.json');
-}
-
-export function loadYearStatistics(): Promise<Record<string, YearStatistics>> {
-  return fetchJson('year_statistics.json');
-}
-
-export function loadHallOfFame(): Promise<HallOfFameEntry[]> {
-  return fetchJson('hall_of_fame.json');
-}
-
-export function loadProblems(): Promise<ProblemYear[]> {
-  return fetchJson('problems.json');
-}
-
-export function loadParticipants(): Promise<Record<string, ParticipantInfo>> {
-  return fetchJson('participants.json');
-}
-
-export function loadResultsCountry(): Promise<ResultsCountryEntry[]> {
-  return fetchJson('results_country.json');
-}
-
-export function loadResultsYear(): Promise<ResultsYearEntry[]> {
-  return fetchJson('results_year.json');
-}
-
-export function loadResultsMatrix(): Promise<ResultsMatrixData> {
-  return fetchJson('results_matrix.json');
-}
-
 export interface StaticPageData {
   title: string;
   content: string;
 }
 
-export function loadStaticPages(): Promise<Record<string, StaticPageData>> {
-  return fetchJson('static_pages.json');
+async function fetchJson<T>(filename: string, origin: string): Promise<T> {
+  const resp = await fetch(`${origin}/data/${filename}`);
+  if (!resp.ok) throw new Error(`Failed to load ${filename}: ${resp.status}`);
+  return resp.json() as Promise<T>;
 }
+
+export const loadTimeline = (o: string) => fetchJson<TimelineEntry[]>("timeline.json", o);
+export const loadCountries = (o: string) => fetchJson<Country[]>("countries.json", o);
+export const loadCountryResultsByYear = (o: string) => fetchJson<Record<string, CountryResult[]>>("country_results_by_year.json", o);
+export const loadIndividualResultsByYear = (o: string) => fetchJson<Record<string, IndividualResult[]>>("individual_results_by_year.json", o);
+export const loadYearInfo = (o: string) => fetchJson<Record<string, YearInfo>>("year_info.json", o);
+export const loadYearStatistics = (o: string) => fetchJson<Record<string, YearStatistics>>("year_statistics.json", o);
+export const loadHallOfFame = (o: string) => fetchJson<HallOfFameEntry[]>("hall_of_fame.json", o);
+export const loadProblems = (o: string) => fetchJson<ProblemYear[]>("problems.json", o);
+export const loadParticipants = (o: string) => fetchJson<Record<string, ParticipantInfo>>("participants.json", o);
+export const loadResultsCountry = (o: string) => fetchJson<ResultsCountryEntry[]>("results_country.json", o);
+export const loadResultsYear = (o: string) => fetchJson<ResultsYearEntry[]>("results_year.json", o);
+export const loadResultsMatrix = (o: string) => fetchJson<ResultsMatrixData>("results_matrix.json", o);
+export const loadStaticPages = (o: string) => fetchJson<Record<string, StaticPageData>>("static_pages.json", o);

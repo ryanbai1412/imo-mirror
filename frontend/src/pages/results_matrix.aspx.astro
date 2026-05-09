@@ -1,0 +1,57 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadResultsMatrix, loadTimeline } from "../utils/data";
+
+const origin = Astro.url.origin;
+const [matrix, timeline] = await Promise.all([
+  loadResultsMatrix(origin),
+  loadTimeline(origin),
+]);
+
+const years = timeline
+  .filter(t => t.contestants_all && t.contestants_all > 0)
+  .map(t => t.year)
+  .sort((a, b) => b - a);
+
+const codes = Object.keys(matrix).sort();
+const filterCode = Astro.url.searchParams.get("code") || "";
+const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
+---
+
+<Layout title="Results Matrix" description="Visual matrix of IMO country rankings across all years. Quick overview of every country's performance history." path="/results_matrix.aspx">
+  <div class="page-content">
+    <h2>Results Matrix</h2>
+    <p><a href="/results.aspx">&larr; Back to Results</a></p>
+
+    <div class="matrix-container">
+      <table class="data-table matrix-table">
+        <thead>
+          <tr>
+            <th class="sticky-col">Country</th>
+            {years.map(y => (
+              <th class="text-right matrix-year">
+                <a href={`/year_info.aspx?year=${y}`}>{String(y).slice(2)}</a>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {filteredCodes.map(code => {
+            const entry = matrix[code];
+            return (
+              <tr>
+                <td class="sticky-col">
+                  <a href={`/country_info.aspx?code=${code}`}>{code}</a>
+                </td>
+                {years.map(y => {
+                  const rank = entry?.years?.[String(y)];
+                  return <td class="text-right matrix-cell">{rank != null ? rank : ""}</td>;
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

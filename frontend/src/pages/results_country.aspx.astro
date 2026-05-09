@@ -1,0 +1,60 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadResultsCountry } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const countryData = await loadResultsCountry(origin);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(countryData, column, order) : countryData;
+
+const cols = [
+  { key: "code", label: "Code" },
+  { key: "country", label: "Country" },
+  { key: "first_participation", label: "First", align: "right" },
+  { key: "participations", label: "Part.", align: "right" },
+  { key: "contestants_all", label: "Cont.", align: "right" },
+  { key: "contestants_male", label: "Male", align: "right" },
+  { key: "contestants_female", label: "Female", align: "right" },
+  { key: "gold", label: "G", align: "right" },
+  { key: "silver", label: "S", align: "right" },
+  { key: "bronze", label: "B", align: "right" },
+  { key: "hm", label: "HM", align: "right" },
+];
+---
+
+<Layout title="Results by Country" description="Comprehensive IMO results by country. Medal counts, participation history, and contestant statistics for all participating nations." path="/results_country.aspx">
+  <div class="page-content">
+    <h2>Results by Country</h2>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            {cols.map(col => (
+              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((row, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td><a href={`/country_info.aspx?code=${row.code}`}>{row.code}</a></td>
+              <td><a href={`/country_info.aspx?code=${row.code}`}>{row.country}</a></td>
+              <td class="text-right">{row.first_participation ?? ""}</td>
+              <td class="text-right">{row.participations}</td>
+              <td class="text-right">{row.contestants_all}</td>
+              <td class="text-right">{row.contestants_male}</td>
+              <td class="text-right">{row.contestants_female}</td>
+              <td class="text-right">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+              <td class="text-right">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+              <td class="text-right">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+              <td class="text-right">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

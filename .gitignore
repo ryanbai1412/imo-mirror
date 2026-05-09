@@ -9,6 +9,10 @@ dist/
 .cache/
 .vite/
 
+# Astro
+.astro/
+.wrangler/
+
 # Python
 *.pyc
 __pycache__/

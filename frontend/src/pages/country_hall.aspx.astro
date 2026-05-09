@@ -1,0 +1,78 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadParticipants, loadCountries } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const code = Astro.url.searchParams.get("code") || "";
+if (!code) return Astro.redirect("/countries.aspx");
+
+const [participants, countries] = await Promise.all([
+  loadParticipants(origin),
+  loadCountries(origin),
+]);
+
+const country = countries.find(c => c.code === code);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+
+interface HallRow { id: number; name: string; participations: number; gold: number; silver: number; bronze: number; hm: number; total_medals: number; }
+const hallMap = new Map<number, HallRow>();
+for (const p of Object.values(participants)) {
+  for (const r of p.results) {
+    if (r.country_code !== code) continue;
+    let entry = hallMap.get(p.id);
+    if (!entry) {
+      entry = { id: p.id, name: p.name, participations: 0, gold: 0, silver: 0, bronze: 0, hm: 0, total_medals: 0 };
+      hallMap.set(p.id, entry);
+    }
+    entry.participations++;
+    const award = (r.award || "").toLowerCase();
+    if (award.includes("gold")) entry.gold++;
+    else if (award.includes("silver")) entry.silver++;
+    else if (award.includes("bronze")) entry.bronze++;
+    else if (award.includes("honourable") || award.includes("hm")) entry.hm++;
+    entry.total_medals = entry.gold + entry.silver + entry.bronze + entry.hm;
+  }
+}
+let rows = Array.from(hallMap.values()).sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze);
+if (column) rows = sortData(rows, column, order);
+---
+
+<Layout title={`${country?.name || code} — Hall of Fame`} description={`Top IMO performers from ${country?.name || code}. Medal counts and participation history for all contestants.`} path={`/country_hall.aspx?code=${code}`}>
+  <div class="page-content">
+    <h2>
+      {country?.flag_url && <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} class="country-flag-large" />}
+      {country?.name || code} &mdash; Hall of Fame
+    </h2>
+    <p class="page-subtitle">{rows.length} participants with awards</p>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="sortable-header"><a href={getSortUrl(Astro.url, "name", column, order)}>Name{sortIndicator("name", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "participations", column, order)}>Part.{sortIndicator("participations", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "gold", column, order)}>G{sortIndicator("gold", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "silver", column, order)}>S{sortIndicator("silver", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "bronze", column, order)}>B{sortIndicator("bronze", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "hm", column, order)}>HM{sortIndicator("hm", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total_medals", column, order)}>Total{sortIndicator("total_medals", column, order)}</a></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td><a href={`/participant_r.aspx?id=${row.id}`}>{row.name}</a></td>
+              <td class="text-right">{row.participations}</td>
+              <td class="text-right">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+              <td class="text-right">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+              <td class="text-right">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+              <td class="text-right">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+              <td class="text-right">{row.total_medals}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

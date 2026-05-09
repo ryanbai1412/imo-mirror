@@ -1,0 +1,85 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadCountryResultsByYear, loadYearInfo } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const year = Astro.url.searchParams.get("year") || "";
+if (!year) return Astro.redirect("/results.aspx");
+
+const [countryResults, yearInfoMap] = await Promise.all([
+  loadCountryResultsByYear(origin),
+  loadYearInfo(origin),
+]);
+
+const results = countryResults[year] || [];
+const info = yearInfoMap[year];
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(results, column, order) : results;
+
+const cols = [
+  { key: "rank", label: "Rank", align: "right" },
+  { key: "country", label: "Country" },
+  { key: "code", label: "Code" },
+  { key: "team_size_all", label: "#", align: "right" },
+  { key: "p1", label: "P1", align: "right" },
+  { key: "p2", label: "P2", align: "right" },
+  { key: "p3", label: "P3", align: "right" },
+  { key: "p4", label: "P4", align: "right" },
+  { key: "p5", label: "P5", align: "right" },
+  { key: "p6", label: "P6", align: "right" },
+  { key: "total", label: "Total", align: "right" },
+  { key: "awards_gold", label: "G", align: "right" },
+  { key: "awards_silver", label: "S", align: "right" },
+  { key: "awards_bronze", label: "B", align: "right" },
+  { key: "awards_hm", label: "HM", align: "right" },
+];
+---
+
+<Layout title={`IMO ${year} - Country Results`} description={`Country results for the ${year} International Mathematical Olympiad. Rankings, scores, and medal counts for all participating countries.`} path={`/year_country_r.aspx?year=${year}`}>
+  <div class="page-content">
+    <h2>IMO {year} &mdash; Country Results</h2>
+    <div class="year-nav">
+      <a href={`/year_info.aspx?year=${year}`}>&laquo; Year Info</a>
+      <span>|</span>
+      <a href={`/year_individual_r.aspx?year=${year}`}>Individual Results</a>
+      <span>|</span>
+      <a href={`/year_statistics.aspx?year=${year}`}>Statistics</a>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            {cols.map(col => (
+              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((row, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right">{row.rank ?? ""}</td>
+              <td><a href={`/country_info.aspx?code=${row.code}`}>{row.country}</a></td>
+              <td><a href={`/country_info.aspx?code=${row.code}`}>{row.code}</a></td>
+              <td class="text-right">{row.team_size_all ?? ""}</td>
+              <td class="text-right">{row.p1 ?? ""}</td>
+              <td class="text-right">{row.p2 ?? ""}</td>
+              <td class="text-right">{row.p3 ?? ""}</td>
+              <td class="text-right">{row.p4 ?? ""}</td>
+              <td class="text-right">{row.p5 ?? ""}</td>
+              <td class="text-right">{row.p6 ?? ""}</td>
+              <td class="text-right">{row.total ?? ""}</td>
+              <td class="text-right">{row.awards_gold ? <span class="award-gold-medal">{row.awards_gold}</span> : ""}</td>
+              <td class="text-right">{row.awards_silver ? <span class="award-silver-medal">{row.awards_silver}</span> : ""}</td>
+              <td class="text-right">{row.awards_bronze ? <span class="award-bronze-medal">{row.awards_bronze}</span> : ""}</td>
+              <td class="text-right">{row.awards_hm ? <span class="award-honourable-mention">{row.awards_hm}</span> : ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

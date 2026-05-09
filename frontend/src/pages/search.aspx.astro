@@ -1,0 +1,64 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadParticipants } from "../utils/data";
+
+const origin = Astro.url.origin;
+const query = Astro.url.searchParams.get("name") || "";
+
+let results: { id: number; name: string; participations: number; years: string }[] = [];
+
+if (query && query.length >= 2) {
+  const participants = await loadParticipants(origin);
+  const q = query.toLowerCase();
+  results = Object.values(participants)
+    .filter(p => p.name.toLowerCase().includes(q))
+    .slice(0, 200)
+    .map(p => ({
+      id: p.id,
+      name: p.name,
+      participations: p.results.length,
+      years: p.results.map(r => r.year).sort().join(", "),
+    }));
+}
+---
+
+<Layout title={query ? `Search: ${query}` : "Search Participants"} description="Search for IMO participants by name. Find competition results, scores, and awards for any International Mathematical Olympiad contestant." path="/search.aspx">
+  <div class="page-content">
+    <h2>Search Participants</h2>
+    <form class="search-form" method="get" action="/search.aspx">
+      <div class="search-input-group">
+        <label for="search-name">Name</label>
+        <input id="search-name" name="name" type="text" class="search-input" value={query} placeholder="Enter participant name..." autofocus />
+      </div>
+      <button type="submit" class="search-btn">Search</button>
+    </form>
+
+    {query && query.length >= 2 && (
+      <>
+        <p class="page-subtitle">{results.length} result{results.length !== 1 ? "s" : ""} found</p>
+        {results.length > 0 && (
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th class="text-right">Participations</th>
+                  <th>Years</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.map((p, idx) => (
+                  <tr class={idx % 2 === 0 ? "even" : "odd"}>
+                    <td><a href={`/participant_r.aspx?id=${p.id}`}>{p.name}</a></td>
+                    <td class="text-right">{p.participations}</td>
+                    <td>{p.years}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>
+    )}
+  </div>
+</Layout>

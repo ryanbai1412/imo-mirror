@@ -1,0 +1,77 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadParticipants } from "../utils/data";
+
+const origin = Astro.url.origin;
+const id = Astro.url.searchParams.get("id") || "";
+if (!id) return Astro.redirect("/search.aspx");
+
+const participants = await loadParticipants(origin);
+const participant = participants[id];
+if (!participant) return Astro.redirect("/search.aspx");
+
+const p = participant;
+const totalGold = p.results.filter(r => (r.award || "").toLowerCase().includes("gold")).length;
+const totalSilver = p.results.filter(r => (r.award || "").toLowerCase().includes("silver")).length;
+const totalBronze = p.results.filter(r => (r.award || "").toLowerCase().includes("bronze")).length;
+const totalHM = p.results.filter(r => (r.award || "").toLowerCase().includes("honourable") || (r.award || "").toLowerCase().includes("hm")).length;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: p.name,
+  description: `IMO participant with ${p.results.length} participation(s). ${totalGold} gold, ${totalSilver} silver, ${totalBronze} bronze medals.`,
+};
+---
+
+<Layout title={p.name} description={`${p.name} - IMO participant. ${p.results.length} participation(s), ${totalGold} gold, ${totalSilver} silver, ${totalBronze} bronze medals.`} path={`/participant_r.aspx?id=${id}`} jsonLd={jsonLd}>
+  <div class="page-content">
+    <div class="participant-header">
+      <h2>{p.name}</h2>
+      <div class="participant-medals">
+        {totalGold > 0 && <span class="participant-stat medal-gold-bg">{totalGold} Gold</span>}
+        {totalSilver > 0 && <span class="participant-stat medal-silver-bg">{totalSilver} Silver</span>}
+        {totalBronze > 0 && <span class="participant-stat medal-bronze-bg">{totalBronze} Bronze</span>}
+        {totalHM > 0 && <span class="participant-stat medal-hm-bg">{totalHM} HM</span>}
+        <span class="participant-stat" style="background:#f1f5f9;color:#334155">{p.results.length} Participation{p.results.length !== 1 ? "s" : ""}</span>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-right">Year</th>
+            <th>Country</th>
+            <th class="text-right">P1</th>
+            <th class="text-right">P2</th>
+            <th class="text-right">P3</th>
+            <th class="text-right">P4</th>
+            <th class="text-right">P5</th>
+            <th class="text-right">P6</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Rank</th>
+            <th>Award</th>
+          </tr>
+        </thead>
+        <tbody>
+          {p.results.sort((a, b) => b.year - a.year).map((r, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right"><a href={`/year_individual_r.aspx?year=${r.year}`}>{r.year}</a></td>
+              <td><a href={`/country_info.aspx?code=${r.country_code}`}>{r.country}</a></td>
+              <td class="text-right">{r.p1 ?? ""}</td>
+              <td class="text-right">{r.p2 ?? ""}</td>
+              <td class="text-right">{r.p3 ?? ""}</td>
+              <td class="text-right">{r.p4 ?? ""}</td>
+              <td class="text-right">{r.p5 ?? ""}</td>
+              <td class="text-right">{r.p6 ?? ""}</td>
+              <td class="text-right">{r.total ?? ""}</td>
+              <td class="text-right">{r.rank ?? ""}</td>
+              <td><span class={`award-${(r.award || "").toLowerCase().replace(/\s+/g, "-")}`}>{r.award}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,56 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadYearStatistics } from "../utils/data";
+
+const origin = Astro.url.origin;
+const year = Astro.url.searchParams.get("year") || "";
+if (!year) return Astro.redirect("/results.aspx");
+
+const statsMap = await loadYearStatistics(origin);
+const stats = statsMap[year];
+---
+
+<Layout title={`IMO ${year} - Statistics`} description={`Score distribution statistics for the ${year} International Mathematical Olympiad. Problem-by-problem analysis.`} path={`/year_statistics.aspx?year=${year}`}>
+  <div class="page-content">
+    <h2>IMO {year} &mdash; Statistics</h2>
+    <div class="year-nav">
+      <a href={`/year_info.aspx?year=${year}`}>&laquo; Year Info</a>
+      <span>|</span>
+      <a href={`/year_country_r.aspx?year=${year}`}>Country Results</a>
+      <span>|</span>
+      <a href={`/year_individual_r.aspx?year=${year}`}>Individual Results</a>
+    </div>
+
+    {stats ? (
+      <div class="stats-grid">
+        {stats.problems.map(prob => (
+          <div class="stat-problem-card">
+            <h4>Problem {prob.number} {prob.avg != null ? `(avg: ${prob.avg.toFixed(2)})` : ""}</h4>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Score</th>
+                    {Object.keys(prob.distribution).sort((a, b) => Number(a) - Number(b)).map(score => (
+                      <th class="text-right">{score}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Count</td>
+                    {Object.keys(prob.distribution).sort((a, b) => Number(a) - Number(b)).map(score => (
+                      <td class="text-right">{prob.distribution[score]}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p>No statistics available for this year.</p>
+    )}
+  </div>
+</Layout>

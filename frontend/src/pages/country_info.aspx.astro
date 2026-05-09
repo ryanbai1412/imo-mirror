@@ -1,0 +1,140 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadCountries, loadCountryResultsByYear, loadIndividualResultsByYear, loadTimeline } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const code = Astro.url.searchParams.get("code") || "";
+if (!code) return Astro.redirect("/countries.aspx");
+
+const [countries, countryResults, individualResults, timeline] = await Promise.all([
+  loadCountries(origin),
+  loadCountryResultsByYear(origin),
+  loadIndividualResultsByYear(origin),
+  loadTimeline(origin),
+]);
+
+const country = countries.find(c => c.code === code);
+if (!country) return Astro.redirect("/countries.aspx");
+
+const { column, order } = parseSortParams(Astro.url.searchParams);
+
+// Build country results by year
+const yearRows: { year: number; rank: number | null; total: number | null; gold: number | null; silver: number | null; bronze: number | null; hm: number | null }[] = [];
+for (const [year, results] of Object.entries(countryResults)) {
+  const match = results.find(r => r.code === code);
+  if (match) {
+    yearRows.push({
+      year: Number(year),
+      rank: match.rank,
+      total: match.total,
+      gold: match.awards_gold,
+      silver: match.awards_silver,
+      bronze: match.awards_bronze,
+      hm: match.awards_hm,
+    });
+  }
+}
+yearRows.sort((a, b) => b.year - a.year);
+
+const sortedYearRows = column ? sortData(yearRows, column, order) : yearRows;
+
+// Build individual results
+const indivRows: { year: number; name: string; participant_id: number | null; total: number | null; rank: number | null; award: string }[] = [];
+for (const [year, results] of Object.entries(individualResults)) {
+  for (const r of results) {
+    if (r.country_code === code) {
+      indivRows.push({
+        year: Number(year),
+        name: r.name,
+        participant_id: r.participant_id,
+        total: r.total,
+        rank: r.rank,
+        award: r.award,
+      });
+    }
+  }
+}
+indivRows.sort((a, b) => b.year - a.year || a.name.localeCompare(b.name));
+
+const hostYears = timeline.filter(t => country.host_years.includes(t.year));
+---
+
+<Layout title={country.name} description={`${country.name} at the International Mathematical Olympiad. Competition history, results by year, and individual contestant performances.`} path={`/country_info.aspx?code=${code}`}>
+  <div class="page-content">
+    <h2>
+      {country.flag_url && <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} class="country-flag-large" />}
+      {country.name}
+    </h2>
+
+    <div class="info-grid">
+      <span class="info-label">Code</span><span class="info-value">{code}</span>
+      {country.contact && <><span class="info-label">Contact</span><span class="info-value">{country.contact}</span></>}
+      {country.website && <><span class="info-label">Website</span><span class="info-value"><a href={country.website} target="_blank" rel="noopener noreferrer">{country.website}</a></span></>}
+      {hostYears.length > 0 && <><span class="info-label">Hosted</span><span class="info-value">{hostYears.map(h => h.year).join(", ")}</span></>}
+    </div>
+
+    <p>
+      <a href={`/country_hall.aspx?code=${code}`}>Hall of Fame</a> &middot;
+      <a href={`/country_individual_r.aspx?code=${code}`}>All Individual Results</a> &middot;
+      <a href={`/country_team_r.aspx?code=${code}`}>Team Results</a>
+    </p>
+
+    <h3>Results by Year</h3>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total", column, order)}>Total{sortIndicator("total", column, order)}</a></th>
+            <th class="text-right">G</th>
+            <th class="text-right">S</th>
+            <th class="text-right">B</th>
+            <th class="text-right">HM</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sortedYearRows.map((row, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right"><a href={`/year_country_r.aspx?year=${row.year}`}>{row.year}</a></td>
+              <td class="text-right">{row.rank ?? ""}</td>
+              <td class="text-right">{row.total ?? ""}</td>
+              <td class="text-right">{row.gold ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+              <td class="text-right">{row.silver ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+              <td class="text-right">{row.bronze ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+              <td class="text-right">{row.hm ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Individual Results (Recent)</h3>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-right">Year</th>
+            <th>Name</th>
+            <th class="text-right">Total</th>
+            <th class="text-right">Rank</th>
+            <th>Award</th>
+          </tr>
+        </thead>
+        <tbody>
+          {indivRows.slice(0, 100).map((row, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right"><a href={`/year_individual_r.aspx?year=${row.year}`}>{row.year}</a></td>
+              <td>{row.participant_id ? <a href={`/participant_r.aspx?id=${row.participant_id}`}>{row.name}</a> : row.name}</td>
+              <td class="text-right">{row.total ?? ""}</td>
+              <td class="text-right">{row.rank ?? ""}</td>
+              <td><span class={`award-${(row.award || "").toLowerCase().replace(/\s+/g, "-")}`}>{row.award}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    {indivRows.length > 100 && <p><a href={`/country_individual_r.aspx?code=${code}`}>View all {indivRows.length} individual results &rarr;</a></p>}
+  </div>
+</Layout>

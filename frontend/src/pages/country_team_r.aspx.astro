@@ -1,0 +1,77 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadCountryResultsByYear, loadCountries } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const code = Astro.url.searchParams.get("code") || "";
+if (!code) return Astro.redirect("/countries.aspx");
+
+const [countryResults, countries] = await Promise.all([
+  loadCountryResultsByYear(origin),
+  loadCountries(origin),
+]);
+
+const country = countries.find(c => c.code === code);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+
+interface TeamRow { year: number; team_size_all: number | null; p1: number | null; p2: number | null; p3: number | null; p4: number | null; p5: number | null; p6: number | null; total: number | null; rank: number | null; awards_gold: number | null; awards_silver: number | null; awards_bronze: number | null; awards_hm: number | null; leader: string; deputy_leader: string; }
+const allRows: TeamRow[] = [];
+for (const [year, results] of Object.entries(countryResults)) {
+  const match = results.find(r => r.code === code);
+  if (match) {
+    allRows.push({ year: Number(year), team_size_all: match.team_size_all, p1: match.p1, p2: match.p2, p3: match.p3, p4: match.p4, p5: match.p5, p6: match.p6, total: match.total, rank: match.rank, awards_gold: match.awards_gold, awards_silver: match.awards_silver, awards_bronze: match.awards_bronze, awards_hm: match.awards_hm, leader: match.leader, deputy_leader: match.deputy_leader });
+  }
+}
+allRows.sort((a, b) => b.year - a.year);
+const rows = column ? sortData(allRows, column, order) : allRows;
+---
+
+<Layout title={`${country?.name || code} — Team Results`} description={`IMO team results for ${country?.name || code}. Yearly rankings, scores, medal counts, and team leaders.`} path={`/country_team_r.aspx?code=${code}`}>
+  <div class="page-content">
+    <h2>
+      {country?.flag_url && <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} class="country-flag-large" />}
+      {country?.name || code} &mdash; Team Results
+    </h2>
+    <p class="page-subtitle">{rows.length} years of participation</p>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
+            <th class="text-right">#</th>
+            <th class="text-right">P1</th><th class="text-right">P2</th><th class="text-right">P3</th>
+            <th class="text-right">P4</th><th class="text-right">P5</th><th class="text-right">P6</th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total", column, order)}>Total{sortIndicator("total", column, order)}</a></th>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
+            <th class="text-right">G</th><th class="text-right">S</th><th class="text-right">B</th><th class="text-right">HM</th>
+            <th>Leader</th><th>Deputy Leader</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right"><a href={`/year_country_r.aspx?year=${row.year}`}>{row.year}</a></td>
+              <td class="text-right">{row.team_size_all ?? ""}</td>
+              <td class="text-right">{row.p1 ?? ""}</td>
+              <td class="text-right">{row.p2 ?? ""}</td>
+              <td class="text-right">{row.p3 ?? ""}</td>
+              <td class="text-right">{row.p4 ?? ""}</td>
+              <td class="text-right">{row.p5 ?? ""}</td>
+              <td class="text-right">{row.p6 ?? ""}</td>
+              <td class="text-right">{row.total ?? ""}</td>
+              <td class="text-right">{row.rank ?? ""}</td>
+              <td class="text-right">{row.awards_gold ?? ""}</td>
+              <td class="text-right">{row.awards_silver ?? ""}</td>
+              <td class="text-right">{row.awards_bronze ?? ""}</td>
+              <td class="text-right">{row.awards_hm ?? ""}</td>
+              <td>{row.leader}</td>
+              <td>{row.deputy_leader}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,56 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadHallOfFame } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const hallOfFame = await loadHallOfFame(origin);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(hallOfFame, column, order) : hallOfFame;
+
+const cols = [
+  { key: "name", label: "Name" },
+  { key: "country_code", label: "Country" },
+  { key: "participations", label: "Part.", align: "right" },
+  { key: "gold", label: "G", align: "right" },
+  { key: "silver", label: "S", align: "right" },
+  { key: "bronze", label: "B", align: "right" },
+  { key: "hm", label: "HM", align: "right" },
+  { key: "special_prizes", label: "SP", align: "right" },
+  { key: "perfect_scores", label: "PS", align: "right" },
+];
+---
+
+<Layout title="Hall of Fame" description="Top performers at the International Mathematical Olympiad. Gold medalists, perfect scorers, and record holders across all years." path="/hall.aspx">
+  <div class="page-content">
+    <h2>Hall of Fame</h2>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            {cols.map(col => (
+              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((entry, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td>{entry.participant_id ? <a href={`/participant_r.aspx?id=${entry.participant_id}`}>{entry.name}</a> : entry.name}</td>
+              <td><a href={`/country_info.aspx?code=${entry.country_code}`}>{entry.country_code}</a></td>
+              <td class="text-right">{entry.participations}</td>
+              <td class="text-right">{entry.gold > 0 ? <span class="award-gold-medal">{entry.gold}</span> : ""}</td>
+              <td class="text-right">{entry.silver > 0 ? <span class="award-silver-medal">{entry.silver}</span> : ""}</td>
+              <td class="text-right">{entry.bronze > 0 ? <span class="award-bronze-medal">{entry.bronze}</span> : ""}</td>
+              <td class="text-right">{entry.hm > 0 ? <span class="award-honourable-mention">{entry.hm}</span> : ""}</td>
+              <td class="text-right">{entry.special_prizes || ""}</td>
+              <td class="text-right">{entry.perfect_scores || ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>
