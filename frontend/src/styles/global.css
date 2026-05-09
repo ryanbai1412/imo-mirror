@@ -216,25 +216,39 @@ a:hover { color: var(--link-hover); }
 .info-value { color: var(--text); }
 
 /* Medal cards */
-.medal-summary { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+.medal-summary { display: flex; gap: 12px; flex-wrap: wrap; margin: 20px 0; }
 .medal-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--radius); min-width: 140px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  border-left: 4px solid var(--border);
+  box-shadow: var(--shadow-sm); min-width: 160px;
+  transition: all 200ms ease;
 }
+.medal-card:hover { box-shadow: var(--shadow); }
+.medal-card.gold { border-left-color: #d4a017; }
+.medal-card.silver { border-left-color: #9ca3af; }
+.medal-card.bronze { border-left-color: #c47a2e; }
+.medal-card.hm { border-left-color: #34d399; }
 .medal-card-icon {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 34px; height: 34px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 14px;
+  font-weight: 700; font-size: 13px; flex-shrink: 0;
 }
 .medal-card-icon.gold { background: #fef3c7; color: #92400e; }
 .medal-card-icon.silver { background: #f1f5f9; color: #475569; }
 .medal-card-icon.bronze { background: #fef2e8; color: #9a3412; }
 .medal-card-icon.hm { background: #ecfdf5; color: #065f46; }
 .medal-card-info { display: flex; flex-direction: column; }
-.medal-card-count { font-weight: 700; font-size: 18px; line-height: 1.2; }
+.medal-card-count { font-weight: 700; font-size: 20px; line-height: 1.2; color: var(--navy); }
 .medal-card-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
-.medal-card-cutoff { font-size: 11px; color: var(--text-muted); }
+.medal-card-cutoff {
+  margin-left: auto; padding: 4px 12px; border-radius: 16px;
+  font-size: 13px; font-weight: 700; white-space: nowrap;
+}
+.medal-card-cutoff.gold { background: #fef3c7; color: #92400e; }
+.medal-card-cutoff.silver { background: #f1f5f9; color: #475569; }
+.medal-card-cutoff.bronze { background: #fef2e8; color: #9a3412; }
 
 /* Participant */
 .participant-header { margin-bottom: 24px; }
