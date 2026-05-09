@@ -132,7 +132,29 @@ def clean_href(href):
     m = re.search(r'https?://www\.imo-official\.org/(.+)', href)
     if m:
         return m.group(1)
-    return href
+    return strip_wayback_prefix(href)
+
+
+def strip_wayback_prefix(url):
+    """Strip Wayback Machine prefix from any URL."""
+    if not url:
+        return url
+    m = re.match(r'https?://web\.archive\.org/web/\d+/(https?://.+)', url)
+    if m:
+        return m.group(1)
+    return url
+
+
+def clean_wayback_html(html):
+    """Strip Wayback Machine artifacts from HTML content (img src, etc.)."""
+    if not html:
+        return html
+    html = re.sub(r'/web/\d+im_/(https?://)', r'\1', html)
+    html = re.sub(
+        r'((?:href|src)=["\'])(?:https?://web\.archive\.org)?/web/\d+(?:im_)?/(https?://)',
+        r'\1\2', html,
+    )
+    return html
 
 
 def scrape_timeline():
@@ -179,7 +201,7 @@ def scrape_timeline():
 
         # Extract homepage link if present
         link_el = cells[2].find("a") if len(cells) > 2 else None
-        homepage = link_el["href"] if link_el and link_el.has_attr("href") else None
+        homepage = strip_wayback_prefix(link_el["href"]) if link_el and link_el.has_attr("href") else None
 
         timeline.append({
             "edition": edition,
@@ -236,7 +258,7 @@ def scrape_countries():
         website = ""
         if len(cells) > 3:
             link = cells[3].find("a")
-            website = link["href"] if link and link.has_attr("href") else ""
+            website = strip_wayback_prefix(link["href"]) if link and link.has_attr("href") else ""
         host_years = clean_text(cells[4].get_text()) if len(cells) > 4 else ""
 
         # Extract flag URL
@@ -512,7 +534,7 @@ def scrape_year_info(year):
     # Homepage link
     link = soup.find("a", string=re.compile(r'Home\s*Page', re.I))
     if link:
-        info["homepage"] = link.get("href", "")
+        info["homepage"] = strip_wayback_prefix(link.get("href", ""))
 
     # Problem languages
     languages = []
