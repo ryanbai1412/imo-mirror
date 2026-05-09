@@ -1,0 +1,14 @@
+---
+interface Props {
+  items: { label: string; href: string }[];
+  currentPath: string;
+}
+
+const { items, currentPath } = Astro.props;
+---
+
+<nav class="sub-nav">
+  {items.map(item => (
+    <a href={item.href} class={currentPath === item.href ? "active" : ""}>{item.label}</a>
+  ))}
+</nav>

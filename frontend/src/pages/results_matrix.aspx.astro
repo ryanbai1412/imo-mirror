@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SubNav from "../components/SubNav.astro";
 import { loadResultsMatrix, loadTimeline } from "../utils/data";
 
 const origin = Astro.url.origin;
@@ -21,7 +22,11 @@ const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
 <Layout title="Results Matrix" description="Visual matrix of IMO country rankings across all years. Quick overview of every country's performance history." path="/results_matrix.aspx">
   <div class="page-content">
     <h2>Results Matrix</h2>
-    <p><a href="/results.aspx">&larr; Back to Results</a></p>
+    <SubNav items={[
+      { label: "By Country", href: "/results.aspx" },
+      { label: "By Year", href: "/results.aspx?view=year" },
+      { label: "Results Matrix", href: "/results_matrix.aspx" },
+    ]} currentPath="/results_matrix.aspx" />
 
     <div class="matrix-container">
       <table class="data-table matrix-table">
