@@ -197,6 +197,7 @@
 
   let searchIndex: SearchItem[] | null = null;
   let activeIndex = -1;
+  let abortController: AbortController | null = null;
 
   const STATIC_PAGES: SearchItem[] = [
     { title: 'Timeline', subtitle: 'IMO editions by year', href: '/organizers.aspx', type: 'page' },
@@ -410,6 +411,11 @@
   }
 
   function setup(): void {
+    // Abort previous listeners to prevent accumulation across View Transitions
+    abortController?.abort();
+    abortController = new AbortController();
+    const { signal } = abortController;
+
     const overlay = document.getElementById('cmd-palette-overlay');
     const input = document.getElementById('cmd-input') as HTMLInputElement | null;
     const backdrop = overlay?.querySelector('.cmd-backdrop');
@@ -431,10 +437,10 @@
         e.preventDefault();
         closePalette();
       }
-    });
+    }, { signal });
 
     // Click backdrop to close
-    backdrop?.addEventListener('click', closePalette);
+    backdrop?.addEventListener('click', closePalette, { signal });
 
     // Search input handler
     let debounceTimer: ReturnType<typeof setTimeout>;
@@ -445,7 +451,7 @@
         const results = search(input.value, items);
         renderResults(results);
       }, 80);
-    });
+    }, { signal });
 
     // Keyboard navigation within results
     input.addEventListener('keydown', (e: KeyboardEvent) => {
@@ -470,7 +476,7 @@
           if (href) navigate(href);
         }
       }
-    });
+    }, { signal });
 
     // Click to navigate
     document.getElementById('cmd-results')!.addEventListener('click', (e: Event) => {
@@ -480,13 +486,13 @@
         const href = item.getAttribute('data-href');
         if (href) navigate(href);
       }
-    });
+    }, { signal });
 
     // Trigger button
     document.getElementById('cmd-trigger')?.addEventListener('click', (e: Event) => {
       e.preventDefault();
       openPalette();
-    });
+    }, { signal });
   }
 
   // Run on initial load
