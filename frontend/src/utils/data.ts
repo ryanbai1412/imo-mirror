@@ -100,12 +100,6 @@ export interface HallOfFameEntry {
   participations: number;
 }
 
-export interface ProblemYear {
-  year: number;
-  languages: string[];
-  pdf_url: string;
-  shortlist_url: string;
-}
 
 export interface ParticipantInfo {
   id: number;
@@ -201,7 +195,6 @@ export const loadIndividualResultsByYear = (o: string) => fetchJson<Record<strin
 export const loadYearInfo = (o: string) => fetchJson<Record<string, YearInfo>>("year_info.json", o);
 export const loadYearStatistics = (o: string) => fetchJson<Record<string, YearStatistics>>("year_statistics.json", o);
 export const loadHallOfFame = (o: string) => fetchJson<HallOfFameEntry[]>("hall_of_fame.json", o);
-export const loadProblems = (o: string) => fetchJson<ProblemYear[]>("problems.json", o);
 export const loadParticipants = (o: string) => fetchJson<Record<string, ParticipantInfo>>("participants.json", o);
 export const loadResultsCountry = (o: string) => fetchJson<ResultsCountryEntry[]>("results_country.json", o);
 export const loadResultsYear = (o: string) => fetchJson<ResultsYearEntry[]>("results_year.json", o);
