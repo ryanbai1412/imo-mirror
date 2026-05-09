@@ -1,0 +1,94 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadTimeline } from "../utils/data";
+import { BASE_URL } from "../utils/seo";
+
+const origin = Astro.url.origin;
+const timeline = await loadTimeline(origin);
+
+const latest = timeline[timeline.length - 1];
+const totalEditions = timeline.length;
+const totalCountries = new Set(timeline.flatMap(t => [t.country])).size;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "IMO Mirror",
+  url: BASE_URL,
+  description: "Fast, static mirror of the International Mathematical Olympiad official website.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${BASE_URL}/search.aspx?name={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
+};
+---
+
+<Layout title="" description="Fast, static mirror of the International Mathematical Olympiad official website. Complete results, participant data, and problem archive from 1959 to present." path="/" jsonLd={jsonLd}>
+  <div class="page-content">
+    <div class="home-hero">
+      <h2>International Mathematical Olympiad</h2>
+      <p class="subtitle">The oldest and most prestigious mathematical competition for high school students</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value">{totalEditions}</span>
+          <span class="hero-stat-label">Editions</span>
+        </div>
+        {latest && (
+          <div class="hero-stat">
+            <span class="hero-stat-value">{latest.year}</span>
+            <span class="hero-stat-label">Latest</span>
+          </div>
+        )}
+        <div class="hero-stat">
+          <span class="hero-stat-value">{totalCountries}+</span>
+          <span class="hero-stat-label">Host Countries</span>
+        </div>
+      </div>
+      <div class="hero-links">
+        {latest && <a href={`/year_info.aspx?year=${latest.year}`} class="hero-link">Latest IMO {latest.year} &rarr;</a>}
+        <a href="/organizers.aspx" class="hero-link">Full Timeline &rarr;</a>
+        <a href="/results.aspx" class="hero-link">All Results &rarr;</a>
+      </div>
+    </div>
+
+    <div class="home-grid">
+      <a href="/organizers.aspx" class="home-card-link">
+        <div class="home-card">
+          <h3>Timeline</h3>
+          <p>Browse every IMO from 1959 to present. Host cities, dates, and participation statistics.</p>
+        </div>
+      </a>
+      <a href="/countries.aspx" class="home-card-link">
+        <div class="home-card">
+          <h3>Countries</h3>
+          <p>Explore participating nations, their contact information, and hosting history.</p>
+        </div>
+      </a>
+      <a href="/results.aspx" class="home-card-link">
+        <div class="home-card">
+          <h3>Results</h3>
+          <p>Comprehensive results by country and year. Medal counts, rankings, and statistics.</p>
+        </div>
+      </a>
+      <a href="/hall.aspx" class="home-card-link">
+        <div class="home-card">
+          <h3>Hall of Fame</h3>
+          <p>Top performers across all IMOs. Gold medalists, perfect scorers, and record holders.</p>
+        </div>
+      </a>
+      <a href="/problems.aspx" class="home-card-link">
+        <div class="home-card">
+          <h3>Problems</h3>
+          <p>Complete archive of IMO problems. PDF downloads and shortlisted problems.</p>
+        </div>
+      </a>
+      <a href="/search.aspx" class="home-card-link">
+        <div class="home-card">
+          <h3>Search</h3>
+          <p>Find any participant by name. View their complete competition history and scores.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</Layout>

@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadStaticPages } from "../utils/data";
+
+const origin = Astro.url.origin;
+const pages = await loadStaticPages(origin);
+const page = pages["advisory"];
+---
+
+<Layout title={page?.title || "Advisory"} description={`${page?.title || "Advisory"} — International Mathematical Olympiad official information and guidelines.`} path="/advisory.aspx">
+  <div class="page-content">
+    {page ? (
+      <>
+        <h2>{page.title}</h2>
+        <div class="static-content" set:html={page.content} />
+      </>
+    ) : (
+      <h2>Page Not Found</h2>
+    )}
+  </div>
+</Layout>

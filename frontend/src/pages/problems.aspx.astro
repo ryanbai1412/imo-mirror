@@ -1,0 +1,38 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadProblems } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const problems = await loadProblems(origin);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(problems, column, order) : problems;
+---
+
+<Layout title="Problems" description="Archive of all International Mathematical Olympiad problems from 1959 to present. PDF downloads and shortlists available in multiple languages." path="/problems.aspx">
+  <div class="page-content">
+    <h2>Problems</h2>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
+            <th>Languages</th>
+            <th>Problems</th>
+            <th>Shortlist</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((entry, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right"><a href={`/year_info.aspx?year=${entry.year}`}>{entry.year}</a></td>
+              <td>{entry.languages?.join(", ") || ""}</td>
+              <td>{entry.pdf_url ? <a href={`https://www.imo-official.org/${entry.pdf_url}`} target="_blank" rel="noopener noreferrer">PDF</a> : ""}</td>
+              <td>{entry.shortlist_url ? <a href={`https://www.imo-official.org/${entry.shortlist_url}`} target="_blank" rel="noopener noreferrer">Shortlist</a> : ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

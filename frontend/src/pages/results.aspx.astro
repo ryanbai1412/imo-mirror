@@ -1,0 +1,117 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadResultsCountry, loadResultsYear } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const view = Astro.url.searchParams.get("view") || "country";
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const isYear = view === "year";
+
+const [countryData, yearData] = await Promise.all([
+  loadResultsCountry(origin),
+  loadResultsYear(origin),
+]);
+
+const sortedCountry = column ? sortData(countryData, column, order) : countryData;
+const sortedYear = column ? sortData(yearData, column, order) : yearData;
+
+const cCols = [
+  { key: "code", label: "Code" },
+  { key: "country", label: "Country" },
+  { key: "first_participation", label: "First", align: "right" },
+  { key: "participations", label: "Part.", align: "right" },
+  { key: "contestants_all", label: "Cont.", align: "right" },
+  { key: "gold", label: "G", align: "right" },
+  { key: "silver", label: "S", align: "right" },
+  { key: "bronze", label: "B", align: "right" },
+  { key: "hm", label: "HM", align: "right" },
+];
+
+const yCols = [
+  { key: "year", label: "Year", align: "right" },
+  { key: "host_country", label: "Host" },
+  { key: "num_countries", label: "Countries", align: "right" },
+  { key: "contestants_all", label: "Cont.", align: "right" },
+  { key: "gold", label: "G", align: "right" },
+  { key: "silver", label: "S", align: "right" },
+  { key: "bronze", label: "B", align: "right" },
+  { key: "hm", label: "HM", align: "right" },
+  { key: "gold_cutoff", label: "G\u2265", align: "right" },
+  { key: "silver_cutoff", label: "S\u2265", align: "right" },
+  { key: "bronze_cutoff", label: "B\u2265", align: "right" },
+];
+---
+
+<Layout title={isYear ? "Results by Year" : "Results by Country"} description={isYear ? "IMO results by year. Medal counts, cutoff scores, and participation statistics." : "IMO results by country. Medal totals, participation history, and rankings."} path={`/results.aspx${isYear ? "?view=year" : ""}`}>
+  <div class="page-content">
+    <h2>Results</h2>
+    <div class="view-toggle">
+      <a href="/results.aspx?view=country" class={!isYear ? "active" : ""}>By Country</a>
+      <a href="/results.aspx?view=year" class={isYear ? "active" : ""}>By Year</a>
+      <a href="/results_matrix.aspx">Results Matrix</a>
+    </div>
+
+    {isYear ? (
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              {yCols.map(col => (
+                <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                  <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sortedYear.map((row, idx) => (
+              <tr class={idx % 2 === 0 ? "even" : "odd"}>
+                <td class="text-right"><a href={`/year_info.aspx?year=${row.year}`}>{row.year}</a></td>
+                <td>{row.host_country}</td>
+                <td class="text-right">{row.num_countries ?? ""}</td>
+                <td class="text-right">{row.contestants_all ?? ""}</td>
+                <td class="text-right">{row.gold}</td>
+                <td class="text-right">{row.silver}</td>
+                <td class="text-right">{row.bronze}</td>
+                <td class="text-right">{row.hm}</td>
+                <td class="text-right">{row.gold_cutoff ?? ""}</td>
+                <td class="text-right">{row.silver_cutoff ?? ""}</td>
+                <td class="text-right">{row.bronze_cutoff ?? ""}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              {cCols.map(col => (
+                <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                  <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sortedCountry.map((row, idx) => (
+              <tr class={idx % 2 === 0 ? "even" : "odd"}>
+                <td><a href={`/country_info.aspx?code=${row.code}`}>{row.code}</a></td>
+                <td><a href={`/country_info.aspx?code=${row.code}`}>{row.country}</a></td>
+                <td class="text-right">{row.first_participation ?? ""}</td>
+                <td class="text-right">{row.participations}</td>
+                <td class="text-right">{row.contestants_all}</td>
+                <td class="text-right">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+                <td class="text-right">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+                <td class="text-right">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+                <td class="text-right">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</Layout>

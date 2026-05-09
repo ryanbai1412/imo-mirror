@@ -1,0 +1,52 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadTimeline } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const timeline = await loadTimeline(origin);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(timeline, column, order) : timeline;
+
+const cols = [
+  { key: "edition", label: "#", align: "right" },
+  { key: "year", label: "Year", align: "right" },
+  { key: "country", label: "Country" },
+  { key: "city", label: "City" },
+  { key: "num_countries", label: "Countries", align: "right" },
+  { key: "contestants_all", label: "Contestants", align: "right" },
+];
+---
+
+<Layout title="Timeline" description="Complete timeline of every International Mathematical Olympiad from 1959 to present. Host cities, dates, and participation statistics." path="/organizers.aspx">
+  <div class="page-content">
+    <h2>Timeline</h2>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            {cols.map(col => (
+              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              </th>
+            ))}
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((entry, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right">{entry.edition}</td>
+              <td class="text-right"><a href={`/year_info.aspx?year=${entry.year}`}>{entry.year}</a></td>
+              <td>{entry.country}</td>
+              <td>{entry.city}</td>
+              <td class="text-right">{entry.num_countries ?? ""}</td>
+              <td class="text-right">{entry.contestants_all ?? ""}</td>
+              <td>{entry.date}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

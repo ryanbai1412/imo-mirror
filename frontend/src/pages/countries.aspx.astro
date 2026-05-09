@@ -1,0 +1,46 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadCountries } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const countries = await loadCountries(origin);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(countries, column, order) : countries;
+
+const cols = [
+  { key: "code", label: "Code" },
+  { key: "name", label: "Country" },
+];
+---
+
+<Layout title="Countries" description="All countries participating in the International Mathematical Olympiad. Contact information, websites, and hosting history." path="/countries.aspx">
+  <div class="page-content">
+    <h2>Countries</h2>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            {cols.map(col => (
+              <th class="sortable-header">
+                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              </th>
+            ))}
+            <th>Flag</th>
+            <th>Website</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((c, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td><a href={`/country_info.aspx?code=${c.code}`}>{c.code}</a></td>
+              <td><a href={`/country_info.aspx?code=${c.code}`}>{c.name}</a></td>
+              <td>{c.flag_url ? <img src={`https://www.imo-official.org/${c.flag_url}`} alt={c.code} class="country-flag" /> : ""}</td>
+              <td>{c.website ? <a href={c.website} target="_blank" rel="noopener noreferrer">Link</a> : ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

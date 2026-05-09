@@ -1,0 +1,64 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { loadResultsYear } from "../utils/data";
+import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+
+const origin = Astro.url.origin;
+const yearData = await loadResultsYear(origin);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(yearData, column, order) : yearData;
+
+const cols = [
+  { key: "year", label: "Year", align: "right" },
+  { key: "host_country", label: "Host" },
+  { key: "num_countries", label: "Countries", align: "right" },
+  { key: "contestants_all", label: "Cont.", align: "right" },
+  { key: "contestants_male", label: "Male", align: "right" },
+  { key: "contestants_female", label: "Female", align: "right" },
+  { key: "gold", label: "G", align: "right" },
+  { key: "silver", label: "S", align: "right" },
+  { key: "bronze", label: "B", align: "right" },
+  { key: "hm", label: "HM", align: "right" },
+  { key: "gold_cutoff", label: "G\u2265", align: "right" },
+  { key: "silver_cutoff", label: "S\u2265", align: "right" },
+  { key: "bronze_cutoff", label: "B\u2265", align: "right" },
+];
+---
+
+<Layout title="Results by Year" description="IMO results by year. Medal counts, cutoff scores, host countries, and participation statistics for every International Mathematical Olympiad." path="/results_year.aspx">
+  <div class="page-content">
+    <h2>Results by Year</h2>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            {cols.map(col => (
+              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((row, idx) => (
+            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+              <td class="text-right"><a href={`/year_info.aspx?year=${row.year}`}>{row.year}</a></td>
+              <td>{row.host_country}</td>
+              <td class="text-right">{row.num_countries ?? ""}</td>
+              <td class="text-right">{row.contestants_all ?? ""}</td>
+              <td class="text-right">{row.contestants_male ?? ""}</td>
+              <td class="text-right">{row.contestants_female ?? ""}</td>
+              <td class="text-right">{row.gold}</td>
+              <td class="text-right">{row.silver}</td>
+              <td class="text-right">{row.bronze}</td>
+              <td class="text-right">{row.hm}</td>
+              <td class="text-right">{row.gold_cutoff ?? ""}</td>
+              <td class="text-right">{row.silver_cutoff ?? ""}</td>
+              <td class="text-right">{row.bronze_cutoff ?? ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>
