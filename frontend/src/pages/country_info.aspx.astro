@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SubNav from "../components/SubNav.astro";
+import PageHeader from "../components/PageHeader.astro";
 import { loadCountries, loadCountryResultsByYear, loadIndividualResultsByYear, loadTimeline } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { awardClass } from "../utils/awardClass";
+import { linkifyEmails } from "../utils/linkifyEmails";
 
 const origin = Astro.url.origin;
 const code = Astro.url.searchParams.get("code") || "";
@@ -65,21 +67,21 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
 
 <Layout title={country.name} description={`${country.name} at the International Mathematical Olympiad. Competition history, results by year, and individual contestant performances.`} path={`/country_info.aspx?code=${code}`}>
   <div class="page-content">
-    <h2>
-      {country.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
-      {country.name}
-    </h2>
-
-    <SubNav items={[
+    <PageHeader title={country.name} navItems={[
       { label: "Overview", href: `/country_info.aspx?code=${code}` },
       { label: "Hall of Fame", href: `/country_hall.aspx?code=${code}` },
       { label: "Individual Results", href: `/country_individual_r.aspx?code=${code}` },
       { label: "Team Results", href: `/country_team_r.aspx?code=${code}` },
-    ]} currentPath={`/country_info.aspx?code=${code}`} />
+    ]} currentPath={`/country_info.aspx?code=${code}`}>
+      <Fragment slot="title">
+        {country.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
+        {country.name}
+      </Fragment>
+    </PageHeader>
 
     <div class="info-grid">
       <span class="info-label">Code</span><span class="info-value">{code}</span>
-      {country.contact && <><span class="info-label">Contact</span><span class="info-value">{country.contact}</span></>}
+      {country.contact && <><span class="info-label">Contact</span><span class="info-value">{linkifyEmails(country.contact).map(seg => seg.email ? <a href={`mailto:${seg.email}`}>{seg.text}</a> : seg.text)}</span></>}
       {country.website && <><span class="info-label">Website</span><span class="info-value"><a href={country.website} target="_blank" rel="noopener noreferrer">{country.website}</a></span></>}
       {hostYears.length > 0 && <><span class="info-label">Hosted</span><span class="info-value">{hostYears.map(h => h.year).join(", ")}</span></>}
     </div>
@@ -90,27 +92,27 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
       <table class="data-table">
         <thead>
           <tr>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total", column, order)}>Total{sortIndicator("total", column, order)}</a></th>
-            <th class="text-right">G</th>
-            <th class="text-right">S</th>
-            <th class="text-right">B</th>
-            <th class="text-right">HM</th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "total", column, order, "desc")}>Total{sortIndicator("total", column, order)}</a></th>
+            <th class="text-center" title="Gold medals">G</th>
+            <th class="text-center" title="Silver medals">S</th>
+            <th class="text-center" title="Bronze medals">B</th>
+            <th class="text-center" title="Honourable Mention">HM</th>
             <th>Leader</th>
             <th>Deputy Leader</th>
           </tr>
         </thead>
         <tbody>
-          {sortedYearRows.map((row, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
-              <td class="text-right"><a href={`/year_country_r.aspx?year=${row.year}`}>{row.year}</a></td>
-              <td class="text-right">{row.rank ?? ""}</td>
-              <td class="text-right">{row.total ?? ""}</td>
-              <td class="text-right">{row.gold ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
-              <td class="text-right">{row.silver ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
-              <td class="text-right">{row.bronze ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
-              <td class="text-right">{row.hm ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+          {sortedYearRows.map((row) => (
+            <tr>
+              <td class="text-center"><a href={`/year_country_r.aspx?year=${row.year}`}>{row.year}</a></td>
+              <td class="text-center">{row.rank ?? ""}</td>
+              <td class="text-center">{row.total ?? ""}</td>
+              <td class="text-center">{row.gold ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+              <td class="text-center">{row.silver ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+              <td class="text-center">{row.bronze ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+              <td class="text-center">{row.hm ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
               <td>{row.leader}</td>
               <td>{row.deputy_leader}</td>
             </tr>
@@ -124,21 +126,21 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
       <table class="data-table">
         <thead>
           <tr>
-            <th class="text-right">Year</th>
+            <th class="text-center">Year</th>
             <th>Name</th>
-            <th class="text-right">Total</th>
-            <th class="text-right">Rank</th>
+            <th class="text-center">Total</th>
+            <th class="text-center">Rank</th>
             <th>Award</th>
           </tr>
         </thead>
         <tbody>
-          {indivRows.slice(0, 100).map((row, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
-              <td class="text-right"><a href={`/year_individual_r.aspx?year=${row.year}`}>{row.year}</a></td>
+          {indivRows.slice(0, 100).map((row, i) => (
+            <tr class:list={[i > 0 && indivRows[i - 1].year !== row.year && "year-group-start"]}>
+              <td class="text-center"><a href={`/year_individual_r.aspx?year=${row.year}`}>{row.year}</a></td>
               <td>{row.participant_id ? <a href={`/participant_r.aspx?id=${row.participant_id}`}>{row.name}</a> : row.name}</td>
-              <td class="text-right">{row.total ?? ""}</td>
-              <td class="text-right">{row.rank ?? ""}</td>
-              <td><span class={`award-${(row.award || "").toLowerCase().replace(/\s+/g, "-")}`}>{row.award}</span></td>
+              <td class="text-center">{row.total ?? ""}</td>
+              <td class="text-center">{row.rank ?? ""}</td>
+              <td><span class={awardClass(row.award)}>{row.award}</span></td>
             </tr>
           ))}
         </tbody>

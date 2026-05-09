@@ -27,10 +27,10 @@ if (query && query.length >= 2) {
     <h2>Search Participants</h2>
     <form class="search-form" method="get" action="/search.aspx">
       <div class="search-input-group">
-        <label for="search-name">Name</label>
-        <input id="search-name" name="name" type="text" class="search-input" value={query} placeholder="Enter participant name..." autofocus />
+        <label for="search-name" class="form-label">Name</label>
+        <input id="search-name" name="name" type="text" class="form-input" value={query} placeholder="Enter participant name..." autofocus />
       </div>
-      <button type="submit" class="search-btn">Search</button>
+      <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
     {query && query.length >= 2 && (
@@ -42,15 +42,15 @@ if (query && query.length >= 2) {
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th class="text-right">Participations</th>
+                  <th class="text-center">Participations</th>
                   <th>Years</th>
                 </tr>
               </thead>
               <tbody>
-                {results.map((p, idx) => (
-                  <tr class={idx % 2 === 0 ? "even" : "odd"}>
+                {results.map((p) => (
+                  <tr>
                     <td><a href={`/participant_r.aspx?id=${p.id}`}>{p.name}</a></td>
-                    <td class="text-right">{p.participations}</td>
+                    <td class="text-center">{p.participations}</td>
                     <td>{p.years}</td>
                   </tr>
                 ))}
@@ -62,3 +62,18 @@ if (query && query.length >= 2) {
     )}
   </div>
 </Layout>
+
+<style>
+  .search-form {
+    display: flex; gap: 12px;
+    margin-bottom: 24px; flex-wrap: wrap;
+    align-items: end;
+  }
+  .search-input-group {
+    display: flex; flex-direction: column;
+    gap: 4px;
+  }
+  @media (max-width: 768px) {
+    .search-form { flex-direction: column; }
+  }
+</style>

@@ -31,8 +31,8 @@ const cols = [
           </tr>
         </thead>
         <tbody>
-          {sorted.map((c, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+          {sorted.map((c) => (
+            <tr>
               <td><a href={`/country_info.aspx?code=${c.code}`}>{c.code}</a></td>
               <td><a href={`/country_info.aspx?code=${c.code}`}>{c.name}</a></td>
               <td>{c.flag_url ? <img src={c.flag_url} alt={c.code} class="country-flag" /> : ""}</td>

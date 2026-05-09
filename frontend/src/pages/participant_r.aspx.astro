@@ -1,12 +1,20 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { loadParticipants } from "../utils/data";
+import { loadParticipants, loadIndividualResultsByYear, loadTimeline } from "../utils/data";
+import CountryLink from "../components/CountryLink.astro";
+import MedalBadge from "../components/MedalBadge.astro";
+import { CHART_COLORS, STACKED_BAR_ORDER } from "../utils/chartColors";
+import { awardClass } from "../utils/awardClass";
 
 const origin = Astro.url.origin;
 const id = Astro.url.searchParams.get("id") || "";
 if (!id) return Astro.redirect("/search.aspx");
 
-const participants = await loadParticipants(origin);
+const [participants, individualResults, timeline] = await Promise.all([
+  loadParticipants(origin),
+  loadIndividualResultsByYear(origin),
+  loadTimeline(origin),
+]);
 const participant = participants[id];
 if (!participant) return Astro.redirect("/search.aspx");
 
@@ -22,6 +30,30 @@ const jsonLd = {
   name: p.name,
   description: `IMO participant with ${p.results.length} participation(s). ${totalGold} gold, ${totalSilver} silver, ${totalBronze} bronze medals.`,
 };
+
+const timelineByYear = new Map(timeline.map(t => [t.year, t]));
+const participantYears = new Set(p.results.map(r => r.year));
+const rankChartData: { year: number; edition: number; gold: number; silver: number; bronze: number; hm: number; none: number; rank: number | null }[] = [];
+for (const [yearStr, results] of Object.entries(individualResults)) {
+  const yr = Number(yearStr);
+  const tl = timelineByYear.get(yr);
+  if (!tl) continue;
+  let gold = 0, silver = 0, bronze = 0, hm = 0, none = 0;
+  for (const r of results) {
+    const a = (r.award || "").toLowerCase();
+    if (a.includes("gold")) gold++;
+    else if (a.includes("silver")) silver++;
+    else if (a.includes("bronze")) bronze++;
+    else if (a.includes("honourable") || a.includes("hm")) hm++;
+    else none++;
+  }
+  const pResult = participantYears.has(yr) ? p.results.find(r => r.year === yr) : null;
+  rankChartData.push({ year: yr, edition: tl.edition, gold, silver, bronze, hm, none, rank: pResult?.rank ?? null });
+}
+rankChartData.sort((a, b) => a.edition - b.edition);
+const rankChartJson = JSON.stringify(rankChartData);
+const chartColorsJson = JSON.stringify(CHART_COLORS);
+const stackedBarOrderJson = JSON.stringify(STACKED_BAR_ORDER);
 ---
 
 <Layout title={p.name} description={`${p.name} - IMO participant. ${p.results.length} participation(s), ${totalGold} gold, ${totalSilver} silver, ${totalBronze} bronze medals.`} path={`/participant_r.aspx?id=${id}`} jsonLd={jsonLd}>
@@ -29,45 +61,60 @@ const jsonLd = {
     <div class="participant-header">
       <h2>{p.name}</h2>
       <div class="participant-medals">
-        {totalGold > 0 && <span class="participant-stat medal-gold-bg">{totalGold} Gold</span>}
-        {totalSilver > 0 && <span class="participant-stat medal-silver-bg">{totalSilver} Silver</span>}
-        {totalBronze > 0 && <span class="participant-stat medal-bronze-bg">{totalBronze} Bronze</span>}
-        {totalHM > 0 && <span class="participant-stat medal-hm-bg">{totalHM} HM</span>}
-        <span class="participant-stat" style="background:#f1f5f9;color:#334155">{p.results.length} Participation{p.results.length !== 1 ? "s" : ""}</span>
+        {totalGold > 0 && <MedalBadge type="gold" count={totalGold} />}
+        {totalSilver > 0 && <MedalBadge type="silver" count={totalSilver} />}
+        {totalBronze > 0 && <MedalBadge type="bronze" count={totalBronze} />}
+        {totalHM > 0 && <MedalBadge type="hm" count={totalHM} />}
+        <span class="badge badge--neutral">{p.results.length} Participation{p.results.length !== 1 ? "s" : ""}</span>
       </div>
     </div>
+
+    {rankChartData.length > 1 && (
+      <div class="stats-section">
+        <h3>Individual Ranking</h3>
+        <div class="chart-wrapper">
+          <canvas id="rank-chart" width="700" height="320"></canvas>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.gold}`}></span>Gold medal</span>
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.silver}`}></span>Silver medal</span>
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.bronze}`}></span>Bronze medal</span>
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.none}`}></span>No medal</span>
+        </div>
+      </div>
+    )}
 
     <div class="table-container">
       <table class="data-table">
         <thead>
           <tr>
-            <th class="text-right">Year</th>
+            <th class="text-center">Year</th>
             <th>Country</th>
-            <th class="text-right">P1</th>
-            <th class="text-right">P2</th>
-            <th class="text-right">P3</th>
-            <th class="text-right">P4</th>
-            <th class="text-right">P5</th>
-            <th class="text-right">P6</th>
-            <th class="text-right">Total</th>
-            <th class="text-right">Rank</th>
+            <th class="text-center" title="Problem 1">P1</th>
+            <th class="text-center" title="Problem 2">P2</th>
+            <th class="text-center" title="Problem 3">P3</th>
+            <th class="text-center" title="Problem 4">P4</th>
+            <th class="text-center" title="Problem 5">P5</th>
+            <th class="text-center" title="Problem 6">P6</th>
+            <th class="text-center">Total</th>
+            <th class="text-center">Rank</th>
             <th>Award</th>
           </tr>
         </thead>
         <tbody>
-          {p.results.sort((a, b) => b.year - a.year).map((r, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
-              <td class="text-right"><a href={`/year_individual_r.aspx?year=${r.year}`}>{r.year}</a></td>
-              <td><a href={`/country_info.aspx?code=${r.country_code}`}>{r.country}</a></td>
-              <td class="text-right">{r.p1 ?? ""}</td>
-              <td class="text-right">{r.p2 ?? ""}</td>
-              <td class="text-right">{r.p3 ?? ""}</td>
-              <td class="text-right">{r.p4 ?? ""}</td>
-              <td class="text-right">{r.p5 ?? ""}</td>
-              <td class="text-right">{r.p6 ?? ""}</td>
-              <td class="text-right">{r.total ?? ""}</td>
-              <td class="text-right">{r.rank ?? ""}</td>
-              <td><span class={`award-${(r.award || "").toLowerCase().replace(/\s+/g, "-")}`}>{r.award}</span></td>
+          {p.results.sort((a, b) => b.year - a.year).map((r) => (
+            <tr>
+              <td class="text-center"><a href={`/year_individual_r.aspx?year=${r.year}`}>{r.year}</a></td>
+              <td><CountryLink code={r.country_code} label={r.country} /></td>
+              <td class="text-center">{r.p1 ?? ""}</td>
+              <td class="text-center">{r.p2 ?? ""}</td>
+              <td class="text-center">{r.p3 ?? ""}</td>
+              <td class="text-center">{r.p4 ?? ""}</td>
+              <td class="text-center">{r.p5 ?? ""}</td>
+              <td class="text-center">{r.p6 ?? ""}</td>
+              <td class="text-center">{r.total ?? ""}</td>
+              <td class="text-center">{r.rank ?? ""}</td>
+              <td><span class={awardClass(r.award)}>{r.award}</span></td>
             </tr>
           ))}
         </tbody>
@@ -75,3 +122,178 @@ const jsonLd = {
     </div>
   </div>
 </Layout>
+
+<script define:vars={{ rankChartJson, chartColorsJson, stackedBarOrderJson }}>
+function drawIndividualRankChart() {
+  const data = JSON.parse(rankChartJson);
+  const canvas = document.getElementById('rank-chart');
+  if (!canvas || !data.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = 700, H = 320;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 30, right: 16, bottom: 36, left: 40 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const maxTotal = data.reduce((m, d) =>
+    Math.max(m, d.gold + d.silver + d.bronze + d.hm + d.none), 0);
+  const yMax = Math.ceil(maxTotal / 50) * 50 || 50;
+  const barW = cw / data.length;
+  const gap = Math.max(1, barW * 0.15);
+
+  const CC = JSON.parse(chartColorsJson);
+  const colors = JSON.parse(stackedBarOrderJson);
+
+  ctx.fillStyle = CC.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = CC.grid;
+  ctx.lineWidth = 0.5;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = CC.label;
+  ctx.textAlign = 'right';
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(yMax * i / ticks);
+    const y = pad.top + ch - (v / yMax) * ch;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(String(v), pad.left - 6, y + 4);
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    const x = pad.left + i * barW + gap / 2;
+    const bw = barW - gap;
+    let y = pad.top + ch;
+    for (const c of colors) {
+      const val = d[c.key];
+      if (!val) continue;
+      const h = (val / yMax) * ch;
+      y -= h;
+      ctx.fillStyle = c.color;
+      ctx.fillRect(x, y, bw, h);
+    }
+  }
+
+  ctx.beginPath();
+  ctx.strokeStyle = CC.line;
+  ctx.lineWidth = 2;
+  let started = false;
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    if (d.rank == null) continue;
+    const x = pad.left + i * barW + (barW - gap) / 2 + gap / 2;
+    const total = d.gold + d.silver + d.bronze + d.hm + d.none;
+    const inverted = total - d.rank + 1;
+    const y = pad.top + ch - (inverted / yMax) * ch;
+    if (!started) { ctx.moveTo(x, y); started = true; }
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    if (d.rank == null) continue;
+    const x = pad.left + i * barW + (barW - gap) / 2 + gap / 2;
+    const total = d.gold + d.silver + d.bronze + d.hm + d.none;
+    const inverted = total - d.rank + 1;
+    const y = pad.top + ch - (inverted / yMax) * ch;
+    ctx.fillStyle = CC.line;
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = CC.bg;
+    ctx.beginPath();
+    ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  const labelStep = Math.max(1, Math.ceil(data.length / 15));
+  for (let i = 0; i < data.length; i++) {
+    if (i % labelStep === 0 || i === data.length - 1) {
+      const d = data[i];
+      const x = pad.left + i * barW + barW / 2;
+      ctx.fillText("'" + String(d.year).slice(-2),
+        x, pad.top + ch + 16);
+    }
+  }
+
+  ctx.fillStyle = CC.title;
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Individual ranking',
+    W / 2, pad.top - 10);
+
+  const existing = canvas.parentElement.querySelector('.chart-tooltip');
+  if (existing) existing.remove();
+  const tip = document.createElement('div');
+  tip.className = 'chart-tooltip';
+  canvas.parentElement.appendChild(tip);
+  let lastIdx = -1;
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const idx = Math.floor((mx - pad.left) / barW);
+    if (idx < 0 || idx >= data.length || my > pad.top + ch) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const d0 = data[idx];
+    const barTotal = d0.gold + d0.silver + d0.bronze + d0.hm + d0.none;
+    const barTopY = pad.top + ch - (barTotal / yMax) * ch;
+    if (my < barTopY) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const ox = canvas.offsetLeft;
+    const oy = canvas.offsetTop;
+    const curX = e.clientX - rect.left;
+    const wrapW = canvas.parentElement.offsetWidth;
+    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
+    const ty = oy + (e.clientY - rect.top) - 10;
+    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
+    if (idx === lastIdx) {
+      tip.style.left = tx + 'px';
+      tip.style.top = ty + 'px';
+      return;
+    }
+    lastIdx = idx;
+    const d = data[idx];
+    const total = d.gold + d.silver + d.bronze + d.hm + d.none;
+    let html = '<b>IMO ' + d.year + '</b> (' + total + ' contestants)<br>';
+    if (d.rank != null) html += 'Rank: ' + d.rank + ' / ' + total + '<br>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.gold + '"></span>Gold: ' + d.gold + '</div>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.silver + '"></span>Silver: ' + d.silver + '</div>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.bronze + '"></span>Bronze: ' + d.bronze + '</div>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.none + '"></span>None: ' + d.none + '</div>';
+    tip.innerHTML = html;
+    tip.classList.add('visible');
+    tip.style.left = tx + 'px';
+    tip.style.top = ty + 'px';
+  });
+  canvas.addEventListener('mouseleave', function() {
+    tip.classList.remove('visible'); lastIdx = -1;
+  });
+}
+drawIndividualRankChart();
+document.addEventListener('astro:page-load', drawIndividualRankChart);
+</script>
+
+<style>
+  .participant-header { margin-bottom: 24px; }
+  .participant-medals {
+    display: flex; gap: 8px;
+    flex-wrap: wrap; margin-top: 8px;
+  }
+</style>

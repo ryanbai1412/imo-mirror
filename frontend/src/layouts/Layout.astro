@@ -22,7 +22,6 @@ const NAV_ITEMS = [
   { label: "Countries", href: "/countries.aspx" },
   { label: "Results", href: "/results.aspx" },
   { label: "Hall of Fame", href: "/hall.aspx" },
-  { label: "About", href: "/general.aspx" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -47,11 +46,13 @@ const currentPath = Astro.url.pathname;
   <meta name="twitter:description" content={pageDescription} />
   {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
   {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
-  <link rel="icon" href="/favicon.ico" sizes="32x32" />
+  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
   <ClientRouter />
 </head>
 <body>
@@ -80,16 +81,100 @@ const currentPath = Astro.url.pathname;
     <footer class="site-footer">
       <div class="footer-inner">
         <span>Static mirror of <a href="https://www.imo-official.org" target="_blank" rel="noopener noreferrer">imo-official.org</a></span>
-        <div class="footer-links">
-          <a href="/general.aspx">About</a>
-          <a href="/links.aspx">Links</a>
-          <a href="/advisory.aspx">Board</a>
-          <a href="/ethics.aspx">Ethics</a>
-          <a href="/documents.aspx">Documents</a>
-        </div>
+        <span>This site is <a href="https://github.com/ryanbai1412/imo-mirror" target="_blank" rel="noopener noreferrer">open source</a>.</span>
       </div>
     </footer>
   </div>
   <CommandPalette />
 </body>
 </html>
+
+<style>
+  .site-header {
+    background: var(--navy); color: #fff;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .header-inner {
+    max-width: var(--max-width); margin: 0 auto;
+    padding: 0 24px;
+    display: flex; align-items: center;
+    justify-content: space-between; height: 56px;
+  }
+  .site-logo {
+    display: flex; align-items: center;
+    gap: 10px; text-decoration: none; color: #fff;
+  }
+  .site-logo:hover {
+    color: var(--gold-light);
+    text-decoration: none;
+  }
+  .logo-img {
+    height: 36px; width: auto; flex-shrink: 0;
+    border-radius: 3px;
+  }
+  .site-logo h1 {
+    font-family: var(--font-display);
+    font-size: 20px; font-weight: 400;
+    letter-spacing: 0.01em; white-space: nowrap;
+  }
+  .main-nav {
+    display: flex; align-items: center; gap: 0;
+  }
+  .main-nav a {
+    color: rgba(255,255,255,0.75);
+    padding: 6px 14px;
+    font-size: 13px; font-weight: 500;
+    border-radius: 4px;
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+  .main-nav a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    text-decoration: none;
+  }
+  .main-nav a.active {
+    color: var(--gold-light);
+  }
+  .main-nav a.header-search-link {
+    color: rgba(255,255,255,0.6);
+    padding: 6px 10px; font-size: 13px;
+    border-radius: 4px;
+    display: flex; align-items: center; gap: 4px;
+    transition: all var(--transition);
+  }
+  .main-nav a.header-search-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+    text-decoration: none;
+  }
+  .site-footer {
+    background: var(--navy);
+    color: rgba(255,255,255,0.5);
+    padding: 24px; text-align: center;
+    font-size: 12px; margin-top: auto;
+  }
+  .site-footer a {
+    color: rgba(255,255,255,0.7);
+  }
+  .site-footer a:hover {
+    color: var(--gold-light);
+    text-decoration: none;
+  }
+  .footer-inner {
+    max-width: var(--max-width); margin: 0 auto;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 16px;
+  }
+  @media (max-width: 768px) {
+    .header-inner {
+      flex-direction: column;
+      height: auto; padding: 12px 16px; gap: 8px;
+    }
+    .main-nav {
+      flex-wrap: wrap; justify-content: center;
+    }
+    .footer-inner { flex-direction: column; }
+  }
+</style>

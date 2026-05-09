@@ -1,8 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SubNav from "../components/SubNav.astro";
+import PageHeader from "../components/PageHeader.astro";
 import { loadIndividualResultsByYear, loadCountries } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { awardClass } from "../utils/awardClass";
 
 const origin = Astro.url.origin;
 const code = Astro.url.searchParams.get("code") || "";
@@ -31,17 +32,17 @@ const rows = column ? sortData(allRows, column, order) : allRows;
 
 <Layout title={`${country?.name || code} — Individual Results`} description={`All individual IMO results for ${country?.name || code}. Problem scores, totals, ranks, and awards for every contestant.`} path={`/country_individual_r.aspx?code=${code}`}>
   <div class="page-content">
-    <h2>
-      {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
-      {country?.name || code} &mdash; Individual Results
-    </h2>
-
-    <SubNav items={[
+    <PageHeader title={`${country?.name || code} — Individual Results`} navItems={[
       { label: "Overview", href: `/country_info.aspx?code=${code}` },
       { label: "Hall of Fame", href: `/country_hall.aspx?code=${code}` },
       { label: "Individual Results", href: `/country_individual_r.aspx?code=${code}` },
       { label: "Team Results", href: `/country_team_r.aspx?code=${code}` },
-    ]} currentPath={`/country_individual_r.aspx?code=${code}`} />
+    ]} currentPath={`/country_individual_r.aspx?code=${code}`}>
+      <Fragment slot="title">
+        {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
+        {country?.name || code} &mdash; Individual Results
+      </Fragment>
+    </PageHeader>
 
     <p class="page-subtitle">{rows.length} individual results</p>
 
@@ -49,29 +50,29 @@ const rows = column ? sortData(allRows, column, order) : allRows;
       <table class="data-table">
         <thead>
           <tr>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
             <th class="sortable-header"><a href={getSortUrl(Astro.url, "name", column, order)}>Contestant{sortIndicator("name", column, order)}</a></th>
-            <th class="text-right">P1</th><th class="text-right">P2</th><th class="text-right">P3</th>
-            <th class="text-right">P4</th><th class="text-right">P5</th><th class="text-right">P6</th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total", column, order)}>Total{sortIndicator("total", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
+            <th class="text-center" title="Problem 1">P1</th><th class="text-center" title="Problem 2">P2</th><th class="text-center" title="Problem 3">P3</th>
+            <th class="text-center" title="Problem 4">P4</th><th class="text-center" title="Problem 5">P5</th><th class="text-center" title="Problem 6">P6</th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "total", column, order, "desc")}>Total{sortIndicator("total", column, order)}</a></th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
             <th>Award</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
-              <td class="text-right"><a href={`/year_individual_r.aspx?year=${row.year}`}>{row.year}</a></td>
+          {rows.map((row, i) => (
+            <tr class:list={[i > 0 && rows[i - 1].year !== row.year && "year-group-start"]}>
+              <td class="text-center"><a href={`/year_individual_r.aspx?year=${row.year}`}>{row.year}</a></td>
               <td>{row.participant_id ? <a href={`/participant_r.aspx?id=${row.participant_id}`}>{row.name}</a> : row.name}</td>
-              <td class="text-right">{row.p1 ?? ""}</td>
-              <td class="text-right">{row.p2 ?? ""}</td>
-              <td class="text-right">{row.p3 ?? ""}</td>
-              <td class="text-right">{row.p4 ?? ""}</td>
-              <td class="text-right">{row.p5 ?? ""}</td>
-              <td class="text-right">{row.p6 ?? ""}</td>
-              <td class="text-right">{row.total ?? ""}</td>
-              <td class="text-right">{row.rank ?? ""}</td>
-              <td><span class={`award-${(row.award || "").toLowerCase().replace(/\s+/g, "-")}`}>{row.award}</span></td>
+              <td class="text-center">{row.p1 ?? ""}</td>
+              <td class="text-center">{row.p2 ?? ""}</td>
+              <td class="text-center">{row.p3 ?? ""}</td>
+              <td class="text-center">{row.p4 ?? ""}</td>
+              <td class="text-center">{row.p5 ?? ""}</td>
+              <td class="text-center">{row.p6 ?? ""}</td>
+              <td class="text-center">{row.total ?? ""}</td>
+              <td class="text-center">{row.rank ?? ""}</td>
+              <td><span class={awardClass(row.award)}>{row.award}</span></td>
             </tr>
           ))}
         </tbody>

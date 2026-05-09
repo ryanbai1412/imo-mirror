@@ -30,13 +30,13 @@ export function parseSortParams(searchParams: URLSearchParams): { column: string
   return { column, order: order === "desc" ? "desc" : "asc" };
 }
 
-export function getSortUrl(url: URL, colKey: string, currentSort: string, currentOrder: string): string {
+export function getSortUrl(url: URL, colKey: string, currentSort: string, currentOrder: string, defaultOrder: SortDirection = "asc"): string {
   const params = new URLSearchParams(url.search);
   if (params.get("column") === colKey) {
     params.set("order", params.get("order") === "asc" ? "desc" : "asc");
   } else {
     params.set("column", colKey);
-    params.set("order", "asc");
+    params.set("order", defaultOrder);
   }
   return `${url.pathname}?${params.toString()}`;
 }

@@ -1,7 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SubNav from "../components/SubNav.astro";
-import { loadResultsMatrix, loadTimeline } from "../utils/data";
+import PageHeader from "../components/PageHeader.astro";
+import { loadResultsMatrix, loadTimeline, isIndividualContestant } from "../utils/data";
 
 const origin = Astro.url.origin;
 const [matrix, timeline] = await Promise.all([
@@ -14,15 +14,14 @@ const years = timeline
   .map(t => t.year)
   .sort((a, b) => b - a);
 
-const codes = Object.keys(matrix).sort();
+const codes = Object.keys(matrix).filter(c => !isIndividualContestant(c)).sort();
 const filterCode = Astro.url.searchParams.get("code") || "";
 const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
 ---
 
 <Layout title="Results Matrix" description="Visual matrix of IMO country rankings across all years. Quick overview of every country's performance history." path="/results_matrix.aspx">
   <div class="page-content">
-    <h2>Results Matrix</h2>
-    <SubNav items={[
+    <PageHeader title="Results Matrix" navItems={[
       { label: "By Country", href: "/results.aspx" },
       { label: "By Year", href: "/results.aspx?view=year" },
       { label: "Results Matrix", href: "/results_matrix.aspx" },
@@ -34,7 +33,7 @@ const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
           <tr>
             <th class="sticky-col">Country</th>
             {years.map(y => (
-              <th class="text-right matrix-year">
+              <th class="text-center matrix-year">
                 <a href={`/year_info.aspx?year=${y}`}>{String(y).slice(2)}</a>
               </th>
             ))}
@@ -50,7 +49,7 @@ const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
                 </td>
                 {years.map(y => {
                   const rank = entry?.[String(y)];
-                  return <td class="text-right matrix-cell">{rank != null ? rank : ""}</td>;
+                  return <td class="text-center matrix-cell">{rank != null ? rank : ""}</td>;
                 })}
               </tr>
             );
@@ -60,3 +59,37 @@ const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
     </div>
   </div>
 </Layout>
+
+<style>
+  .matrix-container {
+    overflow: auto; max-width: 100%;
+    max-height: calc(100vh - 120px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .matrix-table th {
+    top: 0;
+  }
+  .matrix-table { font-size: 11px; }
+  .matrix-table th, .matrix-table td {
+    padding: 3px 5px; white-space: nowrap;
+  }
+  .matrix-year {
+    writing-mode: vertical-rl;
+    text-orientation: mixed; min-width: 22px;
+  }
+  .sticky-col {
+    position: sticky; left: 0;
+    background: var(--surface); z-index: 1;
+    border-right: 2px solid var(--border);
+  }
+  thead .sticky-col {
+    background: var(--navy); z-index: 3;
+  }
+  :global(.matrix-table tbody tr:nth-child(even)) .sticky-col {
+    background: var(--table-stripe);
+  }
+  :global(.matrix-table tbody tr:hover) .sticky-col {
+    background: var(--table-hover);
+  }
+</style>

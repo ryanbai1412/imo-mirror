@@ -1,0 +1,22 @@
+---
+import { isIndividualContestant } from "../utils/data";
+
+interface Props {
+  code: string;
+  label?: string;
+}
+
+const { code, label } = Astro.props;
+const codes = code.split(",").map(c => c.trim()).filter(Boolean);
+const visibleCodes = codes.filter(c => !isIndividualContestant(c));
+---
+
+{visibleCodes.length === 0 ? (
+  <Fragment />
+) : visibleCodes.length === 1 ? (
+  <a href={`/country_info.aspx?code=${visibleCodes[0]}`}>{label && !isIndividualContestant(codes[0]) ? label : visibleCodes[0]}</a>
+) : (
+  visibleCodes.map((c, i) => (
+    <>{i > 0 && ", "}<a href={`/country_info.aspx?code=${c}`}>{c}</a></>
+  ))
+)}

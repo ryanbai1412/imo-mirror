@@ -1,113 +1,167 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SubNav from "../components/SubNav.astro";
-import { loadResultsCountry, loadResultsYear } from "../utils/data";
+import PageHeader from "../components/PageHeader.astro";
+import { loadResultsCountry, loadResultsYear, loadCountries, isIndividualContestant } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { CHART_COLORS } from "../utils/chartColors";
 
 const origin = Astro.url.origin;
 const view = Astro.url.searchParams.get("view") || "country";
 const { column, order } = parseSortParams(Astro.url.searchParams);
 const isYear = view === "year";
 
-const [countryData, yearData] = await Promise.all([
+const [rawCountryData, yearData, countries] = await Promise.all([
   loadResultsCountry(origin),
   loadResultsYear(origin),
+  loadCountries(origin),
 ]);
+const nameToCode = new Map(countries.map(c => [c.name, c.code]));
 
-const sortedCountry = column ? sortData(countryData, column, order) : countryData;
+const countryData = rawCountryData.filter(r => !isIndividualContestant(r.code));
+const sortedCountry = column ? sortData(countryData, column, order) : sortData(countryData, "gold", "desc");
 const sortedYear = column ? sortData(yearData, column, order) : yearData;
+
+const chronoYear = [...yearData]
+  .filter(r => r.year && r.gold != null)
+  .sort((a, b) => a.year - b.year);
+const medalChartData = JSON.stringify(chronoYear.map(r => ({
+  year: r.year,
+  gold: r.gold ?? 0,
+  silver: r.silver ?? 0,
+  bronze: r.bronze ?? 0,
+  hm: r.hm ?? 0,
+})));
+const cutoffChartData = JSON.stringify(
+  chronoYear
+    .filter(r => r.gold_cutoff != null)
+    .map(r => ({
+      year: r.year,
+      gold: r.gold_cutoff,
+      silver: r.silver_cutoff,
+      bronze: r.bronze_cutoff,
+    }))
+);
 
 const cCols = [
   { key: "code", label: "Code" },
   { key: "country", label: "Country" },
-  { key: "first_participation", label: "First", align: "right" },
-  { key: "participations", label: "Part.", align: "right" },
-  { key: "contestants_all", label: "Cont.", align: "right" },
-  { key: "gold", label: "G", align: "right" },
-  { key: "silver", label: "S", align: "right" },
-  { key: "bronze", label: "B", align: "right" },
-  { key: "hm", label: "HM", align: "right" },
+  { key: "first_participation", label: "First", align: "center" },
+  { key: "participations", label: "Part.", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_all", label: "Cont.", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", align: "center", defaultOrder: "desc" as const },
 ];
 
+const chartColorsJson = JSON.stringify(CHART_COLORS);
+
 const yCols = [
-  { key: "year", label: "Year", align: "right" },
+  { key: "year", label: "Year", align: "center" },
   { key: "host_country", label: "Host" },
-  { key: "num_countries", label: "Countries", align: "right" },
-  { key: "contestants_all", label: "Cont.", align: "right" },
-  { key: "gold", label: "G", align: "right" },
-  { key: "silver", label: "S", align: "right" },
-  { key: "bronze", label: "B", align: "right" },
-  { key: "hm", label: "HM", align: "right" },
-  { key: "gold_cutoff", label: "G\u2265", align: "right" },
-  { key: "silver_cutoff", label: "S\u2265", align: "right" },
-  { key: "bronze_cutoff", label: "B\u2265", align: "right" },
+  { key: "num_countries", label: "Countries", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_all", label: "Cont.", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", align: "center", defaultOrder: "desc" as const },
+  { key: "gold_cutoff", label: "G\u2265", align: "center", defaultOrder: "desc" as const },
+  { key: "silver_cutoff", label: "S\u2265", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze_cutoff", label: "B\u2265", align: "center", defaultOrder: "desc" as const },
 ];
 ---
 
 <Layout title={isYear ? "Results by Year" : "Results by Country"} description={isYear ? "IMO results by year. Medal counts, cutoff scores, and participation statistics." : "IMO results by country. Medal totals, participation history, and rankings."} path={`/results.aspx${isYear ? "?view=year" : ""}`}>
   <div class="page-content">
-    <h2>Results</h2>
-    <SubNav items={[
+    <PageHeader title="Results" navItems={[
       { label: "By Country", href: "/results.aspx" },
       { label: "By Year", href: "/results.aspx?view=year" },
       { label: "Results Matrix", href: "/results_matrix.aspx" },
     ]} currentPath={isYear ? "/results.aspx?view=year" : "/results.aspx"} />
 
     {isYear ? (
+      <>
+      <div class="charts-row">
+        <div class="stats-section">
+          <h3>Medal Counts Over Time</h3>
+          <div class="chart-wrapper">
+            <canvas id="medal-time-chart" width="700" height="320"></canvas>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.gold}`}></span>Gold</span>
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.silver}`}></span>Silver</span>
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.bronze}`}></span>Bronze</span>
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.hm}`}></span>HM</span>
+          </div>
+        </div>
+        <div class="stats-section">
+          <h3>Cutoff Scores Over Time</h3>
+          <div class="chart-wrapper">
+            <canvas id="cutoff-time-chart" width="700" height="320"></canvas>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch legend-line" style={`background:${CHART_COLORS.gold}`}></span>Gold cutoff</span>
+            <span class="legend-item"><span class="legend-swatch legend-line" style={`background:${CHART_COLORS.silver}`}></span>Silver cutoff</span>
+            <span class="legend-item"><span class="legend-swatch legend-line" style={`background:${CHART_COLORS.bronze}`}></span>Bronze cutoff</span>
+          </div>
+        </div>
+      </div>
+
       <div class="table-container">
         <table class="data-table">
           <thead>
             <tr>
               {yCols.map(col => (
-                <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
-                  <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+                <th class:list={[col.align === "center" && "text-center", "sortable-header"]}>
+                  <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {sortedYear.map((row, idx) => (
-              <tr class={idx % 2 === 0 ? "even" : "odd"}>
-                <td class="text-right"><a href={`/year_info.aspx?year=${row.year}`}>{row.year}</a></td>
-                <td>{row.host_country}</td>
-                <td class="text-right">{row.num_countries ?? ""}</td>
-                <td class="text-right">{row.contestants_all ?? ""}</td>
-                <td class="text-right">{row.gold}</td>
-                <td class="text-right">{row.silver}</td>
-                <td class="text-right">{row.bronze}</td>
-                <td class="text-right">{row.hm}</td>
-                <td class="text-right">{row.gold_cutoff ?? ""}</td>
-                <td class="text-right">{row.silver_cutoff ?? ""}</td>
-                <td class="text-right">{row.bronze_cutoff ?? ""}</td>
+            {sortedYear.map((row) => (
+              <tr>
+                <td class="text-center"><a href={`/year_info.aspx?year=${row.year}`}>{row.year}</a></td>
+                <td>{nameToCode.has(row.host_country) ? <a href={`/country_info.aspx?code=${nameToCode.get(row.host_country)}`}>{row.host_country}</a> : row.host_country}</td>
+                <td class="text-center">{row.num_countries ?? ""}</td>
+                <td class="text-center">{row.contestants_all ?? ""}</td>
+                <td class="text-center">{row.gold}</td>
+                <td class="text-center">{row.silver}</td>
+                <td class="text-center">{row.bronze}</td>
+                <td class="text-center">{row.hm}</td>
+                <td class="text-center">{row.gold_cutoff ?? ""}</td>
+                <td class="text-center">{row.silver_cutoff ?? ""}</td>
+                <td class="text-center">{row.bronze_cutoff ?? ""}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      </>
     ) : (
       <div class="table-container">
         <table class="data-table">
           <thead>
             <tr>
               {cCols.map(col => (
-                <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
-                  <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+                <th class:list={[col.align === "center" && "text-center", "sortable-header"]}>
+                  <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {sortedCountry.map((row, idx) => (
-              <tr class={idx % 2 === 0 ? "even" : "odd"}>
+            {sortedCountry.map((row) => (
+              <tr>
                 <td><a href={`/country_info.aspx?code=${row.code}`}>{row.code}</a></td>
                 <td><a href={`/country_info.aspx?code=${row.code}`}>{row.country}</a></td>
-                <td class="text-right">{row.first_participation ?? ""}</td>
-                <td class="text-right">{row.participations}</td>
-                <td class="text-right">{row.contestants_all}</td>
-                <td class="text-right">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
-                <td class="text-right">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
-                <td class="text-right">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
-                <td class="text-right">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+                <td class="text-center">{row.first_participation ?? ""}</td>
+                <td class="text-center">{row.participations}</td>
+                <td class="text-center">{row.contestants_all}</td>
+                <td class="text-center">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+                <td class="text-center">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+                <td class="text-center">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+                <td class="text-center">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
               </tr>
             ))}
           </tbody>
@@ -116,3 +170,275 @@ const yCols = [
     )}
   </div>
 </Layout>
+
+<script define:vars={{ medalChartData, cutoffChartData, isYear, chartColorsJson }}>
+const CC = JSON.parse(chartColorsJson);
+if (isYear) {
+  drawMedalTimeChart();
+  drawCutoffTimeChart();
+}
+document.addEventListener('astro:page-load', function() {
+  if (document.getElementById('medal-time-chart')) drawMedalTimeChart();
+  if (document.getElementById('cutoff-time-chart')) drawCutoffTimeChart();
+});
+
+function drawMedalTimeChart() {
+  const data = JSON.parse(medalChartData);
+  const canvas = document.getElementById('medal-time-chart');
+  if (!canvas || !data.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = 700, H = 320;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 16, bottom: 36, left: 40 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const maxCount = data.reduce((m, d) =>
+    Math.max(m, d.gold + d.silver + d.bronze + d.hm), 0);
+  const yMax = Math.ceil(maxCount / 50) * 50 || 50;
+  const barW = cw / data.length;
+  const gap = Math.max(0.5, barW * 0.1);
+
+  const layers = [
+    { key: 'hm',     color: CC.hm },
+    { key: 'bronze', color: CC.bronze },
+    { key: 'silver', color: CC.silver },
+    { key: 'gold',   color: CC.gold },
+  ];
+
+  ctx.fillStyle = CC.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = CC.grid;
+  ctx.lineWidth = 0.5;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = CC.label;
+  ctx.textAlign = 'right';
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(yMax * i / ticks);
+    const y = pad.top + ch - (v / yMax) * ch;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(String(v), pad.left - 6, y + 4);
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    const x = pad.left + i * barW + gap / 2;
+    const bw = barW - gap;
+    let y = pad.top + ch;
+    for (const layer of layers) {
+      const val = d[layer.key];
+      if (!val) continue;
+      const h = (val / yMax) * ch;
+      y -= h;
+      ctx.fillStyle = layer.color;
+      ctx.fillRect(x, y, bw, h);
+    }
+  }
+
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  const labelStep = Math.max(1, Math.ceil(data.length / 15));
+  for (let i = 0; i < data.length; i++) {
+    if (i % labelStep === 0 || i === data.length - 1) {
+      const x = pad.left + i * barW + barW / 2;
+      ctx.fillText("'" + String(data[i].year).slice(-2),
+        x, pad.top + ch + 16);
+    }
+  }
+
+  const existing = canvas.parentElement.querySelector('.chart-tooltip');
+  if (existing) existing.remove();
+  const tip = document.createElement('div');
+  tip.className = 'chart-tooltip';
+  canvas.parentElement.appendChild(tip);
+  let lastIdx = -1;
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const idx = Math.floor((mx - pad.left) / barW);
+    if (idx < 0 || idx >= data.length || my > pad.top + ch || my < pad.top) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const d0 = data[idx];
+    const barTotal = d0.gold + d0.silver + d0.bronze + d0.hm;
+    const barTopY = pad.top + ch - (barTotal / yMax) * ch;
+    if (my < barTopY) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const ox = canvas.offsetLeft;
+    const oy = canvas.offsetTop;
+    const curX = e.clientX - rect.left;
+    const wrapW = canvas.parentElement.offsetWidth;
+    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
+    const ty = oy + (e.clientY - rect.top) - 10;
+    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
+    if (idx === lastIdx) {
+      tip.style.left = tx + 'px';
+      tip.style.top = ty + 'px';
+      return;
+    }
+    lastIdx = idx;
+    const d = data[idx];
+    let html = '<b>IMO ' + d.year + '</b><br>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.gold + '"></span>Gold: ' + d.gold + '</div>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.silver + '"></span>Silver: ' + d.silver + '</div>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.bronze + '"></span>Bronze: ' + d.bronze + '</div>';
+    html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.hm + '"></span>HM: ' + d.hm + '</div>';
+    tip.innerHTML = html;
+    tip.classList.add('visible');
+    tip.style.left = tx + 'px';
+    tip.style.top = ty + 'px';
+  });
+  canvas.addEventListener('mouseleave', function() {
+    tip.classList.remove('visible'); lastIdx = -1;
+  });
+}
+
+function drawCutoffTimeChart() {
+  const data = JSON.parse(cutoffChartData);
+  const canvas = document.getElementById('cutoff-time-chart');
+  if (!canvas || !data.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = 700, H = 320;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 16, bottom: 36, left: 40 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const allVals = data.flatMap(d =>
+    [d.gold, d.silver, d.bronze].filter(v => v != null));
+  const yMax = Math.ceil(Math.max(...allVals) / 5) * 5 || 42;
+
+  ctx.fillStyle = CC.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = CC.grid;
+  ctx.lineWidth = 0.5;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = CC.label;
+  ctx.textAlign = 'right';
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(yMax * i / ticks);
+    const y = pad.top + ch - (v / yMax) * ch;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(String(v), pad.left - 6, y + 4);
+  }
+
+  const lines = [
+    { key: 'gold',   color: CC.gold },
+    { key: 'silver', color: CC.silver },
+    { key: 'bronze', color: CC.bronze },
+  ];
+
+  const xScale = (i) => pad.left + (i / (data.length - 1)) * cw;
+  const yScale = (v) => pad.top + ch - (v / yMax) * ch;
+
+  for (const line of lines) {
+    ctx.beginPath();
+    ctx.strokeStyle = line.color;
+    ctx.lineWidth = 2;
+    let started = false;
+    for (let i = 0; i < data.length; i++) {
+      const v = data[i][line.key];
+      if (v == null) continue;
+      const x = xScale(i);
+      const y = yScale(v);
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    for (let i = 0; i < data.length; i++) {
+      const v = data[i][line.key];
+      if (v == null) continue;
+      ctx.fillStyle = line.color;
+      ctx.beginPath();
+      ctx.arc(xScale(i), yScale(v), 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  const labelStep = Math.max(1, Math.ceil(data.length / 15));
+  for (let i = 0; i < data.length; i++) {
+    if (i % labelStep === 0 || i === data.length - 1) {
+      ctx.fillText("'" + String(data[i].year).slice(-2),
+        xScale(i), pad.top + ch + 16);
+    }
+  }
+
+  const existing = canvas.parentElement.querySelector('.chart-tooltip');
+  if (existing) existing.remove();
+  const tip = document.createElement('div');
+  tip.className = 'chart-tooltip';
+  canvas.parentElement.appendChild(tip);
+  let lastIdx = -1;
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const closest = data.reduce((best, d, i) => {
+      const dist = Math.abs(mx - xScale(i));
+      return dist < best.dist ? { dist, i } : best;
+    }, { dist: Infinity, i: -1 });
+    if (closest.i < 0 || closest.dist > 20 || my > pad.top + ch || my < pad.top) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const idx = closest.i;
+    const d = data[idx];
+    const topVal = Math.max(d.gold || 0, d.silver || 0, d.bronze || 0);
+    if (topVal && my < pad.top + ch - (topVal / yMax) * ch) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const ox = canvas.offsetLeft;
+    const oy = canvas.offsetTop;
+    const curX = e.clientX - rect.left;
+    const wrapW = canvas.parentElement.offsetWidth;
+    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
+    const ty = oy + (e.clientY - rect.top) - 10;
+    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
+    if (idx === lastIdx) {
+      tip.style.left = tx + 'px';
+      tip.style.top = ty + 'px';
+      return;
+    }
+    lastIdx = idx;
+    let html = '<b>IMO ' + d.year + '</b><br>';
+    if (d.gold != null) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.gold + '"></span>Gold cutoff: ' + d.gold + '</div>';
+    if (d.silver != null) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.silver + '"></span>Silver cutoff: ' + d.silver + '</div>';
+    if (d.bronze != null) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.bronze + '"></span>Bronze cutoff: ' + d.bronze + '</div>';
+    tip.innerHTML = html;
+    tip.classList.add('visible');
+    tip.style.left = tx + 'px';
+    tip.style.top = ty + 'px';
+  });
+  canvas.addEventListener('mouseleave', function() {
+    tip.classList.remove('visible'); lastIdx = -1;
+  });
+}
+</script>

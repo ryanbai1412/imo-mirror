@@ -155,9 +155,42 @@ export interface ResultsMatrixData {
   [countryCode: string]: Record<string, number>;
 }
 
-export interface StaticPageData {
-  title: string;
-  content: string;
+
+/**
+ * Format a date string like "10.7. - 20.7." into
+ * locale-specific format without the year, e.g.
+ * "Jul 10 – Jul 20" in en-US.
+ * Uses a fixed reference year internally for parsing.
+ */
+export function formatDate(
+  raw: string,
+  locale?: string,
+): string {
+  if (!raw) return "";
+  const fmt = (d: number, m: number) => {
+    const date = new Date(2000, m - 1, d);
+    return date.toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+    });
+  };
+  // pattern: "10.7. - 20.7." or "10.7."
+  const parts = raw.split("-").map(s => s.trim());
+  const parse = (s: string) => {
+    const m = s.match(/^(\d+)\.(\d+)\./);
+    return m ? [Number(m[1]), Number(m[2])] as const : null;
+  };
+  const a = parse(parts[0]);
+  if (!a) return raw;
+  if (parts.length === 2) {
+    const b = parse(parts[1]);
+    if (b) return `${fmt(a[0], a[1])} – ${fmt(b[0], b[1])}`;
+  }
+  return fmt(a[0], a[1]);
+}
+
+export function isIndividualContestant(code: string): boolean {
+  return /^C\d+$/.test(code);
 }
 
 export type AssetFetcher = (req: Request) => Promise<Response>;
@@ -193,4 +226,3 @@ export const loadParticipants = (o: string) => fetchJson<Record<string, Particip
 export const loadResultsCountry = (o: string) => fetchJson<ResultsCountryEntry[]>("results_country.json", o);
 export const loadResultsYear = (o: string) => fetchJson<ResultsYearEntry[]>("results_year.json", o);
 export const loadResultsMatrix = (o: string) => fetchJson<ResultsMatrixData>("results_matrix.json", o);
-export const loadStaticPages = (o: string) => fetchJson<Record<string, StaticPageData>>("static_pages.json", o);

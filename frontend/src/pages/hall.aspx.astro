@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import CountryLink from "../components/CountryLink.astro";
 import { loadHallOfFame } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
 
@@ -11,13 +12,13 @@ const sorted = column ? sortData(hallOfFame, column, order) : hallOfFame;
 const cols = [
   { key: "name", label: "Name" },
   { key: "country_code", label: "Country" },
-  { key: "participations", label: "Part.", align: "right" },
-  { key: "gold", label: "G", align: "right" },
-  { key: "silver", label: "S", align: "right" },
-  { key: "bronze", label: "B", align: "right" },
-  { key: "hm", label: "HM", align: "right" },
-  { key: "special_prizes", label: "SP", align: "right" },
-  { key: "perfect_scores", label: "PS", align: "right" },
+  { key: "participations", label: "Part.", title: "Participations", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", title: "Gold medals", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", title: "Silver medals", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", title: "Bronze medals", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", title: "Honourable Mention", align: "center", defaultOrder: "desc" as const },
+  { key: "special_prizes", label: "Special Prizes", align: "center", defaultOrder: "desc" as const },
+  { key: "perfect_scores", label: "Perfect Scores", align: "center", defaultOrder: "desc" as const },
 ];
 ---
 
@@ -29,24 +30,24 @@ const cols = [
         <thead>
           <tr>
             {cols.map(col => (
-              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
-                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              <th class:list={[col.align === "center" && "text-center", "sortable-header"]} title={col.title}>
+                <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((entry, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+          {sorted.map((entry) => (
+            <tr>
               <td>{entry.participant_id ? <a href={`/participant_r.aspx?id=${entry.participant_id}`}>{entry.name}</a> : entry.name}</td>
-              <td><a href={`/country_info.aspx?code=${entry.country_code}`}>{entry.country_code}</a></td>
-              <td class="text-right">{entry.participations}</td>
-              <td class="text-right">{entry.gold > 0 ? <span class="award-gold-medal">{entry.gold}</span> : ""}</td>
-              <td class="text-right">{entry.silver > 0 ? <span class="award-silver-medal">{entry.silver}</span> : ""}</td>
-              <td class="text-right">{entry.bronze > 0 ? <span class="award-bronze-medal">{entry.bronze}</span> : ""}</td>
-              <td class="text-right">{entry.hm > 0 ? <span class="award-honourable-mention">{entry.hm}</span> : ""}</td>
-              <td class="text-right">{entry.special_prizes || ""}</td>
-              <td class="text-right">{entry.perfect_scores || ""}</td>
+              <td><CountryLink code={entry.country_code} /></td>
+              <td class="text-center">{entry.participations}</td>
+              <td class="text-center">{entry.gold > 0 ? <span class="award-gold-medal">{entry.gold}</span> : ""}</td>
+              <td class="text-center">{entry.silver > 0 ? <span class="award-silver-medal">{entry.silver}</span> : ""}</td>
+              <td class="text-center">{entry.bronze > 0 ? <span class="award-bronze-medal">{entry.bronze}</span> : ""}</td>
+              <td class="text-center">{entry.hm > 0 ? <span class="award-honourable-mention">{entry.hm}</span> : ""}</td>
+              <td class="text-center">{entry.special_prizes || ""}</td>
+              <td class="text-center">{entry.perfect_scores || ""}</td>
             </tr>
           ))}
         </tbody>

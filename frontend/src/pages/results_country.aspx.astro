@@ -1,25 +1,26 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import { loadResultsCountry } from "../utils/data";
+import { loadResultsCountry, isIndividualContestant } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
 
 const origin = Astro.url.origin;
-const countryData = await loadResultsCountry(origin);
+const rawCountryData = await loadResultsCountry(origin);
+const countryData = rawCountryData.filter(r => !isIndividualContestant(r.code));
 const { column, order } = parseSortParams(Astro.url.searchParams);
 const sorted = column ? sortData(countryData, column, order) : countryData;
 
 const cols = [
   { key: "code", label: "Code" },
   { key: "country", label: "Country" },
-  { key: "first_participation", label: "First", align: "right" },
-  { key: "participations", label: "Part.", align: "right" },
-  { key: "contestants_all", label: "Cont.", align: "right" },
-  { key: "contestants_male", label: "Male", align: "right" },
-  { key: "contestants_female", label: "Female", align: "right" },
-  { key: "gold", label: "G", align: "right" },
-  { key: "silver", label: "S", align: "right" },
-  { key: "bronze", label: "B", align: "right" },
-  { key: "hm", label: "HM", align: "right" },
+  { key: "first_participation", label: "First", title: "First participation year", align: "center" },
+  { key: "participations", label: "Part.", title: "Participations", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_all", label: "Cont.", title: "Contestants", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_male", label: "Male", title: "Male contestants", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_female", label: "Female", title: "Female contestants", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", title: "Gold medals", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", title: "Silver medals", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", title: "Bronze medals", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", title: "Honourable Mention", align: "center", defaultOrder: "desc" as const },
 ];
 ---
 
@@ -31,26 +32,26 @@ const cols = [
         <thead>
           <tr>
             {cols.map(col => (
-              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
-                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              <th class:list={[col.align === "center" && "text-center", "sortable-header"]} title={col.title}>
+                <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((row, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
+          {sorted.map((row) => (
+            <tr>
               <td><a href={`/country_info.aspx?code=${row.code}`}>{row.code}</a></td>
               <td><a href={`/country_info.aspx?code=${row.code}`}>{row.country}</a></td>
-              <td class="text-right">{row.first_participation ?? ""}</td>
-              <td class="text-right">{row.participations}</td>
-              <td class="text-right">{row.contestants_all}</td>
-              <td class="text-right">{row.contestants_male}</td>
-              <td class="text-right">{row.contestants_female}</td>
-              <td class="text-right">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
-              <td class="text-right">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
-              <td class="text-right">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
-              <td class="text-right">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+              <td class="text-center">{row.first_participation ?? ""}</td>
+              <td class="text-center">{row.participations}</td>
+              <td class="text-center">{row.contestants_all}</td>
+              <td class="text-center">{row.contestants_male}</td>
+              <td class="text-center">{row.contestants_female}</td>
+              <td class="text-center">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+              <td class="text-center">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+              <td class="text-center">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+              <td class="text-center">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
             </tr>
           ))}
         </tbody>

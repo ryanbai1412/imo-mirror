@@ -9,19 +9,19 @@ const { column, order } = parseSortParams(Astro.url.searchParams);
 const sorted = column ? sortData(yearData, column, order) : yearData;
 
 const cols = [
-  { key: "year", label: "Year", align: "right" },
+  { key: "year", label: "Year", align: "center" },
   { key: "host_country", label: "Host" },
-  { key: "num_countries", label: "Countries", align: "right" },
-  { key: "contestants_all", label: "Cont.", align: "right" },
-  { key: "contestants_male", label: "Male", align: "right" },
-  { key: "contestants_female", label: "Female", align: "right" },
-  { key: "gold", label: "G", align: "right" },
-  { key: "silver", label: "S", align: "right" },
-  { key: "bronze", label: "B", align: "right" },
-  { key: "hm", label: "HM", align: "right" },
-  { key: "gold_cutoff", label: "G\u2265", align: "right" },
-  { key: "silver_cutoff", label: "S\u2265", align: "right" },
-  { key: "bronze_cutoff", label: "B\u2265", align: "right" },
+  { key: "num_countries", label: "Countries", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_all", label: "Cont.", title: "Contestants", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_male", label: "Male", title: "Male contestants", align: "center", defaultOrder: "desc" as const },
+  { key: "contestants_female", label: "Female", title: "Female contestants", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", title: "Gold medals", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", title: "Silver medals", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", title: "Bronze medals", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", title: "Honourable Mention", align: "center", defaultOrder: "desc" as const },
+  { key: "gold_cutoff", label: "G\u2265", title: "Gold cutoff score", align: "center", defaultOrder: "desc" as const },
+  { key: "silver_cutoff", label: "S\u2265", title: "Silver cutoff score", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze_cutoff", label: "B\u2265", title: "Bronze cutoff score", align: "center", defaultOrder: "desc" as const },
 ];
 ---
 
@@ -33,28 +33,28 @@ const cols = [
         <thead>
           <tr>
             {cols.map(col => (
-              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
-                <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
+              <th class:list={[col.align === "center" && "text-center", "sortable-header"]} title={col.title}>
+                <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((row, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
-              <td class="text-right"><a href={`/year_info.aspx?year=${row.year}`}>{row.year}</a></td>
+          {sorted.map((row) => (
+            <tr>
+              <td class="text-center"><a href={`/year_info.aspx?year=${row.year}`}>{row.year}</a></td>
               <td>{row.host_country}</td>
-              <td class="text-right">{row.num_countries ?? ""}</td>
-              <td class="text-right">{row.contestants_all ?? ""}</td>
-              <td class="text-right">{row.contestants_male ?? ""}</td>
-              <td class="text-right">{row.contestants_female ?? ""}</td>
-              <td class="text-right">{row.gold}</td>
-              <td class="text-right">{row.silver}</td>
-              <td class="text-right">{row.bronze}</td>
-              <td class="text-right">{row.hm}</td>
-              <td class="text-right">{row.gold_cutoff ?? ""}</td>
-              <td class="text-right">{row.silver_cutoff ?? ""}</td>
-              <td class="text-right">{row.bronze_cutoff ?? ""}</td>
+              <td class="text-center">{row.num_countries ?? ""}</td>
+              <td class="text-center">{row.contestants_all ?? ""}</td>
+              <td class="text-center">{row.contestants_male ?? ""}</td>
+              <td class="text-center">{row.contestants_female ?? ""}</td>
+              <td class="text-center">{row.gold}</td>
+              <td class="text-center">{row.silver}</td>
+              <td class="text-center">{row.bronze}</td>
+              <td class="text-center">{row.hm}</td>
+              <td class="text-center">{row.gold_cutoff ?? ""}</td>
+              <td class="text-center">{row.silver_cutoff ?? ""}</td>
+              <td class="text-center">{row.bronze_cutoff ?? ""}</td>
             </tr>
           ))}
         </tbody>

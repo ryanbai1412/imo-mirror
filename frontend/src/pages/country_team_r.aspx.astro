@@ -1,16 +1,18 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SubNav from "../components/SubNav.astro";
-import { loadCountryResultsByYear, loadCountries } from "../utils/data";
+import PageHeader from "../components/PageHeader.astro";
+import { loadCountryResultsByYear, loadCountries, loadTimeline } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { CHART_COLORS } from "../utils/chartColors";
 
 const origin = Astro.url.origin;
 const code = Astro.url.searchParams.get("code") || "";
 if (!code) return Astro.redirect("/countries.aspx");
 
-const [countryResults, countries] = await Promise.all([
+const [countryResults, countries, timeline] = await Promise.all([
   loadCountryResultsByYear(origin),
   loadCountries(origin),
+  loadTimeline(origin),
 ]);
 
 const country = countries.find(c => c.code === code);
@@ -26,55 +28,106 @@ for (const [year, results] of Object.entries(countryResults)) {
 }
 allRows.sort((a, b) => b.year - a.year);
 const rows = column ? sortData(allRows, column, order) : allRows;
+
+const timelineByYear = new Map(timeline.map(t => [t.year, t]));
+const chartPoints = allRows
+  .map(r => ({
+    year: r.year,
+    edition: timelineByYear.get(r.year)?.edition ?? null,
+    numCountries: timelineByYear.get(r.year)?.num_countries ?? null,
+    rank: r.rank,
+  }))
+  .filter(p => p.edition != null)
+  .sort((a, b) => a.edition! - b.edition!);
+const teamChartData = JSON.stringify(chartPoints);
+
+const medalPoints = allRows
+  .slice().sort((a, b) => a.year - b.year)
+  .map(r => ({
+    year: r.year,
+    gold: r.awards_gold ?? 0,
+    silver: r.awards_silver ?? 0,
+    bronze: r.awards_bronze ?? 0,
+    hm: r.awards_hm ?? 0,
+  }));
+const medalChartData = JSON.stringify(medalPoints);
+const chartColorsJson = JSON.stringify(CHART_COLORS);
 ---
 
 <Layout title={`${country?.name || code} — Team Results`} description={`IMO team results for ${country?.name || code}. Yearly rankings, scores, medal counts, and team leaders.`} path={`/country_team_r.aspx?code=${code}`}>
   <div class="page-content">
-    <h2>
-      {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
-      {country?.name || code} &mdash; Team Results
-    </h2>
-
-    <SubNav items={[
+    <PageHeader title={`${country?.name || code} — Team Results`} navItems={[
       { label: "Overview", href: `/country_info.aspx?code=${code}` },
       { label: "Hall of Fame", href: `/country_hall.aspx?code=${code}` },
       { label: "Individual Results", href: `/country_individual_r.aspx?code=${code}` },
       { label: "Team Results", href: `/country_team_r.aspx?code=${code}` },
-    ]} currentPath={`/country_team_r.aspx?code=${code}`} />
+    ]} currentPath={`/country_team_r.aspx?code=${code}`}>
+      <Fragment slot="title">
+        {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
+        {country?.name || code} &mdash; Team Results
+      </Fragment>
+    </PageHeader>
 
     <p class="page-subtitle">{rows.length} years of participation</p>
+
+    {medalPoints.length > 1 && chartPoints.length > 1 && (
+      <div class="charts-row">
+        <div class="stats-section">
+          <h3>Medal Counts</h3>
+          <div class="chart-wrapper">
+            <canvas id="medal-count-chart" width="700" height="280"></canvas>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.gold}`}></span>Gold</span>
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.silver}`}></span>Silver</span>
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.bronze}`}></span>Bronze</span>
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.hm}`}></span>HM</span>
+          </div>
+        </div>
+        <div class="stats-section">
+          <h3>Team Ranking</h3>
+          <div class="chart-wrapper">
+            <canvas id="team-rank-chart" width="700" height="320"></canvas>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.gold}`}></span>Participating countries</span>
+            <span class="legend-item"><span class="legend-swatch legend-line" style={`background:${CHART_COLORS.line}`}></span>Inverted ranking</span>
+          </div>
+        </div>
+      </div>
+    )}
 
     <div class="table-container">
       <table class="data-table">
         <thead>
           <tr>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
-            <th class="text-right">#</th>
-            <th class="text-right">P1</th><th class="text-right">P2</th><th class="text-right">P3</th>
-            <th class="text-right">P4</th><th class="text-right">P5</th><th class="text-right">P6</th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total", column, order)}>Total{sortIndicator("total", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
-            <th class="text-right">G</th><th class="text-right">S</th><th class="text-right">B</th><th class="text-right">HM</th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
+            <th class="text-center" title="Team size">#</th>
+            <th class="text-center" title="Problem 1">P1</th><th class="text-center" title="Problem 2">P2</th><th class="text-center" title="Problem 3">P3</th>
+            <th class="text-center" title="Problem 4">P4</th><th class="text-center" title="Problem 5">P5</th><th class="text-center" title="Problem 6">P6</th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "total", column, order, "desc")}>Total{sortIndicator("total", column, order)}</a></th>
+            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
+            <th class="text-center" title="Gold medals">G</th><th class="text-center" title="Silver medals">S</th><th class="text-center" title="Bronze medals">B</th><th class="text-center" title="Honourable Mention">HM</th>
             <th>Leader</th><th>Deputy Leader</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, idx) => (
-            <tr class={idx % 2 === 0 ? "even" : "odd"}>
-              <td class="text-right"><a href={`/year_country_r.aspx?year=${row.year}`}>{row.year}</a></td>
-              <td class="text-right">{row.team_size_all ?? ""}</td>
-              <td class="text-right">{row.p1 ?? ""}</td>
-              <td class="text-right">{row.p2 ?? ""}</td>
-              <td class="text-right">{row.p3 ?? ""}</td>
-              <td class="text-right">{row.p4 ?? ""}</td>
-              <td class="text-right">{row.p5 ?? ""}</td>
-              <td class="text-right">{row.p6 ?? ""}</td>
-              <td class="text-right">{row.total ?? ""}</td>
-              <td class="text-right">{row.rank ?? ""}</td>
-              <td class="text-right">{row.awards_gold ?? ""}</td>
-              <td class="text-right">{row.awards_silver ?? ""}</td>
-              <td class="text-right">{row.awards_bronze ?? ""}</td>
-              <td class="text-right">{row.awards_hm ?? ""}</td>
+          {rows.map((row) => (
+            <tr>
+              <td class="text-center"><a href={`/year_country_r.aspx?year=${row.year}`}>{row.year}</a></td>
+              <td class="text-center">{row.team_size_all ?? ""}</td>
+              <td class="text-center">{row.p1 ?? ""}</td>
+              <td class="text-center">{row.p2 ?? ""}</td>
+              <td class="text-center">{row.p3 ?? ""}</td>
+              <td class="text-center">{row.p4 ?? ""}</td>
+              <td class="text-center">{row.p5 ?? ""}</td>
+              <td class="text-center">{row.p6 ?? ""}</td>
+              <td class="text-center">{row.total ?? ""}</td>
+              <td class="text-center">{row.rank ?? ""}</td>
+              <td class="text-center">{row.awards_gold ?? ""}</td>
+              <td class="text-center">{row.awards_silver ?? ""}</td>
+              <td class="text-center">{row.awards_bronze ?? ""}</td>
+              <td class="text-center">{row.awards_hm ?? ""}</td>
               <td>{row.leader}</td>
               <td>{row.deputy_leader}</td>
             </tr>
@@ -84,3 +137,284 @@ const rows = column ? sortData(allRows, column, order) : allRows;
     </div>
   </div>
 </Layout>
+
+<script define:vars={{ teamChartData, medalChartData, code, chartColorsJson }}>
+function drawTeamRankChart() {
+  const data = JSON.parse(teamChartData);
+  const canvas = document.getElementById('team-rank-chart');
+  if (!canvas || !data.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = 700, H = 320;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 30, right: 16, bottom: 36, left: 40 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const maxCountries = data.reduce((m, d) =>
+    Math.max(m, d.numCountries || 0), 0);
+  const yMax = Math.ceil(maxCountries / 10) * 10 || 10;
+  const barW = cw / data.length;
+  const gap = Math.max(1, barW * 0.15);
+
+  const CC = JSON.parse(chartColorsJson);
+
+  ctx.fillStyle = CC.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = CC.grid;
+  ctx.lineWidth = 0.5;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = CC.label;
+  ctx.textAlign = 'right';
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(yMax * i / ticks);
+    const y = pad.top + ch - (v / yMax) * ch;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(String(v), pad.left - 6, y + 4);
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    const x = pad.left + i * barW + gap / 2;
+    const bw = barW - gap;
+    if (d.numCountries) {
+      const h = (d.numCountries / yMax) * ch;
+      ctx.fillStyle = CC.gold;
+      ctx.fillRect(x, pad.top + ch - h, bw, h);
+    }
+  }
+
+  ctx.beginPath();
+  ctx.strokeStyle = CC.line;
+  ctx.lineWidth = 2;
+  let started = false;
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    if (d.rank == null || d.numCountries == null) continue;
+    const x = pad.left + i * barW + (barW - gap) / 2 + gap / 2;
+    const inverted = d.numCountries - d.rank + 1;
+    const y = pad.top + ch - (inverted / yMax) * ch;
+    if (!started) { ctx.moveTo(x, y); started = true; }
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    if (d.rank == null || d.numCountries == null) continue;
+    const x = pad.left + i * barW + (barW - gap) / 2 + gap / 2;
+    const inverted = d.numCountries - d.rank + 1;
+    const y = pad.top + ch - (inverted / yMax) * ch;
+    ctx.fillStyle = CC.line;
+    ctx.beginPath();
+    ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  const labelStep = Math.max(1, Math.ceil(data.length / 15));
+  for (let i = 0; i < data.length; i++) {
+    if (i % labelStep === 0 || i === data.length - 1) {
+      const d = data[i];
+      const x = pad.left + i * barW + barW / 2;
+      ctx.fillText("'" + String(d.year).slice(-2),
+        x, pad.top + ch + 16);
+    }
+  }
+
+  ctx.fillStyle = CC.title;
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Team ranking - ' + code,
+    W / 2, pad.top - 10);
+
+  const existing = canvas.parentElement.querySelector('.chart-tooltip');
+  if (existing) existing.remove();
+  const tip = document.createElement('div');
+  tip.className = 'chart-tooltip';
+  canvas.parentElement.appendChild(tip);
+  let lastIdx = -1;
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const idx = Math.floor((mx - pad.left) / barW);
+    if (idx < 0 || idx >= data.length || my > pad.top + ch) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const d0 = data[idx];
+    const barH = d0.numCountries ? (d0.numCountries / yMax) * ch : 0;
+    const barTopY = pad.top + ch - barH;
+    if (my < barTopY) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const ox = canvas.offsetLeft;
+    const oy = canvas.offsetTop;
+    const curX = e.clientX - rect.left;
+    const wrapW = canvas.parentElement.offsetWidth;
+    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
+    const ty = oy + (e.clientY - rect.top) - 10;
+    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
+    if (idx === lastIdx) {
+      tip.style.left = tx + 'px';
+      tip.style.top = ty + 'px';
+      return;
+    }
+    lastIdx = idx;
+    const d = data[idx];
+    let html = '<b>IMO ' + d.year + '</b><br>';
+    if (d.numCountries != null) html += 'Countries: ' + d.numCountries + '<br>';
+    if (d.rank != null) html += 'Rank: ' + d.rank + ' / ' + (d.numCountries || '?');
+    tip.innerHTML = html;
+    tip.classList.add('visible');
+    tip.style.left = tx + 'px';
+    tip.style.top = ty + 'px';
+  });
+  canvas.addEventListener('mouseleave', function() {
+    tip.classList.remove('visible'); lastIdx = -1;
+  });
+}
+drawTeamRankChart();
+drawMedalCountChart();
+document.addEventListener('astro:page-load', function() {
+  drawTeamRankChart();
+  drawMedalCountChart();
+});
+
+function drawMedalCountChart() {
+  const data = JSON.parse(medalChartData);
+  const canvas = document.getElementById('medal-count-chart');
+  if (!canvas || !data.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = 700, H = 280;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 20, right: 16, bottom: 36, left: 40 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const maxTotal = data.reduce((m, d) =>
+    Math.max(m, d.gold + d.silver + d.bronze + d.hm), 0);
+  const yMax = Math.ceil(maxTotal / 2) * 2 || 6;
+  const barW = cw / data.length;
+  const gap = Math.max(1, barW * 0.15);
+
+  const layers = [
+    { key: 'hm',     color: CC.hm },
+    { key: 'bronze', color: CC.bronze },
+    { key: 'silver', color: CC.silver },
+    { key: 'gold',   color: CC.gold },
+  ];
+
+  ctx.fillStyle = CC.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = CC.grid;
+  ctx.lineWidth = 0.5;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = CC.label;
+  ctx.textAlign = 'right';
+  const ticks = Math.min(5, yMax);
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(yMax * i / ticks);
+    const y = pad.top + ch - (v / yMax) * ch;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(String(v), pad.left - 6, y + 4);
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    const x = pad.left + i * barW + gap / 2;
+    const bw = barW - gap;
+    let y = pad.top + ch;
+    for (const layer of layers) {
+      const val = d[layer.key];
+      if (!val) continue;
+      const h = (val / yMax) * ch;
+      y -= h;
+      ctx.fillStyle = layer.color;
+      ctx.fillRect(x, y, bw, h);
+    }
+  }
+
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  const labelStep = Math.max(1, Math.ceil(data.length / 15));
+  for (let i = 0; i < data.length; i++) {
+    if (i % labelStep === 0 || i === data.length - 1) {
+      const x = pad.left + i * barW + barW / 2;
+      ctx.fillText("'" + String(data[i].year).slice(-2),
+        x, pad.top + ch + 16);
+    }
+  }
+
+  const existing = canvas.parentElement.querySelector('.chart-tooltip');
+  if (existing) existing.remove();
+  const tip = document.createElement('div');
+  tip.className = 'chart-tooltip';
+  canvas.parentElement.appendChild(tip);
+  let lastIdx = -1;
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const idx = Math.floor((mx - pad.left) / barW);
+    if (idx < 0 || idx >= data.length || my > pad.top + ch || my < pad.top) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const d0 = data[idx];
+    const barTotal = d0.gold + d0.silver + d0.bronze + d0.hm;
+    const barTopY = pad.top + ch - (barTotal / yMax) * ch;
+    if (my < barTopY) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const ox = canvas.offsetLeft;
+    const oy = canvas.offsetTop;
+    const curX = e.clientX - rect.left;
+    const wrapW = canvas.parentElement.offsetWidth;
+    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
+    const ty = oy + (e.clientY - rect.top) - 10;
+    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
+    if (idx === lastIdx) {
+      tip.style.left = tx + 'px';
+      tip.style.top = ty + 'px';
+      return;
+    }
+    lastIdx = idx;
+    const d = data[idx];
+    let html = '<b>IMO ' + d.year + '</b><br>';
+    if (d.gold) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.gold + '"></span>Gold: ' + d.gold + '</div>';
+    if (d.silver) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.silver + '"></span>Silver: ' + d.silver + '</div>';
+    if (d.bronze) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.bronze + '"></span>Bronze: ' + d.bronze + '</div>';
+    if (d.hm) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.hm + '"></span>HM: ' + d.hm + '</div>';
+    tip.innerHTML = html;
+    tip.classList.add('visible');
+    tip.style.left = tx + 'px';
+    tip.style.top = ty + 'px';
+  });
+  canvas.addEventListener('mouseleave', function() {
+    tip.classList.remove('visible'); lastIdx = -1;
+  });
+}
+</script>

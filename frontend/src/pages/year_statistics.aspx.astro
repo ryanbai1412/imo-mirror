@@ -1,14 +1,42 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SubNav from "../components/SubNav.astro";
-import { loadYearStatistics } from "../utils/data";
+import PageHeader from "../components/PageHeader.astro";
+import { loadYearStatistics, loadTimeline, loadIndividualResultsByYear } from "../utils/data";
+import { CHART_COLORS, STACKED_BAR_ORDER } from "../utils/chartColors";
 
 const origin = Astro.url.origin;
 const year = Astro.url.searchParams.get("year") || "";
 if (!year) return Astro.redirect("/results.aspx");
 
-const statsMap = await loadYearStatistics(origin);
+const [statsMap, timeline, individualResults] = await Promise.all([
+  loadYearStatistics(origin),
+  loadTimeline(origin),
+  loadIndividualResultsByYear(origin),
+]);
 const stats = statsMap[year];
+const results = individualResults[year] || [];
+
+const maxScore = 42;
+const distBuckets: { score: number; gold: number; silver: number; bronze: number; hm: number; none: number }[] = [];
+for (let s = 0; s <= maxScore; s++) {
+  distBuckets.push({ score: s, gold: 0, silver: 0, bronze: 0, hm: 0, none: 0 });
+}
+for (const r of results) {
+  if (r.total == null || r.total < 0 || r.total > maxScore) continue;
+  const bucket = distBuckets[r.total];
+  const award = (r.award || "").toLowerCase();
+  if (award.includes("gold")) bucket.gold++;
+  else if (award.includes("silver")) bucket.silver++;
+  else if (award.includes("bronze")) bucket.bronze++;
+  else if (award.includes("honourable") || award.includes("hm")) bucket.hm++;
+  else bucket.none++;
+}
+const chartData = JSON.stringify(distBuckets);
+const chartColorsJson = JSON.stringify(CHART_COLORS);
+const stackedBarOrderJson = JSON.stringify(STACKED_BAR_ORDER);
+const yearNum = Number(year);
+const prevYear = timeline.find(t => t.year === yearNum - 1);
+const nextYear = timeline.find(t => t.year === yearNum + 1);
 
 const firstRow = stats ? Object.values(stats.problems)[0] : undefined;
 const problemKeys = firstRow ? Object.keys(firstRow).sort() : [];
@@ -34,13 +62,31 @@ const sections: Section[] = [
 
 <Layout title={`IMO ${year} - Statistics`} description={`Score distribution statistics for the ${year} International Mathematical Olympiad. Problem-by-problem analysis.`} path={`/year_statistics.aspx?year=${year}`}>
   <div class="page-content">
-    <h2>IMO {year} &mdash; Statistics</h2>
-    <SubNav items={[
+    <PageHeader title={`IMO ${year} — Statistics`} navItems={[
       { label: "Overview", href: `/year_info.aspx?year=${year}` },
       { label: "Country Results", href: `/year_country_r.aspx?year=${year}` },
       { label: "Individual Results", href: `/year_individual_r.aspx?year=${year}` },
       { label: "Statistics", href: `/year_statistics.aspx?year=${year}` },
-    ]} currentPath={`/year_statistics.aspx?year=${year}`} />
+    ]} currentPath={`/year_statistics.aspx?year=${year}`}
+      prevHref={prevYear ? `/year_statistics.aspx?year=${prevYear.year}` : undefined}
+      nextHref={nextYear ? `/year_statistics.aspx?year=${nextYear.year}` : undefined}
+    />
+
+    {results.length > 0 && (
+      <div class="stats-section">
+        <h3>Points Distribution</h3>
+        <div class="chart-wrapper">
+          <canvas id="dist-chart" width="700" height="320"></canvas>
+        </div>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.gold}`}></span>Gold medal</span>
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.silver}`}></span>Silver medal</span>
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.bronze}`}></span>Bronze medal</span>
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.hm}`}></span>Honourable mention</span>
+          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.none}`}></span>Nothing</span>
+        </div>
+      </div>
+    )}
 
     {stats ? (
       sections.map(section => (
@@ -51,8 +97,8 @@ const sections: Section[] = [
               <thead>
                 <tr>
                   <th></th>
-                  {problemHeaders.map(h => (
-                    <th class="text-right">{h}</th>
+                  {problemHeaders.map((h, i) => (
+                    <th class="text-center" title={`Problem ${i + 1}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -61,7 +107,7 @@ const sections: Section[] = [
                   <tr>
                     <td class="stat-label">{label}</td>
                     {problemKeys.map(key => (
-                      <td class="text-right">{values[key]}</td>
+                      <td class="text-center">{values[key]}</td>
                     ))}
                   </tr>
                 ))}
@@ -76,20 +122,141 @@ const sections: Section[] = [
   </div>
 </Layout>
 
+<script define:vars={{ chartData, chartColorsJson, stackedBarOrderJson }}>
+function drawStatsDistChart() {
+  const data = JSON.parse(chartData);
+  const canvas = document.getElementById('dist-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const W = 700, H = 320;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 30, right: 16, bottom: 36, left: 40 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  const maxTotal = data.reduce((m, d) =>
+    Math.max(m, d.gold + d.silver + d.bronze + d.hm + d.none), 0);
+  const yMax = Math.ceil(maxTotal / 5) * 5 || 5;
+  const barW = cw / data.length;
+  const gap = Math.max(1, barW * 0.15);
+
+  const CC = JSON.parse(chartColorsJson);
+  const colors = JSON.parse(stackedBarOrderJson);
+
+  ctx.fillStyle = CC.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = CC.grid;
+  ctx.lineWidth = 0.5;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = CC.label;
+  ctx.textAlign = 'right';
+  const ticks = 5;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(yMax * i / ticks);
+    const y = pad.top + ch - (v / yMax) * ch;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillText(String(v), pad.left - 6, y + 4);
+  }
+
+  for (let i = 0; i < data.length; i++) {
+    const d = data[i];
+    const x = pad.left + i * barW + gap / 2;
+    const bw = barW - gap;
+    let y = pad.top + ch;
+    for (const c of colors) {
+      const val = d[c.key];
+      if (!val) continue;
+      const h = (val / yMax) * ch;
+      y -= h;
+      ctx.fillStyle = c.color;
+      ctx.fillRect(x, y, bw, h);
+    }
+
+    if (i % 5 === 0 || i === data.length - 1) {
+      ctx.fillStyle = CC.label;
+      ctx.textAlign = 'center';
+      ctx.fillText(String(d.score),
+        x + bw / 2, pad.top + ch + 16);
+    }
+  }
+
+  ctx.fillStyle = CC.title;
+  ctx.font = 'bold 13px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Total Score', W / 2, H - 4);
+
+  const existing = canvas.parentElement.querySelector('.chart-tooltip');
+  if (existing) existing.remove();
+  const tip = document.createElement('div');
+  tip.className = 'chart-tooltip';
+  canvas.parentElement.appendChild(tip);
+  let lastIdx = -1;
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mx = (e.clientX - rect.left) * (W / rect.width);
+    const my = (e.clientY - rect.top) * (H / rect.height);
+    const idx = Math.floor((mx - pad.left) / barW);
+    if (idx < 0 || idx >= data.length || my > pad.top + ch) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const d0 = data[idx];
+    const barTotal = d0.gold + d0.silver + d0.bronze + d0.hm + d0.none;
+    const barTopY = pad.top + ch - (barTotal / yMax) * ch;
+    if (my < barTopY) {
+      tip.classList.remove('visible'); lastIdx = -1; return;
+    }
+    const ox = canvas.offsetLeft;
+    const oy = canvas.offsetTop;
+    const curX = e.clientX - rect.left;
+    const wrapW = canvas.parentElement.offsetWidth;
+    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
+    const ty = oy + (e.clientY - rect.top) - 10;
+    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
+    if (idx === lastIdx) {
+      tip.style.left = tx + 'px';
+      tip.style.top = ty + 'px';
+      return;
+    }
+    lastIdx = idx;
+    const d = data[idx];
+    const total = d.gold + d.silver + d.bronze + d.hm + d.none;
+    let html = '<b>Score ' + d.score + '</b> (' + total + ' contestants)<br>';
+    if (d.gold) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.gold + '"></span>Gold: ' + d.gold + '</div>';
+    if (d.silver) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.silver + '"></span>Silver: ' + d.silver + '</div>';
+    if (d.bronze) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.bronze + '"></span>Bronze: ' + d.bronze + '</div>';
+    if (d.hm) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.hm + '"></span>HM: ' + d.hm + '</div>';
+    if (d.none) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.none + '"></span>None: ' + d.none + '</div>';
+    tip.innerHTML = html;
+    tip.classList.add('visible');
+    tip.style.left = tx + 'px';
+    tip.style.top = ty + 'px';
+  });
+  canvas.addEventListener('mouseleave', function() {
+    tip.classList.remove('visible'); lastIdx = -1;
+  });
+}
+drawStatsDistChart();
+document.addEventListener('astro:page-load', drawStatsDistChart);
+</script>
+
 <style>
-  .stats-section {
-    margin-bottom: 2rem;
-  }
-  .stats-section h3 {
-    margin-bottom: 0.75rem;
-  }
   .stats-table .stat-label {
     white-space: nowrap;
     font-weight: 500;
   }
-  .stats-table td.text-right,
-  .stats-table th.text-right {
-    text-align: right;
+  .stats-table td.text-center,
+  .stats-table th.text-center {
+    text-align: center;
     min-width: 5em;
   }
 </style>

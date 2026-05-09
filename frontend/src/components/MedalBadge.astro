@@ -1,0 +1,22 @@
+---
+interface Props {
+  type: 'gold' | 'silver' | 'bronze' | 'hm';
+  count: number;
+  label?: string;
+}
+
+const { type, count, label } = Astro.props;
+
+const labels: Record<string, string> = {
+  gold: 'Gold',
+  silver: 'Silver',
+  bronze: 'Bronze',
+  hm: 'HM',
+};
+
+const bgClass = `medal-${type}-bg`;
+---
+
+<span class:list={["badge", bgClass]}>
+  {count} {label || labels[type]}
+</span>

@@ -46,39 +46,43 @@ const jsonLd = {
         </div>
       </div>
       <div class="hero-links">
-        {latest && <a href={`/year_info.aspx?year=${latest.year}`} class="hero-link">Latest IMO {latest.year} &rarr;</a>}
-        <a href="/organizers.aspx" class="hero-link">Full Timeline &rarr;</a>
-        <a href="/results.aspx" class="hero-link">All Results &rarr;</a>
+        {latest && <a href={`/year_info.aspx?year=${latest.year}`} class="btn btn--pill btn--ghost">Latest IMO {latest.year} &rarr;</a>}
+        <a href="/organizers.aspx" class="btn btn--pill btn--ghost">Full Timeline &rarr;</a>
+        <a href="/results.aspx" class="btn btn--pill btn--ghost">All Results &rarr;</a>
       </div>
+    </div>
+
+    <div class="notice notice--warning">
+      <p>This site is an <strong>unofficial mirror</strong> of the <a href="https://www.imo-official.org" target="_blank" rel="noopener noreferrer">official IMO website</a>. All data is sourced from <a href="https://www.imo-official.org" target="_blank" rel="noopener noreferrer">imo-official.org</a> and is provided here as a fast, static archive. For authoritative information, please visit the official site.</p>
     </div>
 
     <div class="home-grid">
       <a href="/organizers.aspx" class="home-card-link">
-        <div class="home-card">
+        <div class="card home-card">
           <h3>Timeline</h3>
           <p>Browse every IMO from 1959 to present. Host cities, dates, and participation statistics.</p>
         </div>
       </a>
       <a href="/countries.aspx" class="home-card-link">
-        <div class="home-card">
+        <div class="card home-card">
           <h3>Countries</h3>
           <p>Explore participating nations, their contact information, and hosting history.</p>
         </div>
       </a>
       <a href="/results.aspx" class="home-card-link">
-        <div class="home-card">
+        <div class="card home-card">
           <h3>Results</h3>
           <p>Comprehensive results by country and year. Medal counts, rankings, and statistics.</p>
         </div>
       </a>
       <a href="/hall.aspx" class="home-card-link">
-        <div class="home-card">
+        <div class="card home-card">
           <h3>Hall of Fame</h3>
           <p>Top performers across all IMOs. Gold medalists, perfect scorers, and record holders.</p>
         </div>
       </a>
       <a href="/search.aspx" class="home-card-link">
-        <div class="home-card">
+        <div class="card home-card">
           <h3>Search</h3>
           <p>Find any participant by name. View their complete competition history and scores.</p>
         </div>
@@ -86,3 +90,85 @@ const jsonLd = {
     </div>
   </div>
 </Layout>
+
+<style>
+  .home-hero {
+    background: linear-gradient(
+      135deg, var(--navy) 0%, var(--navy-light) 100%
+    );
+    border-radius: var(--radius);
+    padding: 40px 36px; margin-bottom: 32px;
+    color: #fff; position: relative; overflow: hidden;
+  }
+  .home-hero::before {
+    content: ''; position: absolute;
+    top: -40%; right: -10%;
+    width: 300px; height: 300px;
+    background: radial-gradient(
+      circle, rgba(201,168,76,0.12) 0%,
+      transparent 70%
+    );
+    border-radius: 50%; pointer-events: none;
+  }
+  .home-hero h2 {
+    font-family: var(--font-display);
+    font-size: 36px; font-weight: 400;
+    color: #fff; margin-bottom: 8px;
+    position: relative;
+  }
+  .home-hero .subtitle {
+    color: rgba(255,255,255,0.65);
+    font-size: 15px; margin-bottom: 20px;
+  }
+  .home-hero .hero-stats {
+    display: flex; gap: 24px; margin-bottom: 20px;
+  }
+  .hero-stat {
+    display: flex; flex-direction: column;
+  }
+  .hero-stat-value {
+    font-family: var(--font-display);
+    font-size: 24px; font-weight: 400;
+    color: var(--gold-light);
+  }
+  .hero-stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .home-hero .hero-links {
+    display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .home-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px; margin-bottom: 32px;
+  }
+  .home-card {
+    padding: 20px 24px;
+  }
+  .home-card h3 {
+    font-family: var(--font-display);
+    font-size: 18px; font-weight: 400;
+    color: var(--navy); margin: 0 0 10px;
+  }
+  .home-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6; margin: 0;
+  }
+  .home-card-link {
+    display: block; text-decoration: none;
+    color: inherit;
+  }
+  .home-card-link:hover {
+    text-decoration: none; color: inherit;
+  }
+  @media (max-width: 768px) {
+    .home-hero { padding: 28px 20px; }
+    .home-hero h2 { font-size: 26px; }
+    .home-grid { grid-template-columns: 1fr; }
+  }
+</style>

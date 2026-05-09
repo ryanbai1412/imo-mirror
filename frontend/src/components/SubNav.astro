@@ -7,8 +7,12 @@ interface Props {
 const { items, currentPath } = Astro.props;
 ---
 
-<nav class="sub-nav">
+<nav class="pill-nav sub-nav">
   {items.map(item => (
     <a href={item.href} class={currentPath === item.href ? "active" : ""}>{item.label}</a>
   ))}
 </nav>
+
+<style>
+  .sub-nav { margin: -8px 0 24px; }
+</style>
