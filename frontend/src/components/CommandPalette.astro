@@ -19,32 +19,7 @@
       />
       <kbd class="cmd-kbd">ESC</kbd>
     </div>
-    <div id="cmd-results" class="cmd-results">
-      <div class="cmd-tips">
-        <div class="cmd-tips-label">Search tips</div>
-        <div class="cmd-tip-row cmd-tip-row-active">
-          <span class="cmd-tip-icon">👤</span>
-          <span class="cmd-tip-prefix">p:</span>
-          <span class="cmd-tip-sep">&mdash;</span>
-          <span class="cmd-tip-desc">Search contestants</span>
-          <span class="cmd-tip-arrow">&rarr;</span>
-        </div>
-        <div class="cmd-tip-row">
-          <span class="cmd-tip-icon">🌍</span>
-          <span class="cmd-tip-prefix">c:</span>
-          <span class="cmd-tip-sep">&mdash;</span>
-          <span class="cmd-tip-desc">Search countries</span>
-          <span class="cmd-tip-arrow">&rarr;</span>
-        </div>
-        <div class="cmd-tip-row">
-          <span class="cmd-tip-icon">📅</span>
-          <span class="cmd-tip-prefix">y:</span>
-          <span class="cmd-tip-sep">&mdash;</span>
-          <span class="cmd-tip-desc">Search years</span>
-          <span class="cmd-tip-arrow">&rarr;</span>
-        </div>
-      </div>
-    </div>
+    <div id="cmd-results" class="cmd-results"></div>
     <div class="cmd-footer">
       <span class="cmd-footer-hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> to navigate</span>
       <span class="cmd-footer-hint"><kbd>&crarr;</kbd> to select</span>
@@ -134,56 +109,85 @@
     color: #94a3b8;
     font-size: 14px;
   }
-  .cmd-tips {
-    padding: 8px;
-  }
-  .cmd-tips-label {
-    padding: 8px 12px 6px;
+  .cmd-section-label {
+    padding: 10px 14px 6px;
     font-size: 11px;
     font-weight: 600;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
-  .cmd-tip-row {
+  .cmd-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 14px;
+    padding: 10px 14px;
     border-radius: 8px;
     font-size: 14px;
-    color: #64748b;
+    color: #475569;
     cursor: pointer;
-    transition: background 100ms ease;
+    text-decoration: none;
+    transition: background 80ms ease;
   }
-  .cmd-tip-row:hover {
+  .cmd-row:hover, .cmd-row.active {
     background: #f1f5f9;
+    text-decoration: none;
+    color: #1e293b;
   }
-  .cmd-tip-row-active {
-    background: #f1f5f9;
-  }
-  .cmd-tip-icon {
-    font-size: 16px;
-    width: 24px;
-    text-align: center;
+  .cmd-row-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
     flex-shrink: 0;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
   }
-  .cmd-tip-prefix {
-    font-weight: 700;
-    color: #1e1e1e;
-    min-width: 20px;
-  }
-  .cmd-tip-sep {
-    color: #cbd5e1;
-  }
-  .cmd-tip-desc {
-    color: #64748b;
+  .cmd-row-body {
     flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  .cmd-tip-arrow {
+  .cmd-row-prefix {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .cmd-row-sep {
     color: #cbd5e1;
-    font-size: 16px;
+  }
+  .cmd-row-desc {
+    color: #64748b;
+  }
+  .cmd-row-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cmd-row-subtitle {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cmd-row-arrow {
     flex-shrink: 0;
+    color: #cbd5e1;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 80ms ease;
+  }
+  .cmd-row.active .cmd-row-arrow,
+  .cmd-row:hover .cmd-row-arrow {
+    opacity: 1;
   }
   .cmd-footer {
     display: flex;
@@ -215,78 +219,21 @@
     border: 1px solid #e2e8f0;
     border-radius: 4px;
   }
-  .cmd-group-label {
-    padding: 8px 12px 4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .cmd-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    text-decoration: none;
-    color: #1e1e1e;
-    transition: background 100ms ease;
-  }
-  .cmd-item:hover, .cmd-item.active {
-    background: #f1f5f9;
-    text-decoration: none;
-    color: #1e1e1e;
-  }
-  .cmd-item-icon {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    font-size: 14px;
-    flex-shrink: 0;
-  }
   .cmd-icon-country {
     background: #eff6ff;
-    color: #2563eb;
+    border-color: #bfdbfe;
   }
   .cmd-icon-person {
     background: #f0fdf4;
-    color: #16a34a;
+    border-color: #bbf7d0;
   }
   .cmd-icon-year {
-    background: #fef3c7;
-    color: #d97706;
+    background: #fffbeb;
+    border-color: #fde68a;
   }
   .cmd-icon-page {
     background: #f5f3ff;
-    color: #7c3aed;
-  }
-  .cmd-item-content {
-    flex: 1;
-    min-width: 0;
-  }
-  .cmd-item-title {
-    font-size: 14px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .cmd-item-subtitle {
-    font-size: 12px;
-    color: #64748b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .cmd-item-arrow {
-    flex-shrink: 0;
-    color: #cbd5e1;
-    font-size: 14px;
+    border-color: #ddd6fe;
   }
   @media (max-width: 768px) {
     .cmd-overlay {
@@ -458,30 +405,22 @@
   }
 
   function renderTips(): string {
-    return `<div class="cmd-tips">
-      <div class="cmd-tips-label">Search tips</div>
-      <div class="cmd-tip-row cmd-tip-row-active">
-        <span class="cmd-tip-icon">\u{1F464}</span>
-        <span class="cmd-tip-prefix">p:</span>
-        <span class="cmd-tip-sep">&mdash;</span>
-        <span class="cmd-tip-desc">Search contestants</span>
-        <span class="cmd-tip-arrow">&rarr;</span>
+    return `<div class="cmd-section-label">Search tips</div>
+      <div class="cmd-row active" data-prefix="p:">
+        <div class="cmd-row-icon cmd-icon-person">\u{1F464}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">p:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search contestants</span></div>
+        <span class="cmd-row-arrow">\u2192</span>
       </div>
-      <div class="cmd-tip-row">
-        <span class="cmd-tip-icon">\u{1F30D}</span>
-        <span class="cmd-tip-prefix">c:</span>
-        <span class="cmd-tip-sep">&mdash;</span>
-        <span class="cmd-tip-desc">Search countries</span>
-        <span class="cmd-tip-arrow">&rarr;</span>
+      <div class="cmd-row" data-prefix="c:">
+        <div class="cmd-row-icon cmd-icon-country">\u{1F30D}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">c:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search countries</span></div>
+        <span class="cmd-row-arrow">\u2192</span>
       </div>
-      <div class="cmd-tip-row">
-        <span class="cmd-tip-icon">\u{1F4C5}</span>
-        <span class="cmd-tip-prefix">y:</span>
-        <span class="cmd-tip-sep">&mdash;</span>
-        <span class="cmd-tip-desc">Search years</span>
-        <span class="cmd-tip-arrow">&rarr;</span>
-      </div>
-    </div>`;
+      <div class="cmd-row" data-prefix="y:">
+        <div class="cmd-row-icon cmd-icon-year">\u{1F4C5}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">y:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search years</span></div>
+        <span class="cmd-row-arrow">\u2192</span>
+      </div>`;
   }
 
   function renderResults(results: SearchItem[]): void {
@@ -490,14 +429,15 @@
       const input = document.getElementById('cmd-input') as HTMLInputElement;
       if (input.value.length > 0) {
         container.innerHTML = '<div class="cmd-empty">No results found</div>';
+        activeIndex = -1;
       } else {
         container.innerHTML = renderTips();
+        activeIndex = 0;
+        updateActive();
       }
-      activeIndex = -1;
       return;
     }
 
-    // Group results by type
     const groups: Record<string, SearchItem[]> = {};
     const order = ['page', 'country', 'year', 'person'];
     for (const item of results) {
@@ -513,21 +453,19 @@
     };
 
     let html = '';
-    let idx = 0;
     for (const type of order) {
       const items = groups[type];
       if (!items) continue;
-      html += `<div class="cmd-group-label">${labels[type]}</div>`;
+      html += `<div class="cmd-section-label">${labels[type]}</div>`;
       for (const item of items) {
-        html += `<a href="${escapeHtml(item.href)}" class="cmd-item" data-index="${idx}" data-href="${escapeHtml(item.href)}">
-          <div class="cmd-item-icon ${getIconClass(item.type)}">${getIconSymbol(item.type)}</div>
-          <div class="cmd-item-content">
-            <div class="cmd-item-title">${escapeHtml(item.title)}</div>
-            <div class="cmd-item-subtitle">${escapeHtml(item.subtitle)}</div>
+        html += `<a href="${escapeHtml(item.href)}" class="cmd-row" data-href="${escapeHtml(item.href)}">
+          <div class="cmd-row-icon ${getIconClass(item.type)}">${getIconSymbol(item.type)}</div>
+          <div class="cmd-row-body">
+            <div class="cmd-row-title">${escapeHtml(item.title)}</div>
+            <div class="cmd-row-subtitle">${escapeHtml(item.subtitle)}</div>
           </div>
-          <span class="cmd-item-arrow">\u2192</span>
+          <span class="cmd-row-arrow">\u2192</span>
         </a>`;
-        idx++;
       }
     }
 
@@ -541,11 +479,11 @@
   }
 
   function updateActive(): void {
-    const items = document.querySelectorAll('.cmd-item');
-    items.forEach((el, i) => {
+    const rows = document.querySelectorAll('.cmd-row');
+    rows.forEach((el, i) => {
       el.classList.toggle('active', i === activeIndex);
     });
-    const active = items[activeIndex] as HTMLElement | undefined;
+    const active = rows[activeIndex] as HTMLElement | undefined;
     if (active) {
       active.scrollIntoView({ block: 'nearest' });
     }
@@ -615,38 +553,51 @@
       }, 80);
     }, { signal });
 
-    // Keyboard navigation within results
+    // Keyboard navigation within results and tips
     input.addEventListener('keydown', (e: KeyboardEvent) => {
-      const items = document.querySelectorAll('.cmd-item');
+      const rows = document.querySelectorAll('.cmd-row');
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (items.length > 0) {
-          activeIndex = (activeIndex + 1) % items.length;
+        if (rows.length > 0) {
+          activeIndex = (activeIndex + 1) % rows.length;
           updateActive();
         }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        if (items.length > 0) {
-          activeIndex = (activeIndex - 1 + items.length) % items.length;
+        if (rows.length > 0) {
+          activeIndex = (activeIndex - 1 + rows.length) % rows.length;
           updateActive();
         }
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        const active = items[activeIndex] as HTMLElement | undefined;
+        const active = rows[activeIndex] as HTMLElement | undefined;
         if (active) {
           const href = active.getAttribute('data-href');
-          if (href) navigate(href);
+          const prefix = active.getAttribute('data-prefix');
+          if (href) {
+            navigate(href);
+          } else if (prefix) {
+            input.value = prefix + ' ';
+            input.dispatchEvent(new Event('input'));
+          }
         }
       }
     }, { signal });
 
-    // Click to navigate
+    // Click to navigate or select tip
     document.getElementById('cmd-results')!.addEventListener('click', (e: Event) => {
-      const item = (e.target as HTMLElement).closest('.cmd-item') as HTMLElement | null;
-      if (item) {
+      const row = (e.target as HTMLElement).closest('.cmd-row') as HTMLElement | null;
+      if (row) {
         e.preventDefault();
-        const href = item.getAttribute('data-href');
-        if (href) navigate(href);
+        const href = row.getAttribute('data-href');
+        const prefix = row.getAttribute('data-prefix');
+        if (href) {
+          navigate(href);
+        } else if (prefix) {
+          input.value = prefix + ' ';
+          input.dispatchEvent(new Event('input'));
+          input.focus();
+        }
       }
     }, { signal });
 
