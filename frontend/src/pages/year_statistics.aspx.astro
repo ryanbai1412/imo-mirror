@@ -9,8 +9,9 @@ if (!year) return Astro.redirect("/results.aspx");
 const statsMap = await loadYearStatistics(origin);
 const stats = statsMap[year];
 
-const problemKeys = ["p1", "p2", "p3", "p4", "p5", "p6"];
-const problemHeaders = ["P1", "P2", "P3", "P4", "P5", "P6"];
+const firstRow = stats ? Object.values(stats.problems)[0] : undefined;
+const problemKeys = firstRow ? Object.keys(firstRow).sort() : [];
+const problemHeaders = problemKeys.map(k => k.toUpperCase());
 
 const rows = stats ? Object.entries(stats.problems) : [];
 ---
