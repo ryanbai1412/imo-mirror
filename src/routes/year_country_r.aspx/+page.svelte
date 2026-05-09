@@ -27,8 +27,8 @@
 
   let cols = $derived([
     { key: "rank", label: "Rank", align: "center" },
-    { key: "country", label: "Country" },
     { key: "code", label: "Code" },
+    { key: "country", label: "Country" },
     {
       key: "team_size_all",
       label: "#",
@@ -200,14 +200,15 @@
     url={data.url}
     column={data.column}
     order={data.order}
+    freezeCols={2}
   >
     {#snippet row(r)}
       <td class="text-center">{r.rank ?? ""}</td>
+      <td><a href="/team_r.aspx?code={r.code}&year={data.year}">{r.code}</a></td
+      >
       <td
         ><a href="/team_r.aspx?code={r.code}&year={data.year}">{r.country}</a
         ></td
-      >
-      <td><a href="/team_r.aspx?code={r.code}&year={data.year}">{r.code}</a></td
       >
       <td class="text-center">{r.team_size_all ?? ""}</td>
       <td class="text-center">{r.p1 ?? ""}</td>

@@ -103,6 +103,7 @@
     url={data.url}
     column={data.column}
     order={data.order}
+    freezeCols={2}
   >
     {#snippet row(entry)}
       <td class="text-center">{entry.edition}</td>

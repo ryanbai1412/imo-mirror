@@ -145,18 +145,29 @@
         </button>
       </nav>
 
-      <!-- Mobile hamburger -->
-      <button
-        class="mobile-toggle"
-        aria-label="Toggle menu"
-        onclick={() => (menuOpen = !menuOpen)}
-      >
-        {#if menuOpen}
-          <Icon name="X" size={20} />
-        {:else}
-          <Icon name="Menu" size={20} />
-        {/if}
-      </button>
+      <!-- Mobile actions -->
+      <div class="flex items-center gap-1 md:hidden">
+        <button
+          class="mobile-toggle"
+          aria-label="Search"
+          onclick={() => {
+            document.getElementById("cmd-trigger")?.click();
+          }}
+        >
+          <Icon name="Search" size={18} />
+        </button>
+        <button
+          class="mobile-toggle"
+          aria-label="Toggle menu"
+          onclick={() => (menuOpen = !menuOpen)}
+        >
+          {#if menuOpen}
+            <Icon name="X" size={20} />
+          {:else}
+            <Icon name="Menu" size={20} />
+          {/if}
+        </button>
+      </div>
     </div>
 
     <!-- Mobile menu panel -->
@@ -253,7 +264,6 @@
     cursor: pointer;
     opacity: 0.4;
     pointer-events: none;
-    transition: opacity 200ms ease;
     align-items: center;
     gap: 6px;
     border-radius: var(--radius-default);
@@ -264,7 +274,11 @@
     font-size: 13px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.55);
-    transition: all 150ms ease;
+    transition:
+      opacity 200ms ease,
+      border-color 150ms ease,
+      background 150ms ease,
+      color 150ms ease;
   }
   :global(.search-ready) .search-trigger {
     opacity: 1;
@@ -301,11 +315,6 @@
   .mobile-toggle:hover {
     background: rgba(255, 255, 255, 0.08);
     color: white;
-  }
-  @media (min-width: 768px) {
-    .mobile-toggle {
-      display: none;
-    }
   }
   .mobile-nav-link {
     display: flex;

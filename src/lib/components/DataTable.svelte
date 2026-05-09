@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { onMount } from "svelte";
   import SortableTableHead from "./SortableTableHead.svelte";
   import type { SortDirection } from "$lib/utils/sort";
   import "$lib/styles/table.css";
@@ -24,6 +25,7 @@
     footer,
     tableClass,
     rowClass,
+    freezeCols = 0,
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any[];
@@ -38,11 +40,30 @@
     tableClass?: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rowClass?: (item: any, index: number) => string;
+    freezeCols?: number;
   } = $props();
+
+  let tableEl = $state<HTMLTableElement | undefined>(undefined);
+
+  onMount(() => {
+    if (freezeCols >= 2 && tableEl) {
+      const firstTh = tableEl.querySelector("th:first-child");
+      if (firstTh) {
+        tableEl.style.setProperty(
+          "--freeze-col1-w",
+          firstTh.getBoundingClientRect().width + "px"
+        );
+      }
+    }
+  });
 </script>
 
 <div class="table-container">
-  <table class="data-table{tableClass ? ` ${tableClass}` : ''}">
+  <table
+    bind:this={tableEl}
+    class="data-table{tableClass ? ` ${tableClass}` : ''}"
+    data-freeze={freezeCols || undefined}
+  >
     {#if cols && url && column !== undefined && order}
       <SortableTableHead {cols} {url} {column} {order} />
     {:else if header}
@@ -65,16 +86,29 @@
   .table-container {
     margin: 0 0 16px;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 70vh;
     -webkit-overflow-scrolling: touch;
+  }
+  .table-container :global(.data-table th) {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .table-container :global(.data-table[data-freeze] th:first-child) {
+    z-index: 4;
+  }
+  .table-container :global(.data-table[data-freeze="2"] th:nth-child(2)) {
+    z-index: 4;
   }
   @media (min-width: 768px) {
     .table-container {
       overflow-x: visible;
+      overflow-y: visible;
+      max-height: none;
     }
-  }
-  .table-container :global(.data-table th) {
-    position: sticky;
-    top: var(--header-h, 56px);
-    z-index: 2;
+    .table-container :global(.data-table th) {
+      top: var(--header-h, 56px);
+    }
   }
 </style>

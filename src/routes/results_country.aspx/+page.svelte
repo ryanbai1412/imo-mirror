@@ -115,6 +115,7 @@
     url={data.url}
     column={data.column}
     order={data.order}
+    freezeCols={1}
   >
     {#snippet row(r)}
       <td><a href="/country_info.aspx?code={r.code}">{r.code}</a></td>

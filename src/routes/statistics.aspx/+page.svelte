@@ -650,7 +650,7 @@
 
     <div class="stats-section">
       <h3>Medal Recipients</h3>
-      <div class="flex flex-wrap items-center gap-1.5">
+      <div class="recipient-controls">
         <PillPicker
           items={[
             { key: "gold", label: "Gold" },
@@ -783,7 +783,7 @@
   <!-- Repeat Contestant Outcomes (transition) -->
   <div class="stats-section">
     <h3>Repeat Contestant Outcomes</h3>
-    <DataTable data={AWARD_LABELS} tableClass="transition-table">
+    <DataTable data={AWARD_LABELS} tableClass="transition-table" freezeCols={1}>
       {#snippet header()}
         <thead>
           <tr>
@@ -835,7 +835,7 @@
 
     <!-- Contestant Background -->
     <h3 class="mt-8">Contestant Background</h3>
-    <DataTable data={AWARD_LABELS} tableClass="transition-table">
+    <DataTable data={AWARD_LABELS} tableClass="transition-table" freezeCols={1}>
       {#snippet header()}
         <thead>
           <tr>
@@ -942,6 +942,16 @@
   .transition-pct {
     font-size: 0.75em;
     color: var(--color-text-secondary);
+  }
+  .recipient-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .recipient-controls :global(.pill-picker) {
+    margin-bottom: 0;
   }
   .chart-check {
     display: flex;

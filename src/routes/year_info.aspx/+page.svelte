@@ -91,32 +91,40 @@
         <h3>Awards</h3>
         <div class="info-grid">
           {#if data.info?.gold_count != null}<span
-              class="info-label text-medal-gold">Gold</span
-            ><span class="info-value text-medal-gold"
+              class="info-label"
+              style="color: var(--color-medal-gold)">Gold</span
+            ><span class="info-value" style="color: var(--color-medal-gold)"
               >{data.info.gold_count}{#if data.info.gold_cutoff != null}
-                <span class="font-normal text-text-secondary"
+                <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
+                {" "}<span class="font-normal text-text-secondary"
                   >(≥ {data.info.gold_cutoff} pts)</span
                 >{/if}</span
             >{/if}
           {#if data.info?.silver_count != null}<span
-              class="info-label text-medal-silver">Silver</span
-            ><span class="info-value text-medal-silver"
+              class="info-label"
+              style="color: var(--color-medal-silver)">Silver</span
+            ><span class="info-value" style="color: var(--color-medal-silver)"
               >{data.info.silver_count}{#if data.info.silver_cutoff != null}
-                <span class="font-normal text-text-secondary"
+                <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
+                {" "}<span class="font-normal text-text-secondary"
                   >(≥ {data.info.silver_cutoff} pts)</span
                 >{/if}</span
             >{/if}
           {#if data.info?.bronze_count != null}<span
-              class="info-label text-medal-bronze">Bronze</span
-            ><span class="info-value text-medal-bronze"
+              class="info-label"
+              style="color: var(--color-medal-bronze)">Bronze</span
+            ><span class="info-value" style="color: var(--color-medal-bronze)"
               >{data.info.bronze_count}{#if data.info.bronze_cutoff != null}
-                <span class="font-normal text-text-secondary"
+                <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
+                {" "}<span class="font-normal text-text-secondary"
                   >(≥ {data.info.bronze_cutoff} pts)</span
                 >{/if}</span
             >{/if}
           {#if data.info?.hm_count != null}<span
-              class="info-label text-medal-hm">Hon. Mention</span
-            ><span class="info-value text-medal-hm">{data.info.hm_count}</span
+              class="info-label"
+              style="color: var(--color-medal-hm)">Hon. Mention</span
+            ><span class="info-value" style="color: var(--color-medal-hm)"
+              >{data.info.hm_count}</span
             >{/if}
         </div>
       {/if}

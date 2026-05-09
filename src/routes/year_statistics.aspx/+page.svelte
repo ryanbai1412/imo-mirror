@@ -262,7 +262,7 @@
     {#each data.sections as section (section.title)}
       <div class="stats-section">
         <h3>{section.title}</h3>
-        <DataTable data={section.rows}>
+        <DataTable data={section.rows} freezeCols={1}>
           {#snippet header()}
             <thead>
               <tr>

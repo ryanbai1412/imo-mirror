@@ -174,6 +174,7 @@
     url={data.url}
     column={data.column}
     order={data.order}
+    freezeCols={1}
   >
     {#snippet row(r)}
       <td class="text-center"
@@ -203,6 +204,7 @@
   <h3>Individual Results (Recent)</h3>
   <DataTable
     data={data.indivRows.slice(0, 100)}
+    freezeCols={2}
     rowClass={(r, i) =>
       i > 0 && data.indivRows[i - 1].year !== r.year ? "year-group-start" : ""}
   >

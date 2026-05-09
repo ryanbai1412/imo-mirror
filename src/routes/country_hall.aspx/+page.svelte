@@ -120,6 +120,7 @@
     url={data.url}
     column={data.column}
     order={data.order}
+    freezeCols={1}
   >
     {#snippet row(r)}
       <td><a href="/participant_r.aspx?id={r.id}">{r.name}</a></td>

@@ -164,7 +164,7 @@
     </ChartSection>
   {/if}
 
-  <DataTable data={sortedResults}>
+  <DataTable data={sortedResults} freezeCols={1}>
     {#snippet header()}
       <thead>
         <tr>

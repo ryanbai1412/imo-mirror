@@ -91,6 +91,7 @@
     url={data.url}
     column={data.column}
     order={data.order}
+    freezeCols={1}
   >
     {#snippet row(entry)}
       <td

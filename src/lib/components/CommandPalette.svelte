@@ -585,6 +585,17 @@
     inset: 0;
     background: var(--color-backdrop);
     backdrop-filter: blur(4px);
+    animation: cmd-backdrop-in 300ms ease forwards;
+  }
+  @keyframes cmd-backdrop-in {
+    from {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+    to {
+      opacity: 1;
+      backdrop-filter: blur(4px);
+    }
   }
   .cmd-dialog {
     position: relative;
@@ -597,16 +608,30 @@
       0 25px 50px -12px rgba(0, 0, 0, 0.25),
       0 0 0 1px rgba(0, 0, 0, 0.05);
     overflow: hidden;
-    animation: cmd-in 150ms ease;
+    animation: cmd-spotlight 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-  @keyframes cmd-in {
-    from {
+  @keyframes cmd-spotlight {
+    0% {
       opacity: 0;
-      transform: scale(0.98) translateY(-8px);
+      transform: scale(0.92) translateY(-20px);
+      box-shadow:
+        0 0 0 0 rgba(201, 168, 76, 0),
+        0 25px 50px -12px rgba(0, 0, 0, 0);
     }
-    to {
+    60% {
+      opacity: 1;
+      transform: scale(1.01) translateY(2px);
+      box-shadow:
+        0 0 40px 4px rgba(201, 168, 76, 0.15),
+        0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    100% {
       opacity: 1;
       transform: scale(1) translateY(0);
+      box-shadow:
+        0 0 24px 2px rgba(201, 168, 76, 0.08),
+        0 25px 50px -12px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
     }
   }
   .cmd-input-wrapper {
@@ -615,10 +640,40 @@
     gap: 10px;
     padding: 14px 16px;
     border-bottom: 1px solid var(--color-border);
+    animation: cmd-input-glow 600ms ease forwards;
+  }
+  @keyframes cmd-input-glow {
+    0% {
+      border-bottom-color: var(--color-border);
+      box-shadow: inset 0 -1px 0 0 transparent;
+    }
+    50% {
+      border-bottom-color: var(--color-gold);
+      box-shadow: inset 0 -1px 8px -2px rgba(201, 168, 76, 0.25);
+    }
+    100% {
+      border-bottom-color: var(--color-border);
+      box-shadow: inset 0 -1px 0 0 transparent;
+    }
   }
   .cmd-search-icon {
     flex-shrink: 0;
     color: var(--color-text-muted);
+    animation: cmd-icon-pop 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes cmd-icon-pop {
+    0% {
+      transform: scale(0.6) rotate(-15deg);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.15) rotate(3deg);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+      opacity: 1;
+    }
   }
   .cmd-input {
     flex: 1;

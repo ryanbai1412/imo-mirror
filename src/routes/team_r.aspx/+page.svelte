@@ -241,7 +241,7 @@
     </div>
   {/if}
 
-  <DataTable data={data.teamMembers}>
+  <DataTable data={data.teamMembers} freezeCols={1}>
     {#snippet header()}
       <thead>
         <tr>

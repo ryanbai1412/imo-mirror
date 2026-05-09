@@ -221,6 +221,7 @@
     url={data.url}
     column={data.column}
     order={data.order}
+    freezeCols={1}
     rowClass={(row, i) =>
       i > 0 && data.rows[i - 1].year !== row.year ? "year-group-start" : ""}
   >

@@ -25,7 +25,7 @@
 
 <div class="mb-6">
   <div class="flex items-start justify-between gap-4">
-    <div>
+    <div class="min-w-0">
       {#if hasArrows}
         <div class="mb-5 inline-flex items-center gap-3.5">
           {#if prevHref}<ArrowLink href={prevHref} direction="prev" />{/if}
@@ -39,19 +39,29 @@
           {#if titleContent}{@render titleContent()}{:else}{title}{/if}
         </h1>
       {/if}
-      <nav class="pill-nav">
-        {#each navItems as item (item.href)}
-          <a href={item.href} class:active={currentPath === item.href}
-            >{item.label}</a
-          >
-        {/each}
-      </nav>
+      <div class="pill-nav-scroll">
+        <nav class="pill-nav">
+          {#each navItems as item (item.href)}
+            <a href={item.href} class:active={currentPath === item.href}
+              >{item.label}</a
+            >
+          {/each}
+        </nav>
+      </div>
     </div>
     {@render right?.()}
   </div>
 </div>
 
 <style>
+  .pill-nav-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .pill-nav-scroll::-webkit-scrollbar {
+    display: none;
+  }
   .pill-nav {
     display: flex;
     width: fit-content;
@@ -70,6 +80,7 @@
     text-decoration: none;
     transition: all 150ms ease;
     font-family: var(--font-body);
+    white-space: nowrap;
   }
   .pill-nav a + a {
     border-left: 1px solid var(--color-border);
@@ -82,9 +93,10 @@
     background: var(--color-navy);
     color: var(--color-surface);
   }
-  @media (max-width: 768px) {
-    .pill-nav {
-      flex-wrap: wrap;
+  @media (max-width: 767px) {
+    .pill-nav a {
+      padding: 7px 14px;
+      font-size: 12px;
     }
   }
 </style>
