@@ -164,10 +164,7 @@ export interface ResultsYearEntry {
 }
 
 export interface ResultsMatrixData {
-  [countryCode: string]: {
-    name: string;
-    years: Record<string, number | null>;
-  };
+  [countryCode: string]: Record<string, number>;
 }
 
 export interface StaticPageData {
@@ -175,8 +172,24 @@ export interface StaticPageData {
   content: string;
 }
 
+export type AssetFetcher = (req: Request) => Promise<Response>;
+
+let _assetFetcher: AssetFetcher | undefined;
+
+try {
+  const mod = await import("cloudflare:workers");
+  if (mod.env?.ASSETS?.fetch) {
+    _assetFetcher = mod.env.ASSETS.fetch.bind(mod.env.ASSETS);
+  }
+} catch {
+  // Not running on Cloudflare Workers — use global fetch
+}
+
 async function fetchJson<T>(filename: string, origin: string): Promise<T> {
-  const resp = await fetch(`${origin}/data/${filename}`);
+  const url = new URL(`/data/${filename}`, origin);
+  const resp = _assetFetcher
+    ? await _assetFetcher(new Request(url))
+    : await fetch(url);
   if (!resp.ok) throw new Error(`Failed to load ${filename}: ${resp.status}`);
   return resp.json() as Promise<T>;
 }
