@@ -279,7 +279,7 @@ a:hover { color: var(--link-hover); }
 .matrix-table { font-size: 11px; }
 .matrix-table th, .matrix-table td { padding: 3px 5px; white-space: nowrap; }
 .matrix-year { writing-mode: vertical-rl; text-orientation: mixed; min-width: 22px; }
-.sticky-col { position: sticky; left: 0; background: var(--surface); z-index: 1; border-right: 2px solid var(--border); }
+.sticky-col { position: sticky; left: 0; background: var(--surface); z-index: 11; border-right: 2px solid var(--border); }
 thead .sticky-col { background: var(--navy); z-index: 20; }
 
 /* Search */
