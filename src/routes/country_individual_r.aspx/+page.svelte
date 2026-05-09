@@ -170,7 +170,18 @@
     content="All individual IMO results for {data.country?.name ||
       data.code}. Problem scores, totals, ranks, and awards for every contestant."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Countries", href: "/countries.aspx" }, { name: data.country?.name || data.code, href: `/country_info.aspx?code=${data.code}` }, { name: "Individual Results", href: `/country_individual_r.aspx?code=${data.code}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Countries", href: "/countries.aspx" },
+    {
+      name: data.country?.name || data.code,
+      href: `/country_info.aspx?code=${data.code}`,
+    },
+    {
+      name: "Individual Results",
+      href: `/country_individual_r.aspx?code=${data.code}`,
+    },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

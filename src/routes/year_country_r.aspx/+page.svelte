@@ -158,7 +158,12 @@
     name="twitter:description"
     content="Country results for the {data.year} International Mathematical Olympiad. Rankings, scores, and medal counts for all participating countries."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Timeline", href: "/organizers.aspx" }, { name: `IMO ${data.year}`, href: `/year_info.aspx?year=${data.year}` }, { name: "Country Results", href: `/year_country_r.aspx?year=${data.year}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Timeline", href: "/organizers.aspx" },
+    { name: `IMO ${data.year}`, href: `/year_info.aspx?year=${data.year}` },
+    { name: "Country Results", href: `/year_country_r.aspx?year=${data.year}` },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

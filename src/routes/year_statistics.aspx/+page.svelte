@@ -146,7 +146,12 @@
     name="twitter:description"
     content="Score distribution statistics for the {data.year} International Mathematical Olympiad. Problem-by-problem analysis."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Timeline", href: "/organizers.aspx" }, { name: `IMO ${data.year}`, href: `/year_info.aspx?year=${data.year}` }, { name: "Statistics", href: `/year_statistics.aspx?year=${data.year}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Timeline", href: "/organizers.aspx" },
+    { name: `IMO ${data.year}`, href: `/year_info.aspx?year=${data.year}` },
+    { name: "Statistics", href: `/year_statistics.aspx?year=${data.year}` },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

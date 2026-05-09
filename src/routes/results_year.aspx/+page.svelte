@@ -142,7 +142,10 @@
     name="twitter:description"
     content="IMO results by year. Medal counts, cutoff scores, host countries, and participation statistics for every International Mathematical Olympiad."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Results by Year", href: "/results_year.aspx" }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Results by Year", href: "/results_year.aspx" },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

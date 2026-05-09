@@ -558,7 +558,10 @@
     name="twitter:description"
     content="Cross-year statistics for the International Mathematical Olympiad: medal cutoffs, day 1 vs day 2 analysis, repeat contestant outcomes, and problem difficulty."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Statistics", href: "/statistics.aspx" }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Statistics", href: "/statistics.aspx" },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

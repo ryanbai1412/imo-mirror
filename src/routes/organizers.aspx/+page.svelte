@@ -62,7 +62,10 @@
     name="twitter:description"
     content="Complete timeline of every International Mathematical Olympiad from 1959 to present. Host cities, dates, and participation statistics."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Timeline", href: "/organizers.aspx" }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Timeline", href: "/organizers.aspx" },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

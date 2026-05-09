@@ -29,7 +29,10 @@
     name="twitter:description"
     content="Visual matrix of IMO country rankings across all years. Quick overview of every country's performance history."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Results Matrix", href: "/results_matrix.aspx" }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Results Matrix", href: "/results_matrix.aspx" },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

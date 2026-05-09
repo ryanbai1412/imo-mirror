@@ -96,7 +96,10 @@
     name="twitter:description"
     content="Comprehensive IMO results by country. Medal counts, participation history, and contestant statistics for all participating nations."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Results by Country", href: "/results_country.aspx" }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Results by Country", href: "/results_country.aspx" },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

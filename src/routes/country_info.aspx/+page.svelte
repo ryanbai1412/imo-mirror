@@ -86,7 +86,14 @@
     content="{data.country
       ?.name} at the International Mathematical Olympiad. Competition history, results by year, and individual contestant performances."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Countries", href: "/countries.aspx" }, { name: data.country?.name || data.code, href: `/country_info.aspx?code=${data.code}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Countries", href: "/countries.aspx" },
+    {
+      name: data.country?.name || data.code,
+      href: `/country_info.aspx?code=${data.code}`,
+    },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

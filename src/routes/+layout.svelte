@@ -113,11 +113,11 @@
         class="flex items-center gap-2.5 text-white no-underline hover:text-gold-light"
       >
         <img
-          src="/imo-logo.gif"
+          src="/imo-logo.webp"
           alt="IMO Logo"
           class="h-9 w-auto shrink-0 rounded-sm"
           width="106"
-          height="80"
+          height="73"
         />
         <span
           class="hidden font-display text-xl font-normal tracking-[0.01em] whitespace-nowrap sm:block"

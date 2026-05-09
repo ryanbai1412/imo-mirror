@@ -91,7 +91,11 @@
       .length} participation(s), {data.totalGold} gold, {data.totalSilver} silver, {data.totalBronze} bronze medals."
   />
   {@html `<script type="application/ld+json">${jsonLd}</` + "script>"}
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Hall of Fame", href: "/hall.aspx" }, { name: p.name, href: `/participant_r.aspx?id=${data.id}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Hall of Fame", href: "/hall.aspx" },
+    { name: p.name, href: `/participant_r.aspx?id=${data.id}` },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

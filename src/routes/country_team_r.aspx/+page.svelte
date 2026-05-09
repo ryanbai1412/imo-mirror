@@ -190,7 +190,15 @@
     content="IMO team results for {data.country?.name ||
       data.code}. Yearly rankings, scores, medal counts, and team leaders."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Countries", href: "/countries.aspx" }, { name: data.country?.name || data.code, href: `/country_info.aspx?code=${data.code}` }, { name: "Team Results", href: `/country_team_r.aspx?code=${data.code}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Countries", href: "/countries.aspx" },
+    {
+      name: data.country?.name || data.code,
+      href: `/country_info.aspx?code=${data.code}`,
+    },
+    { name: "Team Results", href: `/country_team_r.aspx?code=${data.code}` },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

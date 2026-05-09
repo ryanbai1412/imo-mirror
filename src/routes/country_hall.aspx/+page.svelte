@@ -87,7 +87,15 @@
     content="Top IMO performers from {data.country?.name ||
       data.code}. Medal counts and participation history for all contestants."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Countries", href: "/countries.aspx" }, { name: data.country?.name || data.code, href: `/country_info.aspx?code=${data.code}` }, { name: "Hall of Fame", href: `/country_hall.aspx?code=${data.code}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Countries", href: "/countries.aspx" },
+    {
+      name: data.country?.name || data.code,
+      href: `/country_info.aspx?code=${data.code}`,
+    },
+    { name: "Hall of Fame", href: `/country_hall.aspx?code=${data.code}` },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

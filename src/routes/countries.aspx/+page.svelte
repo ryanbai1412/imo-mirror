@@ -32,7 +32,10 @@
     name="twitter:description"
     content="All countries participating in the International Mathematical Olympiad. Contact information, websites, and hosting history."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Countries", href: "/countries.aspx" }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Countries", href: "/countries.aspx" },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">
@@ -48,7 +51,10 @@
       <td><a href="/country_info.aspx?code={c.code}">{c.code}</a></td>
       <td><a href="/country_info.aspx?code={c.code}">{c.name}</a></td>
       <td
-        >{#if c.flag_url}<FlagImg src={c.flag_url} alt="{c.name} flag" />{/if}</td
+        >{#if c.flag_url}<FlagImg
+            src={c.flag_url}
+            alt="{c.name} flag"
+          />{/if}</td
       >
       <td
         >{#if c.website}<a

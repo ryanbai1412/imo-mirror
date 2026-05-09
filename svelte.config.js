@@ -16,7 +16,7 @@ const config = {
           "/favicon-16.png",
           "/favicon-32.png",
           "/apple-touch-icon.png",
-          "/imo-logo.gif",
+          "/imo-logo.webp",
           "/robots.txt",
           "/sitemap.xml",
         ],

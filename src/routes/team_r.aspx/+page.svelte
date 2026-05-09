@@ -93,7 +93,18 @@
     content="Results for {data.country?.name ||
       data.code} at the {data.year} International Mathematical Olympiad. Individual scores, rankings, and awards."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Countries", href: "/countries.aspx" }, { name: data.country?.name || data.code, href: `/country_info.aspx?code=${data.code}` }, { name: `IMO ${data.year}`, href: `/team_r.aspx?year=${data.year}&code=${data.code}` }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Countries", href: "/countries.aspx" },
+    {
+      name: data.country?.name || data.code,
+      href: `/country_info.aspx?code=${data.code}`,
+    },
+    {
+      name: `IMO ${data.year}`,
+      href: `/team_r.aspx?year=${data.year}&code=${data.code}`,
+    },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">

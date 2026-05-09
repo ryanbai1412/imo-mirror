@@ -77,7 +77,10 @@
     name="twitter:description"
     content="Top performers at the International Mathematical Olympiad. Gold medalists, perfect scorers, and record holders across all years."
   />
-  {@html `<script type="application/ld+json">${breadcrumbJsonLd([{ name: "Home", href: "/" }, { name: "Hall of Fame", href: "/hall.aspx" }])}</` + "script>"}
+  {@html `<script type="application/ld+json">${breadcrumbJsonLd([
+    { name: "Home", href: "/" },
+    { name: "Hall of Fame", href: "/hall.aspx" },
+  ])}</` + "script>"}
 </svelte:head>
 
 <div class="page-content">
