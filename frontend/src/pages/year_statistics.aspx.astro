@@ -13,7 +13,22 @@ const firstRow = stats ? Object.values(stats.problems)[0] : undefined;
 const problemKeys = firstRow ? Object.keys(firstRow).sort() : [];
 const problemHeaders = problemKeys.map(k => k.toUpperCase());
 
-const rows = stats ? Object.entries(stats.problems) : [];
+const allRows = stats ? Object.entries(stats.problems) : [];
+
+const distributionRows = allRows.filter(([label]) => label.startsWith("Num("));
+const summaryRows = allRows.filter(([label]) => label.startsWith("Mean(") || label.startsWith("Max(") || label.startsWith("\u03c3("));
+const correlationRows = allRows.filter(([label]) => label.startsWith("Corr("));
+
+interface Section {
+  title: string;
+  rows: [string, Record<string, string>][];
+}
+
+const sections: Section[] = [
+  { title: "Score Distribution", rows: distributionRows },
+  { title: "Summary Statistics", rows: summaryRows },
+  { title: "Correlations", rows: correlationRows },
+].filter(s => s.rows.length > 0);
 ---
 
 <Layout title={`IMO ${year} - Statistics`} description={`Score distribution statistics for the ${year} International Mathematical Olympiad. Problem-by-problem analysis.`} path={`/year_statistics.aspx?year=${year}`}>
@@ -28,28 +43,33 @@ const rows = stats ? Object.entries(stats.problems) : [];
     </div>
 
     {stats ? (
-      <div class="table-container">
-        <table class="data-table stats-table">
-          <thead>
-            <tr>
-              <th></th>
-              {problemHeaders.map(h => (
-                <th class="text-right">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(([label, values]) => (
-              <tr>
-                <td class="stat-label">{label}</td>
-                {problemKeys.map(key => (
-                  <td class="text-right">{values[key]}</td>
+      sections.map(section => (
+        <div class="stats-section">
+          <h3>{section.title}</h3>
+          <div class="table-container">
+            <table class="data-table stats-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  {problemHeaders.map(h => (
+                    <th class="text-right">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {section.rows.map(([label, values]) => (
+                  <tr>
+                    <td class="stat-label">{label}</td>
+                    {problemKeys.map(key => (
+                      <td class="text-right">{values[key]}</td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))
     ) : (
       <p>No statistics available for this year.</p>
     )}
@@ -57,6 +77,12 @@ const rows = stats ? Object.entries(stats.problems) : [];
 </Layout>
 
 <style>
+  .stats-section {
+    margin-bottom: 2rem;
+  }
+  .stats-section h3 {
+    margin-bottom: 0.75rem;
+  }
   .stats-table .stat-label {
     white-space: nowrap;
     font-weight: 500;
