@@ -42,7 +42,7 @@ export default function YearIndividualResultsPage() {
     return (
       <div className="page-content">
         <h2>Please select a year</h2>
-        <p><Link to="/timeline.aspx">View timeline</Link></p>
+        <p><Link to="/organizers.aspx">View timeline</Link></p>
       </div>
     );
   }

@@ -1,56 +1,37 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const NAV_ITEMS = [
-  { label: 'Home', path: '/' },
-  { label: 'Timeline', path: '/timeline.aspx' },
-  { label: 'Countries', path: '/country_info.aspx' },
+  { label: 'Timeline', path: '/organizers.aspx' },
+  { label: 'Countries', path: '/countries.aspx' },
   { label: 'Results', path: '/results.aspx' },
-  { label: 'Hall of Fame', path: '/hall_of_fame.aspx' },
+  { label: 'Hall of Fame', path: '/hall.aspx' },
   { label: 'Problems', path: '/problems.aspx' },
-];
-
-const LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'fr', label: 'Français' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'es', label: 'Español' },
-  { code: 'ru', label: 'Русский' },
+  { label: 'About', path: '/general.aspx' },
 ];
 
 export default function Header() {
-  const [searchParams] = useSearchParams();
-  const currentLang = searchParams.get('language') || 'en';
+  const location = useLocation();
 
   return (
     <header className="site-header">
-      <div className="header-top">
+      <div className="header-inner">
         <Link to="/" className="site-logo">
+          <span className="logo-icon">I</span>
           <h1>International Mathematical Olympiad</h1>
         </Link>
-      </div>
-      <nav className="main-nav">
-        <ul>
+        <nav className="main-nav">
           {NAV_ITEMS.map((item) => (
-            <li key={item.path}>
-              <Link to={item.path}>{item.label}</Link>
-            </li>
-          ))}
-        </ul>
-        <div className="language-selector">
-          {LANGUAGES.map((lang) => (
-            <span
-              key={lang.code}
-              className={`lang-option ${lang.code === currentLang ? 'active' : ''}`}
+            <Link
+              key={item.path}
+              to={item.path}
+              className={location.pathname === item.path ? 'active' : ''}
             >
-              {lang.code === currentLang ? (
-                <strong>{lang.code.toUpperCase()}</strong>
-              ) : (
-                <span>{lang.code.toUpperCase()}</span>
-              )}
-            </span>
+              {item.label}
+            </Link>
           ))}
-        </div>
-      </nav>
+          <Link to="/search.aspx" className="header-search-link">Search</Link>
+        </nav>
+      </div>
     </header>
   );
 }

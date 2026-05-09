@@ -16,58 +16,68 @@ export default function HomePage() {
 
   if (loading) return <Loading />;
 
-  // Find the most recent IMO with data
   const latest = timeline.find((t) => t.contestants_all && t.contestants_all > 0);
 
   return (
-    <div className="page-content">
-      <h2>International Mathematical Olympiad</h2>
-      <div className="home-intro">
+    <>
+      <section className="hero">
+        <h2>International Mathematical Olympiad</h2>
         <p>
-          The International Mathematical Olympiad (IMO) is the World Championship Mathematics
-          Competition for High School students and is held annually in a different country.
+          The world championship mathematics competition for high school students,
+          held annually since 1959.
         </p>
-        <p>
-          The first IMO was held in 1959 in Romania, with 7 countries participating. It has
-          gradually expanded to over 100 countries from 5 continents.
-        </p>
-      </div>
-
-      {latest && (
-        <div className="home-latest">
-          <h3>
-            <Link to={`/year_info.aspx?year=${latest.year}`}>
-              IMO {latest.year} &mdash; {latest.city}, {latest.country}
+        {latest && (
+          <div className="hero-cta">
+            <Link to={`/year_info.aspx?year=${latest.year}`} className="btn btn-gold">
+              IMO {latest.year} — {latest.city}, {latest.country}
             </Link>
-          </h3>
-          {latest.date && <p>{latest.date}</p>}
-          <p>
-            {latest.num_countries} countries, {latest.contestants_all} contestants
-          </p>
-          <ul className="home-links">
-            <li>
-              <Link to={`/year_country_r.aspx?year=${latest.year}`}>Country results</Link>
-            </li>
-            <li>
-              <Link to={`/year_individual_r.aspx?year=${latest.year}`}>Individual results</Link>
-            </li>
-            <li>
-              <Link to={`/year_statistics.aspx?year=${latest.year}`}>Statistics</Link>
-            </li>
-          </ul>
-        </div>
-      )}
+          </div>
+        )}
+      </section>
 
-      <div className="home-sections">
-        <h3>Explore</h3>
-        <ul className="home-links">
-          <li><Link to="/timeline.aspx">Timeline of all IMOs</Link></li>
-          <li><Link to="/country_info.aspx">Participating countries</Link></li>
-          <li><Link to="/results.aspx">Results overview</Link></li>
-          <li><Link to="/hall_of_fame.aspx">Hall of Fame</Link></li>
-          <li><Link to="/problems.aspx">Problems</Link></li>
-        </ul>
+      <div className="page-content">
+        {latest && (
+          <div className="home-latest card">
+            <h3>Latest: IMO {latest.year}</h3>
+            {latest.date && <p className="text-secondary">{latest.date}</p>}
+            <p>
+              {latest.num_countries} countries &middot; {latest.contestants_all} contestants
+            </p>
+            <div className="home-links">
+              <Link to={`/year_country_r.aspx?year=${latest.year}`}>Country Results</Link>
+              <Link to={`/year_individual_r.aspx?year=${latest.year}`}>Individual Results</Link>
+              <Link to={`/year_statistics.aspx?year=${latest.year}`}>Statistics</Link>
+            </div>
+          </div>
+        )}
+
+        <div className="home-grid">
+          <Link to="/organizers.aspx" className="home-card card">
+            <h3>Timeline</h3>
+            <p>Every IMO from 1959 to today</p>
+          </Link>
+          <Link to="/countries.aspx" className="home-card card">
+            <h3>Countries</h3>
+            <p>{timeline.length > 0 ? '100+' : ''} participating nations</p>
+          </Link>
+          <Link to="/results.aspx" className="home-card card">
+            <h3>Results</h3>
+            <p>Comprehensive results by country and year</p>
+          </Link>
+          <Link to="/hall.aspx" className="home-card card">
+            <h3>Hall of Fame</h3>
+            <p>Top performers in IMO history</p>
+          </Link>
+          <Link to="/problems.aspx" className="home-card card">
+            <h3>Problems</h3>
+            <p>All competition problems and solutions</p>
+          </Link>
+          <Link to="/search.aspx" className="home-card card">
+            <h3>Search</h3>
+            <p>Find any participant by name</p>
+          </Link>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

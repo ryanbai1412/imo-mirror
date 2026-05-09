@@ -28,7 +28,7 @@ export default function YearInfoPage() {
     return (
       <div className="page-content">
         <h2>Please select a year</h2>
-        <p><Link to="/timeline.aspx">View timeline</Link></p>
+        <p><Link to="/organizers.aspx">View timeline</Link></p>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export default function YearInfoPage() {
       <div className="year-nav">
         <Link to={`/year_info.aspx?year=${Number(year) - 1}`}>← Previous</Link>
         {' | '}
-        <Link to="/timeline.aspx">Timeline</Link>
+        <Link to="/organizers.aspx">Timeline</Link>
         {' | '}
         <Link to={`/year_info.aspx?year=${Number(year) + 1}`}>Next →</Link>
       </div>

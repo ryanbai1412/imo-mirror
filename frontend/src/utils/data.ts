@@ -225,3 +225,12 @@ export function loadResultsYear(): Promise<ResultsYearEntry[]> {
 export function loadResultsMatrix(): Promise<ResultsMatrixData> {
   return fetchJson('results_matrix.json');
 }
+
+export interface StaticPageData {
+  title: string;
+  content: string;
+}
+
+export function loadStaticPages(): Promise<Record<string, StaticPageData>> {
+  return fetchJson('static_pages.json');
+}
