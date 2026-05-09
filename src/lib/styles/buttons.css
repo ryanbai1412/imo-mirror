@@ -1,0 +1,39 @@
+/* Shared button styles — imported by pages that use .btn classes.
+   Currently: +page.svelte (homepage) and +error.svelte. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-default);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-body);
+  transition: all 150ms ease;
+}
+.btn-primary {
+  background: var(--color-navy);
+  color: var(--color-surface);
+}
+.btn-primary:hover {
+  background: var(--color-navy-light);
+  color: var(--color-surface);
+  text-decoration: none;
+}
+.btn--pill {
+  border-radius: var(--radius-pill);
+}
+.btn--ghost {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-surface);
+}
+.btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: var(--color-surface);
+  text-decoration: none;
+}

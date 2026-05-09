@@ -1,15 +1,31 @@
-import adapter from '@sveltejs/adapter-cloudflare';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from "@sveltejs/adapter-cloudflare";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	preprocess: vitePreprocess(),
-	kit: {
-		adapter: adapter(),
-		alias: {
-			'$lib': './src/lib'
-		}
-	}
+  preprocess: vitePreprocess(),
+  kit: {
+    adapter: adapter({
+      routes: {
+        include: ["/*"],
+        exclude: [
+          "/_app/immutable/*",
+          "/_app/version.json",
+          "/flags/*",
+          "/favicon.ico",
+          "/favicon-16.png",
+          "/favicon-32.png",
+          "/apple-touch-icon.png",
+          "/imo-logo.gif",
+          "/robots.txt",
+          "/sitemap.xml",
+        ],
+      },
+    }),
+    alias: {
+      $lib: "./src/lib",
+    },
+  },
 };
 
 export default config;

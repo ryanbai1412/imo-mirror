@@ -1,0 +1,43 @@
+/* Chart layout classes — imported by ChartSection, ScatterGrid,
+   and pages that use .stats-section / .chart-wrapper / .charts-row
+   directly without a wrapper component. */
+
+.stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stats-section {
+  margin-bottom: 24px;
+}
+.stats-section h3 {
+  margin-bottom: 12px;
+}
+
+.chart-wrapper {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  overflow: visible;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.charts-row .stats-section {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1024px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+}

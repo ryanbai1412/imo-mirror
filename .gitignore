@@ -7,6 +7,9 @@ build/
 dist/
 *.tsbuildinfo
 
+# Generated at build time
+static/sitemap.xml
+
 # Cache
 .cache/
 .vite/

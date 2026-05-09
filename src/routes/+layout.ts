@@ -1,4 +1,4 @@
-import '$lib/data-store';
+import "$lib/data-store";
 
 // Just importing starts both import()s.
 // Root layout runs on every page →
@@ -6,5 +6,5 @@ import '$lib/data-store';
 // regardless of route.
 
 export async function load() {
-	return {};
+  return {};
 }

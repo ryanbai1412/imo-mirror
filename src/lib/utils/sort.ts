@@ -3,7 +3,7 @@ export type SortDirection = "asc" | "desc";
 export function sortData<T>(
   data: T[],
   column: string,
-  direction: SortDirection,
+  direction: SortDirection
 ): T[] {
   const sorted = [...data];
   sorted.sort((a, b) => {
@@ -24,13 +24,21 @@ export function sortData<T>(
   return sorted;
 }
 
-export function parseSortParams(searchParams: URLSearchParams): { column: string; order: SortDirection } {
+export function parseSortParams(searchParams: URLSearchParams): {
+  column: string;
+  order: SortDirection;
+} {
   const column = searchParams.get("column") || "";
-  const order = (searchParams.get("order") || "asc") as SortDirection;
-  return { column, order: order === "desc" ? "desc" : "asc" };
+  const raw = searchParams.get("order");
+  const order: SortDirection = raw === "desc" ? "desc" : "asc";
+  return { column, order };
 }
 
-export function getSortUrl(url: URL, colKey: string, defaultOrder: SortDirection = "asc"): string {
+export function getSortUrl(
+  url: URL,
+  colKey: string,
+  defaultOrder: SortDirection = "asc"
+): string {
   const params = new URLSearchParams(url.search);
   if (params.get("column") === colKey) {
     params.set("order", params.get("order") === "asc" ? "desc" : "asc");
@@ -41,7 +49,11 @@ export function getSortUrl(url: URL, colKey: string, defaultOrder: SortDirection
   return `${url.pathname}?${params.toString()}`;
 }
 
-export function sortIndicator(colKey: string, currentSort: string, currentOrder: string): string {
+export function sortIndicator(
+  colKey: string,
+  currentSort: string,
+  currentOrder: string
+): string {
   if (currentSort !== colKey) return "";
   return currentOrder === "asc" ? " \u2191" : " \u2193";
 }

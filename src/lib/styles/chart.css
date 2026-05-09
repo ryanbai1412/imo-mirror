@@ -1,0 +1,41 @@
+/* Shared chart styles — imported by BarChart, LineChart, ScatterChart.
+   Component-specific styles remain in scoped <style> blocks. */
+
+.chart-container {
+  width: 100%;
+  border-radius: var(--radius-default, 6px);
+}
+.chart-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-chart-line);
+  margin-bottom: 4px;
+}
+.chart-svg {
+  display: block;
+  width: 100%;
+}
+.axis-label {
+  font-size: 11px;
+  fill: var(--color-chart-label);
+  font-family: system-ui, sans-serif;
+}
+.chart-loading {
+  background: linear-gradient(
+    90deg,
+    var(--color-border-light, #f0eeea) 25%,
+    var(--color-surface-hover, #f8f7f4) 50%,
+    var(--color-border-light, #f0eeea) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

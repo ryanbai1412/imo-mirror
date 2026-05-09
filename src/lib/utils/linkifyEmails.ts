@@ -10,12 +10,9 @@ export interface TextSegment {
   email?: string;
 }
 
-const EMAIL_RE =
-  /([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g;
+const EMAIL_RE = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
 
-export function linkifyEmails(
-  input: string
-): TextSegment[] {
+export function linkifyEmails(input: string): TextSegment[] {
   EMAIL_RE.lastIndex = 0;
   const segments: TextSegment[] = [];
   let lastIndex = 0;

@@ -1,0 +1,85 @@
+/* Shared table theme — visual appearance only, no layout behavior.
+   Imported by DataTable.svelte and standalone table pages. */
+
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.data-table th,
+.data-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.data-table th:first-child,
+.data-table td:first-child {
+  border-left: 1px solid var(--color-border);
+}
+.data-table th:last-child,
+.data-table td:last-child {
+  border-right: 1px solid var(--color-border);
+}
+.data-table th {
+  background: var(--color-navy);
+  color: var(--color-surface);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.data-table thead th:first-child {
+  border-top-left-radius: var(--radius-default);
+}
+.data-table thead th:last-child {
+  border-top-right-radius: var(--radius-default);
+}
+.data-table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: var(--radius-default);
+}
+.data-table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: var(--radius-default);
+}
+.data-table th a {
+  color: var(--color-surface);
+  text-decoration: none;
+}
+.data-table th a:hover {
+  color: var(--color-gold-light);
+}
+.data-table tbody tr {
+  transition: background 150ms ease;
+}
+.data-table tbody tr:nth-child(odd) {
+  background: var(--color-surface);
+}
+.data-table tbody tr:nth-child(even) {
+  background: var(--color-table-stripe);
+}
+.data-table tbody tr:hover {
+  background: var(--color-table-hover);
+}
+.data-table tbody tr:last-child td {
+  border-bottom: 1px solid var(--color-border);
+}
+.data-table tbody tr.year-group-start td {
+  border-top: 2px solid var(--color-border);
+}
+
+/* Sortable header */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background 150ms ease;
+}
+.sortable-header:hover {
+  background: var(--color-navy-light);
+}
+.sortable-header a:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: -2px;
+  border-radius: 2px;
+}

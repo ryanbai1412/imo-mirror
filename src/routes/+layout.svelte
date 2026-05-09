@@ -1,162 +1,341 @@
 <script lang="ts">
-	import '$lib/data-store';
-	import '../app.css';
-	import { page } from '$app/stores';
-	import { SITE_NAME } from '$lib/utils/seo';
-	import Icon from '$lib/components/Icon.svelte';
+  import "$lib/data-store";
+  import "../app.css";
+  import type { Snippet } from "svelte";
+  import { page } from "$app/state";
+  import { onMount } from "svelte";
 
-	const NAV_ITEMS = [
-		{ label: 'Timeline', href: '/organizers.aspx', prefixes: ['/organizers.aspx', '/year_info.aspx', '/year_country_r.aspx', '/year_individual_r.aspx', '/year_statistics.aspx'] },
-		{ label: 'Countries', href: '/countries.aspx', prefixes: ['/countries.aspx', '/country_info.aspx', '/country_team_r.aspx', '/country_individual_r.aspx', '/country_hall.aspx', '/team_r.aspx'] },
-		{ label: 'Results', href: '/results_country.aspx', prefixes: ['/results_country.aspx', '/results_year.aspx', '/results_matrix.aspx'] },
-		{ label: 'Hall of Fame', href: '/hall.aspx', prefixes: ['/hall.aspx', '/hall_of_fame.aspx', '/participant_r.aspx'] },
-		{ label: 'Statistics', href: '/statistics.aspx', prefixes: ['/statistics.aspx'] }
-	];
+  import Icon from "$lib/components/Icon.svelte";
+  import CommandPalette from "$lib/components/CommandPalette.svelte";
 
-	$: currentPath = $page.url.pathname;
-	$: isActive = (item: (typeof NAV_ITEMS)[number]) => item.prefixes.some((p) => currentPath === p);
+  const NAV_ITEMS = [
+    {
+      label: "Timeline",
+      href: "/organizers.aspx",
+      prefixes: [
+        "/organizers.aspx",
+        "/year_info.aspx",
+        "/year_country_r.aspx",
+        "/year_individual_r.aspx",
+        "/year_statistics.aspx",
+      ],
+    },
+    {
+      label: "Countries",
+      href: "/countries.aspx",
+      prefixes: [
+        "/countries.aspx",
+        "/country_info.aspx",
+        "/country_team_r.aspx",
+        "/country_individual_r.aspx",
+        "/country_hall.aspx",
+        "/team_r.aspx",
+      ],
+    },
+    {
+      label: "Results",
+      href: "/results_country.aspx",
+      prefixes: [
+        "/results_country.aspx",
+        "/results_year.aspx",
+        "/results_matrix.aspx",
+      ],
+    },
+    {
+      label: "Hall of Fame",
+      href: "/hall.aspx",
+      prefixes: ["/hall.aspx", "/hall_of_fame.aspx", "/participant_r.aspx"],
+    },
+    {
+      label: "Statistics",
+      href: "/statistics.aspx",
+      prefixes: ["/statistics.aspx"],
+    },
+  ];
+
+  let { children }: { children: Snippet } = $props();
+
+  let menuOpen = $state(false);
+  let headerEl = $state<HTMLElement | undefined>(undefined);
+
+  let currentPath = $derived(page.url.pathname);
+  let isActive = $derived((item: (typeof NAV_ITEMS)[number]) =>
+    item.prefixes.some((p) => currentPath === p)
+  );
+
+  // Close mobile menu on navigation
+  $effect(() => {
+    if (currentPath) menuOpen = false;
+  });
+
+  onMount(() => {
+    function updateHeaderH() {
+      if (headerEl) {
+        document.documentElement.style.setProperty(
+          "--header-h",
+          headerEl.offsetHeight + "px"
+        );
+      }
+    }
+    updateHeaderH();
+    window.addEventListener("resize", updateHeaderH);
+    return () => window.removeEventListener("resize", updateHeaderH);
+  });
 </script>
 
 <svelte:head>
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-	<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
-	<script src="/js/chart-utils.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin="anonymous"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  />
+  <meta property="og:site_name" content="IMO Mirror" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
+  <meta name="twitter:card" content="summary" />
 </svelte:head>
 
-<div class="site-wrapper">
-	<header class="site-header">
-		<div class="header-inner">
-			<a href="/" class="site-logo">
-				<img src="/imo-logo.gif" alt="IMO Logo" class="logo-img" width="106" height="80" />
-				<h1>International Mathematical Olympiad</h1>
-			</a>
-			<nav class="main-nav">
-				{#each NAV_ITEMS as item}
-					<a href={item.href} class:active={isActive(item)}>{item.label}</a>
-				{/each}
-				<button id="cmd-trigger" class="header-search-box" aria-label="Search (Cmd+K)">
-					<Icon name="Search" size={13} />
-					<span>Search</span>
-					<kbd class="nav-kbd">⌘K</kbd>
-				</button>
-			</nav>
-		</div>
-	</header>
-	<div class="site-main">
-		<slot />
-	</div>
-	<footer class="site-footer">
-		<div class="footer-inner">
-			<span>Static mirror of <a href="https://www.imo-official.org" target="_blank" rel="noopener noreferrer">imo-official.org</a></span>
-			<span>This site is <a href="https://github.com/ryanbai1412/imo-mirror" target="_blank" rel="noopener noreferrer">open source</a>.</span>
-			<span><a href="https://github.com/ryanbai1412/imo-mirror/issues/new" target="_blank" rel="noopener noreferrer">Report a bug</a></span>
-		</div>
-	</footer>
+<div class="flex min-h-screen flex-col">
+  <header
+    bind:this={headerEl}
+    class="sticky top-0 z-50 bg-navy text-white shadow-[0_2px_12px_rgba(0,0,0,0.2)]"
+  >
+    <div
+      class="mx-auto flex h-14 max-w-[1140px] items-center justify-between px-4 md:px-6"
+    >
+      <a
+        href="/"
+        class="flex items-center gap-2.5 text-white no-underline hover:text-gold-light"
+      >
+        <img
+          src="/imo-logo.gif"
+          alt="IMO Logo"
+          class="h-9 w-auto shrink-0 rounded-sm"
+          width="106"
+          height="80"
+        />
+        <span
+          class="hidden font-display text-xl font-normal tracking-[0.01em] whitespace-nowrap sm:block"
+        >
+          International Mathematical Olympiad
+        </span>
+        <span class="font-display text-base font-normal sm:hidden">IMO</span>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav aria-label="Main navigation" class="hidden items-center md:flex">
+        {#each NAV_ITEMS as item (item.href)}
+          <a href={item.href} class="nav-link" class:active={isActive(item)}
+            >{item.label}</a
+          >
+        {/each}
+        <button
+          id="cmd-trigger"
+          class="search-trigger"
+          aria-label="Search (Cmd+K)"
+        >
+          <Icon name="Search" size={13} />
+          <span>Search</span>
+          <kbd class="search-kbd">⌘K</kbd>
+        </button>
+      </nav>
+
+      <!-- Mobile hamburger -->
+      <button
+        class="mobile-toggle"
+        aria-label="Toggle menu"
+        onclick={() => (menuOpen = !menuOpen)}
+      >
+        {#if menuOpen}
+          <Icon name="X" size={20} />
+        {:else}
+          <Icon name="Menu" size={20} />
+        {/if}
+      </button>
+    </div>
+
+    <!-- Mobile menu panel -->
+    {#if menuOpen}
+      <nav
+        aria-label="Mobile navigation"
+        class="flex flex-col gap-1 border-t border-white/10 px-4 py-3 md:hidden"
+      >
+        {#each NAV_ITEMS as item (item.href)}
+          <a
+            href={item.href}
+            class="mobile-nav-link"
+            class:active={isActive(item)}>{item.label}</a
+          >
+        {/each}
+        <button
+          id="cmd-trigger-mobile"
+          class="mobile-search-btn"
+          aria-label="Search"
+          onclick={() => {
+            menuOpen = false;
+            document.getElementById("cmd-trigger")?.click();
+          }}
+        >
+          <Icon name="Search" size={16} />
+          <span>Search</span>
+        </button>
+      </nav>
+    {/if}
+  </header>
+
+  <main
+    class="site-main mx-auto w-full max-w-[1140px] flex-1 px-4 pt-5 pb-8 md:px-6 md:pt-8 md:pb-12"
+  >
+    {@render children()}
+  </main>
+
+  <footer class="mt-auto bg-navy px-6 py-6 text-center text-xs text-white/50">
+    <div
+      class="mx-auto flex max-w-[1140px] flex-col items-center justify-between gap-4 md:flex-row md:gap-4"
+    >
+      <span
+        >Static mirror of <a
+          href="https://www.imo-official.org"
+          class="text-white/70 hover:text-gold-light hover:no-underline"
+          target="_blank"
+          rel="noopener noreferrer">imo-official.org</a
+        ></span
+      >
+      <span
+        >This site is <a
+          href="https://github.com/ryanbai1412/imo-mirror"
+          class="text-white/70 hover:text-gold-light hover:no-underline"
+          target="_blank"
+          rel="noopener noreferrer">open source</a
+        >.</span
+      >
+      <span
+        ><a
+          href="https://github.com/ryanbai1412/imo-mirror/issues/new"
+          class="text-white/70 hover:text-gold-light hover:no-underline"
+          target="_blank"
+          rel="noopener noreferrer">Report a bug</a
+        ></span
+      >
+    </div>
+  </footer>
 </div>
 
+<CommandPalette />
+
 <style>
-	.site-header {
-		background: var(--navy); color: #fff;
-		position: sticky; top: 0; z-index: 100;
-		box-shadow: 0 2px 12px rgba(0,0,0,0.2);
-	}
-	.header-inner {
-		max-width: var(--max-width); margin: 0 auto;
-		padding: 0 24px;
-		display: flex; align-items: center;
-		justify-content: space-between; height: 56px;
-	}
-	.site-logo {
-		display: flex; align-items: center;
-		gap: 10px; text-decoration: none; color: #fff;
-	}
-	.site-logo:hover {
-		color: var(--gold-light);
-		text-decoration: none;
-	}
-	.logo-img {
-		height: 36px; width: auto; flex-shrink: 0;
-		border-radius: 3px;
-	}
-	.site-logo h1 {
-		font-family: var(--font-display);
-		font-size: 20px; font-weight: 400;
-		letter-spacing: 0.01em; white-space: nowrap;
-	}
-	.main-nav {
-		display: flex; align-items: center; gap: 0;
-	}
-	.main-nav a {
-		color: rgba(255,255,255,0.75);
-		padding: 6px 14px;
-		font-size: 13px; font-weight: 500;
-		border-radius: 4px;
-		transition: all var(--transition);
-		white-space: nowrap;
-	}
-	.main-nav a:hover {
-		color: #fff;
-		background: rgba(255,255,255,0.08);
-		text-decoration: none;
-	}
-	.main-nav a.active {
-		color: var(--gold-light);
-	}
-	.site-footer {
-		background: var(--navy);
-		color: rgba(255,255,255,0.5);
-		padding: 24px; text-align: center;
-		font-size: 12px; margin-top: auto;
-	}
-	.site-footer a {
-		color: rgba(255,255,255,0.7);
-	}
-	.site-footer a:hover {
-		color: var(--gold-light);
-		text-decoration: none;
-	}
-	.footer-inner {
-		max-width: var(--max-width); margin: 0 auto;
-		display: flex; align-items: center;
-		justify-content: space-between; gap: 16px;
-	}
-	.header-search-box {
-		display: flex; align-items: center; gap: 6px;
-		padding: 5px 10px;
-		background: rgba(255,255,255,0.08);
-		border: 1px solid rgba(255,255,255,0.18);
-		border-radius: var(--radius);
-		color: rgba(255,255,255,0.55);
-		font-size: 13px; font-weight: 500;
-		font-family: var(--font-body);
-		cursor: pointer;
-		transition: all var(--transition);
-		margin-left: 6px;
-	}
-	.header-search-box:hover {
-		background: rgba(255,255,255,0.14);
-		border-color: rgba(255,255,255,0.28);
-		color: rgba(255,255,255,0.85);
-	}
-	.nav-kbd {
-		font-size: 11px; font-family: var(--font-body);
-		padding: 1px 5px;
-		background: rgba(255,255,255,0.1);
-		border: 1px solid rgba(255,255,255,0.15);
-		border-radius: 4px;
-		color: rgba(255,255,255,0.45);
-		line-height: 1.4;
-		margin-left: 2px;
-	}
-	@media (max-width: 768px) {
-		.header-inner {
-			flex-direction: column;
-			height: auto; padding: 12px 16px; gap: 8px;
-		}
-		.main-nav {
-			flex-wrap: wrap; justify-content: center;
-		}
-		.footer-inner { flex-direction: column; }
-	}
+  .nav-link {
+    white-space: nowrap;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.75);
+    transition: all 150ms ease;
+    text-decoration: none;
+  }
+  .nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    text-decoration: none;
+  }
+  .nav-link.active {
+    color: var(--color-gold-light);
+  }
+  .search-trigger {
+    margin-left: 6px;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--radius-default);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
+    padding: 4px 10px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.55);
+    transition: all 150ms ease;
+  }
+  .search-trigger:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .search-kbd {
+    margin-left: 2px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1px 4px;
+    font-family: var(--font-body);
+    font-size: 11px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .mobile-toggle {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    padding: 8px;
+    color: rgba(255, 255, 255, 0.75);
+    transition:
+      color 150ms ease,
+      background 150ms ease;
+  }
+  .mobile-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+  }
+  @media (min-width: 768px) {
+    .mobile-toggle {
+      display: none;
+    }
+  }
+  .mobile-nav-link {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.75);
+    transition: all 150ms ease;
+    text-decoration: none;
+  }
+  .mobile-nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+    text-decoration: none;
+  }
+  .mobile-nav-link.active {
+    color: var(--color-gold-light);
+  }
+  .mobile-search-btn {
+    display: flex;
+    min-height: 44px;
+    cursor: pointer;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    border: 0;
+    background: transparent;
+    padding: 10px 12px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.75);
+    transition: all 150ms ease;
+  }
+  .mobile-search-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+  }
 </style>
