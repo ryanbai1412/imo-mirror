@@ -253,6 +253,7 @@
   }
 
   let searchIndex: SearchItem[] | null = null;
+  let loadPromise: Promise<SearchItem[]> | null = null;
   let activeIndex = -1;
   let abortController: AbortController | null = null;
 
@@ -275,50 +276,55 @@
 
   async function loadSearchIndex(): Promise<SearchItem[]> {
     if (searchIndex) return searchIndex;
+    if (loadPromise) return loadPromise;
 
-    const [countriesRes, participantsRes, timelineRes] = await Promise.all([
-      fetch('/data/countries.json'),
-      fetch('/data/participants.json'),
-      fetch('/data/timeline.json'),
-    ]);
+    loadPromise = (async () => {
+      const [countriesRes, participantsRes, timelineRes] = await Promise.all([
+        fetch('/data/countries.json'),
+        fetch('/data/participants.json'),
+        fetch('/data/timeline.json'),
+      ]);
 
-    const countries: { code: string; name: string }[] = await countriesRes.json();
-    const participants: Record<string, { id: number; name: string; results: { year: number }[] }> = await participantsRes.json();
-    const timeline: { year: number; country: string; city: string }[] = await timelineRes.json();
+      const countries: { code: string; name: string }[] = await countriesRes.json();
+      const participants: Record<string, { id: number; name: string; results: { year: number }[] }> = await participantsRes.json();
+      const timeline: { year: number; country: string; city: string }[] = await timelineRes.json();
 
-    const items: SearchItem[] = [...STATIC_PAGES];
+      const items: SearchItem[] = [...STATIC_PAGES];
 
-    for (const c of countries) {
-      items.push({
-        title: c.name,
-        subtitle: `Country \u2022 ${c.code}`,
-        href: `/country_info.aspx?code=${c.code}`,
-        type: 'country',
-      });
-    }
-
-    for (const entry of timeline) {
-      if (entry.year) {
+      for (const c of countries) {
         items.push({
-          title: `IMO ${entry.year}`,
-          subtitle: `${entry.city ? entry.city + ', ' : ''}${entry.country}`,
-          href: `/year_info.aspx?year=${entry.year}`,
-          type: 'year',
+          title: c.name,
+          subtitle: `Country \u2022 ${c.code}`,
+          href: `/country_info.aspx?code=${c.code}`,
+          type: 'country',
         });
       }
-    }
 
-    for (const p of Object.values(participants)) {
-      items.push({
-        title: p.name,
-        subtitle: `Contestant \u2022 ${p.results.length} participation${p.results.length !== 1 ? 's' : ''}`,
-        href: `/participant_r.aspx?id=${p.id}`,
-        type: 'person',
-      });
-    }
+      for (const entry of timeline) {
+        if (entry.year) {
+          items.push({
+            title: `IMO ${entry.year}`,
+            subtitle: `${entry.city ? entry.city + ', ' : ''}${entry.country}`,
+            href: `/year_info.aspx?year=${entry.year}`,
+            type: 'year',
+          });
+        }
+      }
 
-    searchIndex = items;
-    return items;
+      for (const p of Object.values(participants)) {
+        items.push({
+          title: p.name,
+          subtitle: `Contestant \u2022 ${p.results.length} participation${p.results.length !== 1 ? 's' : ''}`,
+          href: `/participant_r.aspx?id=${p.id}`,
+          type: 'person',
+        });
+      }
+
+      searchIndex = items;
+      return items;
+    })();
+
+    return loadPromise;
   }
 
   const PREFIXES: Record<string, SearchItem['type']> = {
