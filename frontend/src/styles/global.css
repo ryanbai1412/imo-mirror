@@ -61,11 +61,9 @@ a:hover { color: var(--link-hover); }
 }
 .site-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
 .site-logo:hover { color: var(--gold-light); text-decoration: none; }
-.logo-icon {
-  width: 28px; height: 28px; border: 2px solid var(--gold); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700; font-size: 14px;
-  color: var(--gold); flex-shrink: 0;
+.logo-img {
+  height: 36px; width: auto; flex-shrink: 0;
+  border-radius: 3px;
 }
 .site-logo h1 {
   font-family: var(--font-display);
