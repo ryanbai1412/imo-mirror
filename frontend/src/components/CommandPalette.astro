@@ -1,0 +1,626 @@
+---
+// Command Palette (Cmd+K) - Global search across countries, contestants, and pages
+---
+
+<div id="cmd-palette-overlay" class="cmd-overlay" aria-hidden="true">
+  <div class="cmd-backdrop"></div>
+  <div class="cmd-dialog" role="dialog" aria-modal="true" aria-label="Global search">
+    <div class="cmd-input-wrapper">
+      <svg class="cmd-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        id="cmd-input"
+        type="text"
+        placeholder="Search countries, contestants, years..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <kbd class="cmd-kbd">ESC</kbd>
+    </div>
+    <div id="cmd-results" class="cmd-results"></div>
+    <div class="cmd-footer">
+      <span class="cmd-footer-hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> to navigate</span>
+      <span class="cmd-footer-hint"><kbd>&crarr;</kbd> to select</span>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .cmd-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 20vh;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+  .cmd-overlay[aria-hidden="false"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .cmd-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+  }
+  .cmd-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 580px;
+    margin: 0 16px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transform: scale(0.98) translateY(-8px);
+    transition: transform 150ms ease;
+  }
+  .cmd-overlay[aria-hidden="false"] .cmd-dialog {
+    transform: scale(1) translateY(0);
+  }
+  .cmd-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e2e0db;
+  }
+  .cmd-search-icon {
+    flex-shrink: 0;
+    color: #94a3b8;
+  }
+  #cmd-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1e1e1e;
+    background: transparent;
+  }
+  #cmd-input::placeholder {
+    color: #94a3b8;
+  }
+  .cmd-kbd {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: inherit;
+    color: #64748b;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+  }
+  .cmd-results {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .cmd-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+  }
+  .cmd-section-label {
+    padding: 10px 14px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .cmd-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 80ms ease;
+  }
+  .cmd-row:hover, .cmd-row.active {
+    background: #f1f5f9;
+    text-decoration: none;
+    color: #1e293b;
+  }
+  .cmd-row-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+  .cmd-row-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cmd-row-prefix {
+    font-weight: 600;
+    color: #1e293b;
+  }
+  .cmd-row-sep {
+    color: #cbd5e1;
+  }
+  .cmd-row-desc {
+    color: #64748b;
+  }
+  .cmd-row-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cmd-row-subtitle {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cmd-row-arrow {
+    flex-shrink: 0;
+    color: #cbd5e1;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 80ms ease;
+  }
+  .cmd-row.active .cmd-row-arrow,
+  .cmd-row:hover .cmd-row-arrow {
+    opacity: 1;
+  }
+  .cmd-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    border-top: 1px solid #e2e0db;
+    background: #f8fafc;
+    border-radius: 0 0 12px 12px;
+  }
+  .cmd-footer-hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .cmd-footer-hint kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    font-size: 11px;
+    font-family: inherit;
+    color: #64748b;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+  }
+  .cmd-icon-country {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+  }
+  .cmd-icon-person {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+  }
+  .cmd-icon-year {
+    background: #fffbeb;
+    border-color: #fde68a;
+  }
+  .cmd-icon-page {
+    background: #f5f3ff;
+    border-color: #ddd6fe;
+  }
+  @media (max-width: 768px) {
+    .cmd-overlay {
+      padding-top: 10vh;
+    }
+  }
+</style>
+
+<script>
+  import { navigate as astroNavigate } from 'astro:transitions/client';
+
+  interface SearchItem {
+    title: string;
+    subtitle: string;
+    href: string;
+    type: 'country' | 'person' | 'year' | 'page';
+  }
+
+  let searchIndex: SearchItem[] | null = null;
+  let loadPromise: Promise<SearchItem[]> | null = null;
+  let activeIndex = -1;
+  let abortController: AbortController | null = null;
+
+  const STATIC_PAGES: SearchItem[] = [
+    { title: 'Timeline', subtitle: 'IMO editions by year', href: '/organizers.aspx', type: 'page' },
+    { title: 'Countries', subtitle: 'All participating countries', href: '/countries.aspx', type: 'page' },
+    { title: 'Results', subtitle: 'Competition results overview', href: '/results.aspx', type: 'page' },
+    { title: 'Results by Country', subtitle: 'Country-level result summaries', href: '/results_country.aspx', type: 'page' },
+    { title: 'Results by Year', subtitle: 'Year-level result summaries', href: '/results_year.aspx', type: 'page' },
+    { title: 'Results Matrix', subtitle: 'Country rankings across years', href: '/results_matrix.aspx', type: 'page' },
+    { title: 'Hall of Fame', subtitle: 'Top IMO performers', href: '/hall.aspx', type: 'page' },
+    { title: 'Problems', subtitle: 'Problem archive by year', href: '/problems.aspx', type: 'page' },
+    { title: 'About IMO', subtitle: 'General information', href: '/general.aspx', type: 'page' },
+    { title: 'Links', subtitle: 'Related websites', href: '/links.aspx', type: 'page' },
+    { title: 'Advisory Board', subtitle: 'IMO board members', href: '/advisory.aspx', type: 'page' },
+    { title: 'Code of Ethics', subtitle: 'IMO ethics guidelines', href: '/ethics.aspx', type: 'page' },
+    { title: 'Documents', subtitle: 'Official documents', href: '/documents.aspx', type: 'page' },
+    { title: 'Search Participants', subtitle: 'Full participant search', href: '/search.aspx', type: 'page' },
+  ];
+
+  async function loadSearchIndex(): Promise<SearchItem[]> {
+    if (searchIndex) return searchIndex;
+    if (loadPromise) return loadPromise;
+
+    loadPromise = (async () => {
+      try {
+        const [countriesRes, participantsRes, timelineRes] = await Promise.all([
+          fetch('/data/countries.json'),
+          fetch('/data/participants.json'),
+          fetch('/data/timeline.json'),
+        ]);
+
+        const countries: { code: string; name: string }[] = await countriesRes.json();
+        const participants: Record<string, { id: number; name: string; results: { year: number }[] }> = await participantsRes.json();
+        const timeline: { year: number; country: string; city: string }[] = await timelineRes.json();
+
+        const items: SearchItem[] = [...STATIC_PAGES];
+
+        for (const c of countries) {
+          items.push({
+            title: c.name,
+            subtitle: `Country \u2022 ${c.code}`,
+            href: `/country_info.aspx?code=${c.code}`,
+            type: 'country',
+          });
+        }
+
+        for (const entry of timeline) {
+          if (entry.year) {
+            items.push({
+              title: `IMO ${entry.year}`,
+              subtitle: `${entry.city ? entry.city + ', ' : ''}${entry.country}`,
+              href: `/year_info.aspx?year=${entry.year}`,
+              type: 'year',
+            });
+          }
+        }
+
+        for (const p of Object.values(participants)) {
+          items.push({
+            title: p.name,
+            subtitle: `Contestant \u2022 ${p.results.length} participation${p.results.length !== 1 ? 's' : ''}`,
+            href: `/participant_r.aspx?id=${p.id}`,
+            type: 'person',
+          });
+        }
+
+        searchIndex = items;
+        return items;
+      } catch (err) {
+        loadPromise = null;
+        throw err;
+      }
+    })();
+
+    return loadPromise;
+  }
+
+  const PREFIXES: Record<string, SearchItem['type']> = {
+    'pg:': 'page',
+    'p:': 'person',
+    'c:': 'country',
+    'y:': 'year',
+  };
+
+  function search(query: string, items: SearchItem[]): SearchItem[] {
+    if (!query || query.length < 1) return [];
+
+    let q = query.toLowerCase().trim();
+    let filterType: SearchItem['type'] | null = null;
+
+    for (const [prefix, type] of Object.entries(PREFIXES)) {
+      if (q.startsWith(prefix)) {
+        filterType = type;
+        q = q.slice(prefix.length).trim();
+        break;
+      }
+    }
+
+    if (!q && !filterType) return [];
+
+    const terms = q.split(/\s+/).filter(Boolean);
+    const scored: { item: SearchItem; score: number }[] = [];
+
+    for (const item of items) {
+      if (filterType && item.type !== filterType) continue;
+
+      const titleLower = item.title.toLowerCase();
+      const subtitleLower = item.subtitle.toLowerCase();
+
+      if (terms.length === 0) {
+        scored.push({ item, score: 0 });
+        continue;
+      }
+
+      let match = true;
+      let score = 0;
+
+      for (const term of terms) {
+        const inTitle = titleLower.includes(term);
+        const inSubtitle = subtitleLower.includes(term);
+        if (!inTitle && !inSubtitle) {
+          match = false;
+          break;
+        }
+        if (inTitle) score += 10;
+        if (titleLower.startsWith(term)) score += 20;
+        if (titleLower === q) score += 50;
+        if (inSubtitle) score += 2;
+      }
+
+      if (match) {
+        if (item.type === 'page') score += 5;
+        if (item.type === 'country') score += 3;
+        if (item.type === 'year') score += 2;
+        scored.push({ item, score });
+      }
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, 30).map(s => s.item);
+  }
+
+  function getIconClass(type: string): string {
+    switch (type) {
+      case 'country': return 'cmd-icon-country';
+      case 'person': return 'cmd-icon-person';
+      case 'year': return 'cmd-icon-year';
+      default: return 'cmd-icon-page';
+    }
+  }
+
+  function getIconSymbol(type: string): string {
+    switch (type) {
+      case 'country': return '\u{1F30D}';
+      case 'person': return '\u{1F464}';
+      case 'year': return '\u{1F4C5}';
+      default: return '\u{1F4C4}';
+    }
+  }
+
+  function renderTips(): string {
+    return `<div class="cmd-section-label">Search tips</div>
+      <div class="cmd-row active" data-prefix="p:">
+        <div class="cmd-row-icon cmd-icon-person">\u{1F464}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">p:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search contestants</span></div>
+        <span class="cmd-row-arrow">\u2192</span>
+      </div>
+      <div class="cmd-row" data-prefix="c:">
+        <div class="cmd-row-icon cmd-icon-country">\u{1F30D}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">c:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search countries</span></div>
+        <span class="cmd-row-arrow">\u2192</span>
+      </div>
+      <div class="cmd-row" data-prefix="y:">
+        <div class="cmd-row-icon cmd-icon-year">\u{1F4C5}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">y:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search years</span></div>
+        <span class="cmd-row-arrow">\u2192</span>
+      </div>`;
+  }
+
+  function renderResults(results: SearchItem[]): void {
+    const container = document.getElementById('cmd-results')!;
+    if (results.length === 0) {
+      const input = document.getElementById('cmd-input') as HTMLInputElement;
+      if (input.value.length > 0) {
+        container.innerHTML = '<div class="cmd-empty">No results found</div>';
+        activeIndex = -1;
+      } else {
+        container.innerHTML = renderTips();
+        activeIndex = 0;
+        updateActive();
+      }
+      return;
+    }
+
+    const groups: Record<string, SearchItem[]> = {};
+    const order = ['page', 'country', 'year', 'person'];
+    for (const item of results) {
+      if (!groups[item.type]) groups[item.type] = [];
+      groups[item.type].push(item);
+    }
+
+    const labels: Record<string, string> = {
+      page: 'Pages',
+      country: 'Countries',
+      year: 'Years',
+      person: 'Contestants',
+    };
+
+    let html = '';
+    for (const type of order) {
+      const items = groups[type];
+      if (!items) continue;
+      html += `<div class="cmd-section-label">${labels[type]}</div>`;
+      for (const item of items) {
+        html += `<a href="${escapeHtml(item.href)}" class="cmd-row" data-href="${escapeHtml(item.href)}">
+          <div class="cmd-row-icon ${getIconClass(item.type)}">${getIconSymbol(item.type)}</div>
+          <div class="cmd-row-body">
+            <div class="cmd-row-title">${escapeHtml(item.title)}</div>
+            <div class="cmd-row-subtitle">${escapeHtml(item.subtitle)}</div>
+          </div>
+          <span class="cmd-row-arrow">\u2192</span>
+        </a>`;
+      }
+    }
+
+    container.innerHTML = html;
+    activeIndex = 0;
+    updateActive();
+  }
+
+  function escapeHtml(str: string): string {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function updateActive(): void {
+    const rows = document.querySelectorAll('.cmd-row');
+    rows.forEach((el, i) => {
+      el.classList.toggle('active', i === activeIndex);
+    });
+    const active = rows[activeIndex] as HTMLElement | undefined;
+    if (active) {
+      active.scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function openPalette(): void {
+    const overlay = document.getElementById('cmd-palette-overlay')!;
+    const input = document.getElementById('cmd-input') as HTMLInputElement;
+    overlay.setAttribute('aria-hidden', 'false');
+    input.value = '';
+    renderResults([]);
+    setTimeout(() => input.focus(), 50);
+    loadSearchIndex();
+  }
+
+  function closePalette(): void {
+    const overlay = document.getElementById('cmd-palette-overlay')!;
+    overlay.setAttribute('aria-hidden', 'true');
+    activeIndex = -1;
+  }
+
+  function navigate(href: string): void {
+    closePalette();
+    astroNavigate(href);
+  }
+
+  function setup(): void {
+    // Abort previous listeners to prevent accumulation across View Transitions
+    abortController?.abort();
+    abortController = new AbortController();
+    const { signal } = abortController;
+
+    const overlay = document.getElementById('cmd-palette-overlay');
+    const input = document.getElementById('cmd-input') as HTMLInputElement | null;
+    const backdrop = overlay?.querySelector('.cmd-backdrop');
+
+    if (!overlay || !input) return;
+
+    // Keyboard shortcut to open
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        const isOpen = overlay.getAttribute('aria-hidden') === 'false';
+        if (isOpen) {
+          closePalette();
+        } else {
+          openPalette();
+        }
+      }
+      if (e.key === 'Escape' && overlay.getAttribute('aria-hidden') === 'false') {
+        e.preventDefault();
+        closePalette();
+      }
+    }, { signal });
+
+    // Click backdrop to close
+    backdrop?.addEventListener('click', closePalette, { signal });
+
+    // Search input handler
+    let debounceTimer: ReturnType<typeof setTimeout>;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(async () => {
+        const items = await loadSearchIndex();
+        const results = search(input.value, items);
+        renderResults(results);
+      }, 80);
+    }, { signal });
+
+    // Keyboard navigation within results and tips
+    input.addEventListener('keydown', (e: KeyboardEvent) => {
+      const rows = document.querySelectorAll('.cmd-row');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (rows.length > 0) {
+          activeIndex = (activeIndex + 1) % rows.length;
+          updateActive();
+        }
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (rows.length > 0) {
+          activeIndex = (activeIndex - 1 + rows.length) % rows.length;
+          updateActive();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        const active = rows[activeIndex] as HTMLElement | undefined;
+        if (active) {
+          const href = active.getAttribute('data-href');
+          const prefix = active.getAttribute('data-prefix');
+          if (href) {
+            navigate(href);
+          } else if (prefix) {
+            input.value = prefix + ' ';
+            input.dispatchEvent(new Event('input'));
+          }
+        }
+      }
+    }, { signal });
+
+    // Click to navigate or select tip
+    document.getElementById('cmd-results')!.addEventListener('click', (e: Event) => {
+      const row = (e.target as HTMLElement).closest('.cmd-row') as HTMLElement | null;
+      if (row) {
+        e.preventDefault();
+        const href = row.getAttribute('data-href');
+        const prefix = row.getAttribute('data-prefix');
+        if (href) {
+          navigate(href);
+        } else if (prefix) {
+          input.value = prefix + ' ';
+          input.dispatchEvent(new Event('input'));
+          input.focus();
+        }
+      }
+    }, { signal });
+
+    // Trigger button
+    document.getElementById('cmd-trigger')?.addEventListener('click', (e: Event) => {
+      e.preventDefault();
+      openPalette();
+    }, { signal });
+  }
+
+  // Run on initial load
+  setup();
+  // Re-run after View Transition navigation
+  document.addEventListener('astro:after-swap', setup);
+</script>
