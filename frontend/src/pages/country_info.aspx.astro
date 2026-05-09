@@ -20,7 +20,7 @@ if (!country) return Astro.redirect("/countries.aspx");
 const { column, order } = parseSortParams(Astro.url.searchParams);
 
 // Build country results by year
-const yearRows: { year: number; rank: number | null; total: number | null; gold: number | null; silver: number | null; bronze: number | null; hm: number | null }[] = [];
+const yearRows: { year: number; rank: number | null; total: number | null; gold: number | null; silver: number | null; bronze: number | null; hm: number | null; leader: string; deputy_leader: string }[] = [];
 for (const [year, results] of Object.entries(countryResults)) {
   const match = results.find(r => r.code === code);
   if (match) {
@@ -32,6 +32,8 @@ for (const [year, results] of Object.entries(countryResults)) {
       silver: match.awards_silver,
       bronze: match.awards_bronze,
       hm: match.awards_hm,
+      leader: match.leader || "",
+      deputy_leader: match.deputy_leader || "",
     });
   }
 }
@@ -92,6 +94,8 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
             <th class="text-right">S</th>
             <th class="text-right">B</th>
             <th class="text-right">HM</th>
+            <th>Leader</th>
+            <th>Deputy Leader</th>
           </tr>
         </thead>
         <tbody>
@@ -104,6 +108,8 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
               <td class="text-right">{row.silver ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
               <td class="text-right">{row.bronze ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
               <td class="text-right">{row.hm ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+              <td>{row.leader}</td>
+              <td>{row.deputy_leader}</td>
             </tr>
           ))}
         </tbody>
