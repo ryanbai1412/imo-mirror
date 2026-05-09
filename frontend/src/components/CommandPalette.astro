@@ -20,7 +20,16 @@
       <kbd class="cmd-kbd">ESC</kbd>
     </div>
     <div id="cmd-results" class="cmd-results">
-      <div class="cmd-empty">Type to search across all IMO data</div>
+      <div class="cmd-tips">
+        <div class="cmd-tips-label">Search tips</div>
+        <div class="cmd-tip-item"><span class="cmd-tip-prefix">p:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search contestants</span></div>
+        <div class="cmd-tip-item"><span class="cmd-tip-prefix">c:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search countries</span></div>
+        <div class="cmd-tip-item"><span class="cmd-tip-prefix">y:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search years</span></div>
+      </div>
+    </div>
+    <div class="cmd-footer">
+      <span class="cmd-footer-hint"><kbd>&uarr;</kbd><kbd>&darr;</kbd> to navigate</span>
+      <span class="cmd-footer-hint"><kbd>&crarr;</kbd> to select</span>
     </div>
   </div>
 </div>
@@ -106,6 +115,67 @@
     text-align: center;
     color: #94a3b8;
     font-size: 14px;
+  }
+  .cmd-tips {
+    padding: 12px 8px;
+  }
+  .cmd-tips-label {
+    padding: 4px 12px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .cmd-tip-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #64748b;
+  }
+  .cmd-tip-prefix {
+    font-weight: 600;
+    color: #1e1e1e;
+    min-width: 24px;
+  }
+  .cmd-tip-sep {
+    color: #cbd5e1;
+  }
+  .cmd-tip-desc {
+    color: #64748b;
+  }
+  .cmd-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    border-top: 1px solid #e2e0db;
+    background: #f8fafc;
+    border-radius: 0 0 12px 12px;
+  }
+  .cmd-footer-hint {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .cmd-footer-hint kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    font-size: 11px;
+    font-family: inherit;
+    color: #64748b;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
   }
   .cmd-group-label {
     padding: 8px 12px 4px;
@@ -264,16 +334,42 @@
     return items;
   }
 
+  const PREFIXES: Record<string, SearchItem['type']> = {
+    'p:': 'person',
+    'c:': 'country',
+    'y:': 'year',
+    'pg:': 'page',
+  };
+
   function search(query: string, items: SearchItem[]): SearchItem[] {
     if (!query || query.length < 1) return [];
-    const q = query.toLowerCase();
-    const terms = q.split(/\s+/).filter(Boolean);
 
+    let q = query.toLowerCase().trim();
+    let filterType: SearchItem['type'] | null = null;
+
+    for (const [prefix, type] of Object.entries(PREFIXES)) {
+      if (q.startsWith(prefix)) {
+        filterType = type;
+        q = q.slice(prefix.length).trim();
+        break;
+      }
+    }
+
+    if (!q && !filterType) return [];
+
+    const terms = q.split(/\s+/).filter(Boolean);
     const scored: { item: SearchItem; score: number }[] = [];
 
     for (const item of items) {
+      if (filterType && item.type !== filterType) continue;
+
       const titleLower = item.title.toLowerCase();
       const subtitleLower = item.subtitle.toLowerCase();
+
+      if (terms.length === 0) {
+        scored.push({ item, score: 0 });
+        continue;
+      }
 
       let match = true;
       let score = 0;
@@ -292,7 +388,6 @@
       }
 
       if (match) {
-        // Boost pages and countries over contestants for short queries
         if (item.type === 'page') score += 5;
         if (item.type === 'country') score += 3;
         if (item.type === 'year') score += 2;
@@ -322,6 +417,15 @@
     }
   }
 
+  function renderTips(): string {
+    return `<div class="cmd-tips">
+      <div class="cmd-tips-label">Search tips</div>
+      <div class="cmd-tip-item"><span class="cmd-tip-prefix">p:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search contestants</span></div>
+      <div class="cmd-tip-item"><span class="cmd-tip-prefix">c:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search countries</span></div>
+      <div class="cmd-tip-item"><span class="cmd-tip-prefix">y:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search years</span></div>
+    </div>`;
+  }
+
   function renderResults(results: SearchItem[]): void {
     const container = document.getElementById('cmd-results')!;
     if (results.length === 0) {
@@ -329,7 +433,7 @@
       if (input.value.length > 0) {
         container.innerHTML = '<div class="cmd-empty">No results found</div>';
       } else {
-        container.innerHTML = '<div class="cmd-empty">Type to search across all IMO data</div>';
+        container.innerHTML = renderTips();
       }
       activeIndex = -1;
       return;
