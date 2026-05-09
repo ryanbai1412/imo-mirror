@@ -296,6 +296,8 @@
 </style>
 
 <script>
+  import { navigate as astroNavigate } from 'astro:transitions/client';
+
   interface SearchItem {
     title: string;
     subtitle: string;
@@ -567,7 +569,7 @@
 
   function navigate(href: string): void {
     closePalette();
-    window.location.href = href;
+    astroNavigate(href);
   }
 
   function setup(): void {
