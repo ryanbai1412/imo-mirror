@@ -95,7 +95,6 @@
               style="color: var(--color-medal-gold)">Gold</span
             ><span class="info-value" style="color: var(--color-medal-gold)"
               >{data.info.gold_count}{#if data.info.gold_cutoff != null}
-                <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
                 {" "}<span class="font-normal text-text-secondary"
                   >(≥ {data.info.gold_cutoff} pts)</span
                 >{/if}</span
@@ -105,7 +104,6 @@
               style="color: var(--color-medal-silver)">Silver</span
             ><span class="info-value" style="color: var(--color-medal-silver)"
               >{data.info.silver_count}{#if data.info.silver_cutoff != null}
-                <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
                 {" "}<span class="font-normal text-text-secondary"
                   >(≥ {data.info.silver_cutoff} pts)</span
                 >{/if}</span
@@ -115,7 +113,6 @@
               style="color: var(--color-medal-bronze)">Bronze</span
             ><span class="info-value" style="color: var(--color-medal-bronze)"
               >{data.info.bronze_count}{#if data.info.bronze_cutoff != null}
-                <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
                 {" "}<span class="font-normal text-text-secondary"
                   >(≥ {data.info.bronze_cutoff} pts)</span
                 >{/if}</span

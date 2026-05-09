@@ -48,6 +48,8 @@ export default ts.config(
       "svelte/prefer-svelte-reactivity": "off",
       // $state + $effect used for user-overridable defaults
       "svelte/prefer-writable-derived": "off",
+      // Whitespace-control mustaches like {" "} are intentional
+      "svelte/no-useless-mustaches": "off",
     },
   },
   {

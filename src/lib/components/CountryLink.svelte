@@ -29,6 +29,6 @@
     >{label && !isIndividualContestant(codes[0]) ? label : visibleCodes[0]}</a
   >
 {:else if visibleCodes.length > 1}
-  <!-- eslint-disable-next-line svelte/no-useless-mustaches -->
-  {#each visibleCodes as c, i (c)}{#if i > 0}{", "}{/if}<a href={href(c)}>{c}</a>{/each}
+  {#each visibleCodes as c, i (c)}{#if i > 0}{", "}{/if}<a href={href(c)}>{c}</a
+    >{/each}
 {/if}

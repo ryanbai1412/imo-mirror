@@ -17,5 +17,4 @@
 </script>
 
 {#if medal}<span class={awardClass(award)}>{LABELS[medal]}</span
-  >{/if}{#if hasSpecial}{#if medal},
-  {/if}Special prize{/if}
+  >{/if}{#if hasSpecial}{#if medal}{", "}{/if}Special prize{/if}
