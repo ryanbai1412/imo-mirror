@@ -1,13 +1,45 @@
+<script lang="ts" module>
+  export type IconName =
+    | "Calendar"
+    | "ChevronRight"
+    | "FileText"
+    | "Globe"
+    | "Menu"
+    | "Search"
+    | "User"
+    | "X";
+</script>
+
 <script lang="ts">
-  import * as icons from "lucide-static";
+  import {
+    Calendar,
+    ChevronRight,
+    FileText,
+    Globe,
+    Menu,
+    Search,
+    User,
+    X,
+  } from "lucide-static";
   import { resizeSvg } from "$lib/utils/svgResize";
+
+  const icons: Record<IconName, string> = {
+    Calendar,
+    ChevronRight,
+    FileText,
+    Globe,
+    Menu,
+    Search,
+    User,
+    X,
+  };
 
   let {
     name,
     size = 18,
     class: className = "",
   }: {
-    name: keyof typeof icons;
+    name: IconName;
     size?: number;
     class?: string;
   } = $props();

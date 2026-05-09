@@ -1,9 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
   import { goto } from "$app/navigation";
-  import Icon from "./Icon.svelte";
-  import type * as icons from "lucide-static";
-  type IconName = keyof typeof icons;
+  import Icon, { type IconName } from "./Icon.svelte";
   import countriesData from "$lib/data/countries.json";
   import timelineData from "$lib/data/timeline.json";
   import { individualResults, countryResults } from "$lib/data-store";
@@ -456,10 +454,15 @@
   }
 
   onMount(() => {
-    document.getElementById("cmd-trigger")?.addEventListener("click", (e) => {
+    const trigger = document.getElementById("cmd-trigger");
+    trigger?.addEventListener("click", (e) => {
       e.preventDefault();
       openPalette();
     });
+
+    // Mark header as hydrated so CSS un-dims the button
+    const header = trigger?.closest("header");
+    header?.classList.add("search-ready");
   });
 </script>
 

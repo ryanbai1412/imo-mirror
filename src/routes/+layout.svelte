@@ -251,6 +251,9 @@
     margin-left: 6px;
     display: flex;
     cursor: pointer;
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 200ms ease;
     align-items: center;
     gap: 6px;
     border-radius: var(--radius-default);
@@ -262,6 +265,10 @@
     font-weight: 500;
     color: rgba(255, 255, 255, 0.55);
     transition: all 150ms ease;
+  }
+  :global(.search-ready) .search-trigger {
+    opacity: 1;
+    pointer-events: auto;
   }
   .search-trigger:hover {
     border-color: rgba(255, 255, 255, 0.28);
