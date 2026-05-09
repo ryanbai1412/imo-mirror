@@ -22,9 +22,27 @@
     <div id="cmd-results" class="cmd-results">
       <div class="cmd-tips">
         <div class="cmd-tips-label">Search tips</div>
-        <div class="cmd-tip-item"><span class="cmd-tip-prefix">p:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search contestants</span></div>
-        <div class="cmd-tip-item"><span class="cmd-tip-prefix">c:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search countries</span></div>
-        <div class="cmd-tip-item"><span class="cmd-tip-prefix">y:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search years</span></div>
+        <div class="cmd-tip-row cmd-tip-row-active">
+          <span class="cmd-tip-icon">👤</span>
+          <span class="cmd-tip-prefix">p:</span>
+          <span class="cmd-tip-sep">&mdash;</span>
+          <span class="cmd-tip-desc">Search contestants</span>
+          <span class="cmd-tip-arrow">&rarr;</span>
+        </div>
+        <div class="cmd-tip-row">
+          <span class="cmd-tip-icon">🌍</span>
+          <span class="cmd-tip-prefix">c:</span>
+          <span class="cmd-tip-sep">&mdash;</span>
+          <span class="cmd-tip-desc">Search countries</span>
+          <span class="cmd-tip-arrow">&rarr;</span>
+        </div>
+        <div class="cmd-tip-row">
+          <span class="cmd-tip-icon">📅</span>
+          <span class="cmd-tip-prefix">y:</span>
+          <span class="cmd-tip-sep">&mdash;</span>
+          <span class="cmd-tip-desc">Search years</span>
+          <span class="cmd-tip-arrow">&rarr;</span>
+        </div>
       </div>
     </div>
     <div class="cmd-footer">
@@ -117,35 +135,55 @@
     font-size: 14px;
   }
   .cmd-tips {
-    padding: 12px 8px;
+    padding: 8px;
   }
   .cmd-tips-label {
-    padding: 4px 12px 8px;
+    padding: 8px 12px 6px;
     font-size: 11px;
     font-weight: 600;
     color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
-  .cmd-tip-item {
+  .cmd-tip-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     border-radius: 8px;
     font-size: 14px;
     color: #64748b;
+    cursor: pointer;
+    transition: background 100ms ease;
+  }
+  .cmd-tip-row:hover {
+    background: #f1f5f9;
+  }
+  .cmd-tip-row-active {
+    background: #f1f5f9;
+  }
+  .cmd-tip-icon {
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
   }
   .cmd-tip-prefix {
-    font-weight: 600;
+    font-weight: 700;
     color: #1e1e1e;
-    min-width: 24px;
+    min-width: 20px;
   }
   .cmd-tip-sep {
     color: #cbd5e1;
   }
   .cmd-tip-desc {
     color: #64748b;
+    flex: 1;
+  }
+  .cmd-tip-arrow {
+    color: #cbd5e1;
+    font-size: 16px;
+    flex-shrink: 0;
   }
   .cmd-footer {
     display: flex;
@@ -420,9 +458,27 @@
   function renderTips(): string {
     return `<div class="cmd-tips">
       <div class="cmd-tips-label">Search tips</div>
-      <div class="cmd-tip-item"><span class="cmd-tip-prefix">p:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search contestants</span></div>
-      <div class="cmd-tip-item"><span class="cmd-tip-prefix">c:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search countries</span></div>
-      <div class="cmd-tip-item"><span class="cmd-tip-prefix">y:</span><span class="cmd-tip-sep">&mdash;</span><span class="cmd-tip-desc">Search years</span></div>
+      <div class="cmd-tip-row cmd-tip-row-active">
+        <span class="cmd-tip-icon">\u{1F464}</span>
+        <span class="cmd-tip-prefix">p:</span>
+        <span class="cmd-tip-sep">&mdash;</span>
+        <span class="cmd-tip-desc">Search contestants</span>
+        <span class="cmd-tip-arrow">&rarr;</span>
+      </div>
+      <div class="cmd-tip-row">
+        <span class="cmd-tip-icon">\u{1F30D}</span>
+        <span class="cmd-tip-prefix">c:</span>
+        <span class="cmd-tip-sep">&mdash;</span>
+        <span class="cmd-tip-desc">Search countries</span>
+        <span class="cmd-tip-arrow">&rarr;</span>
+      </div>
+      <div class="cmd-tip-row">
+        <span class="cmd-tip-icon">\u{1F4C5}</span>
+        <span class="cmd-tip-prefix">y:</span>
+        <span class="cmd-tip-sep">&mdash;</span>
+        <span class="cmd-tip-desc">Search years</span>
+        <span class="cmd-tip-arrow">&rarr;</span>
+      </div>
     </div>`;
   }
 
