@@ -53,7 +53,7 @@ const currentPath = Astro.url.pathname;
 </head>
 <body>
   <div class="site-wrapper">
-    <header class="site-header">
+    <header class="site-header" transition:animate="none">
       <div class="header-inner">
         <a href="/" class="site-logo">
           <span class="logo-icon">I</span>
@@ -70,7 +70,7 @@ const currentPath = Astro.url.pathname;
     <div class="site-main">
       <slot />
     </div>
-    <footer class="site-footer">
+    <footer class="site-footer" transition:animate="none">
       <div class="footer-inner">
         <span>Static mirror of <a href="https://www.imo-official.org" target="_blank" rel="noopener noreferrer">imo-official.org</a></span>
         <div class="footer-links">
