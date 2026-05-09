@@ -2,9 +2,44 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Page Not Found" description="The requested page was not found.">
+<Layout title="Page Not Found" description="The requested page was not found on IMO Mirror.">
   <div class="page-content">
     <h2>Page Not Found</h2>
-    <p>The page you're looking for doesn't exist. Try navigating from the <a href="/">homepage</a>.</p>
+    <p>Sorry, the page you're looking for doesn't exist or may have been removed.</p>
+    <p>Here are some places you can go instead:</p>
+    <div class="not-found-links">
+      <a href="/" class="not-found-link">Homepage</a>
+      <a href="/organizers.aspx" class="not-found-link">Timeline</a>
+      <a href="/countries.aspx" class="not-found-link">Countries</a>
+      <a href="/results.aspx" class="not-found-link">Results</a>
+      <a href="/hall.aspx" class="not-found-link">Hall of Fame</a>
+      <a href="/search.aspx" class="not-found-link">Search Participants</a>
+    </div>
   </div>
 </Layout>
+
+<style>
+  .not-found-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .not-found-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 18px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 150ms ease;
+    text-decoration: none;
+  }
+  .not-found-link:hover {
+    background: var(--navy-light);
+    color: var(--gold-light);
+    text-decoration: none;
+  }
+</style>
