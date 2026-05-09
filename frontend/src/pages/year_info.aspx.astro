@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SubNav from "../components/SubNav.astro";
 import { loadYearInfo, loadTimeline } from "../utils/data";
 
 const origin = Astro.url.origin;
@@ -31,6 +32,13 @@ const jsonLd = {
 <Layout title={`IMO ${year}`} description={`IMO ${year} held in ${entry?.city || ""}, ${entry?.country || ""}. ${info?.num_contestants || ""} contestants from ${info?.num_countries || ""} countries.`} path={`/year_info.aspx?year=${year}`} jsonLd={jsonLd}>
   <div class="page-content">
     <h2>IMO {year}</h2>
+
+    <SubNav items={[
+      { label: "Overview", href: `/year_info.aspx?year=${year}` },
+      { label: "Country Results", href: `/year_country_r.aspx?year=${year}` },
+      { label: "Individual Results", href: `/year_individual_r.aspx?year=${year}` },
+      { label: "Statistics", href: `/year_statistics.aspx?year=${year}` },
+    ]} currentPath={`/year_info.aspx?year=${year}`} />
 
     <div class="year-nav">
       {prevYear && <a href={`/year_info.aspx?year=${prevYear.year}`}>&laquo; {prevYear.year}</a>}
@@ -92,12 +100,6 @@ const jsonLd = {
       </div>
     )}
 
-    <h3>Results</h3>
-    <ul>
-      <li><a href={`/year_country_r.aspx?year=${year}`}>Country Results</a></li>
-      <li><a href={`/year_individual_r.aspx?year=${year}`}>Individual Results</a></li>
-      <li><a href={`/year_statistics.aspx?year=${year}`}>Statistics</a></li>
-    </ul>
 
     {info?.homepage && (
       <>

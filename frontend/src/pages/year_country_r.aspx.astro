@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SubNav from "../components/SubNav.astro";
 import { loadCountryResultsByYear, loadYearInfo } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
 
@@ -39,13 +40,12 @@ const cols = [
 <Layout title={`IMO ${year} - Country Results`} description={`Country results for the ${year} International Mathematical Olympiad. Rankings, scores, and medal counts for all participating countries.`} path={`/year_country_r.aspx?year=${year}`}>
   <div class="page-content">
     <h2>IMO {year} &mdash; Country Results</h2>
-    <div class="year-nav">
-      <a href={`/year_info.aspx?year=${year}`}>&laquo; Year Info</a>
-      <span>|</span>
-      <a href={`/year_individual_r.aspx?year=${year}`}>Individual Results</a>
-      <span>|</span>
-      <a href={`/year_statistics.aspx?year=${year}`}>Statistics</a>
-    </div>
+    <SubNav items={[
+      { label: "Overview", href: `/year_info.aspx?year=${year}` },
+      { label: "Country Results", href: `/year_country_r.aspx?year=${year}` },
+      { label: "Individual Results", href: `/year_individual_r.aspx?year=${year}` },
+      { label: "Statistics", href: `/year_statistics.aspx?year=${year}` },
+    ]} currentPath={`/year_country_r.aspx?year=${year}`} />
 
     <div class="table-container">
       <table class="data-table">

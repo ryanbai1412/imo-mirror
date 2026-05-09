@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SubNav from "../components/SubNav.astro";
 import { loadResultsCountry, loadResultsYear } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
 
@@ -46,11 +47,11 @@ const yCols = [
 <Layout title={isYear ? "Results by Year" : "Results by Country"} description={isYear ? "IMO results by year. Medal counts, cutoff scores, and participation statistics." : "IMO results by country. Medal totals, participation history, and rankings."} path={`/results.aspx${isYear ? "?view=year" : ""}`}>
   <div class="page-content">
     <h2>Results</h2>
-    <div class="view-toggle">
-      <a href="/results.aspx?view=country" class={!isYear ? "active" : ""}>By Country</a>
-      <a href="/results.aspx?view=year" class={isYear ? "active" : ""}>By Year</a>
-      <a href="/results_matrix.aspx">Results Matrix</a>
-    </div>
+    <SubNav items={[
+      { label: "By Country", href: "/results.aspx" },
+      { label: "By Year", href: "/results.aspx?view=year" },
+      { label: "Results Matrix", href: "/results_matrix.aspx" },
+    ]} currentPath={isYear ? "/results.aspx?view=year" : "/results.aspx"} />
 
     {isYear ? (
       <div class="table-container">

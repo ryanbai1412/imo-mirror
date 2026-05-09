@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SubNav from "../components/SubNav.astro";
 import { loadStaticPages } from "../utils/data";
 
 const origin = Astro.url.origin;
@@ -12,6 +13,13 @@ const page = pages["links"];
     {page ? (
       <>
         <h2>{page.title}</h2>
+        <SubNav items={[
+          { label: "About", href: "/general.aspx" },
+          { label: "Links", href: "/links.aspx" },
+          { label: "Advisory Board", href: "/advisory.aspx" },
+          { label: "Ethics", href: "/ethics.aspx" },
+          { label: "Documents", href: "/documents.aspx" },
+        ]} currentPath="/links.aspx" />
         <div class="static-content" set:html={page.content} />
       </>
     ) : (

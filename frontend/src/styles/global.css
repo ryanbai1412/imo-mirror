@@ -249,7 +249,19 @@ a:hover { color: var(--link-hover); }
 .stat-problem-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; }
 .stat-problem-card h4 { font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
 
-/* View toggle */
+/* Sub-navigation */
+.sub-nav { display: inline-flex; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin: -8px 0 20px; }
+.sub-nav a {
+  padding: 7px 18px; border: none; background: var(--surface);
+  font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  cursor: pointer; text-decoration: none; transition: all var(--transition);
+  font-family: var(--font-body);
+}
+.sub-nav a + a { border-left: 1px solid var(--border); }
+.sub-nav a:hover { background: #f8f7f4; text-decoration: none; }
+.sub-nav a.active { background: var(--navy); color: #fff; }
+
+/* View toggle (legacy alias) */
 .view-toggle { display: inline-flex; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; margin: 0 0 16px; }
 .view-toggle a {
   padding: 7px 18px; border: none; background: var(--surface);
@@ -318,4 +330,5 @@ thead .sticky-col { background: var(--navy); z-index: 2; }
   .footer-inner { flex-direction: column; }
   .medal-summary { flex-direction: column; }
   .search-form { flex-direction: column; }
+  .sub-nav { flex-wrap: wrap; }
 }

@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SubNav from "../components/SubNav.astro";
 import { loadCountries, loadCountryResultsByYear, loadIndividualResultsByYear, loadTimeline } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
 
@@ -67,6 +68,13 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
       {country.name}
     </h2>
 
+    <SubNav items={[
+      { label: "Overview", href: `/country_info.aspx?code=${code}` },
+      { label: "Hall of Fame", href: `/country_hall.aspx?code=${code}` },
+      { label: "Individual Results", href: `/country_individual_r.aspx?code=${code}` },
+      { label: "Team Results", href: `/country_team_r.aspx?code=${code}` },
+    ]} currentPath={`/country_info.aspx?code=${code}`} />
+
     <div class="info-grid">
       <span class="info-label">Code</span><span class="info-value">{code}</span>
       {country.contact && <><span class="info-label">Contact</span><span class="info-value">{country.contact}</span></>}
@@ -74,11 +82,6 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
       {hostYears.length > 0 && <><span class="info-label">Hosted</span><span class="info-value">{hostYears.map(h => h.year).join(", ")}</span></>}
     </div>
 
-    <p>
-      <a href={`/country_hall.aspx?code=${code}`}>Hall of Fame</a> &middot;
-      <a href={`/country_individual_r.aspx?code=${code}`}>All Individual Results</a> &middot;
-      <a href={`/country_team_r.aspx?code=${code}`}>Team Results</a>
-    </p>
 
     <h3>Results by Year</h3>
     <div class="table-container">

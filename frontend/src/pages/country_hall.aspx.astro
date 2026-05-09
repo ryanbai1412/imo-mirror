@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import SubNav from "../components/SubNav.astro";
 import { loadParticipants, loadCountries } from "../utils/data";
 import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
 
@@ -44,6 +45,14 @@ if (column) rows = sortData(rows, column, order);
       {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
       {country?.name || code} &mdash; Hall of Fame
     </h2>
+
+    <SubNav items={[
+      { label: "Overview", href: `/country_info.aspx?code=${code}` },
+      { label: "Hall of Fame", href: `/country_hall.aspx?code=${code}` },
+      { label: "Individual Results", href: `/country_individual_r.aspx?code=${code}` },
+      { label: "Team Results", href: `/country_team_r.aspx?code=${code}` },
+    ]} currentPath={`/country_hall.aspx?code=${code}`} />
+
     <p class="page-subtitle">{rows.length} participants with awards</p>
 
     <div class="table-container">
