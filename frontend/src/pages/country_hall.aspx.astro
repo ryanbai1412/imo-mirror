@@ -2,7 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
 import { loadParticipants, loadCountries } from "../utils/data";
-import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { sortData, parseSortParams } from "../utils/sort";
+import SortableTableHead from "../components/SortableTableHead.astro";
+import { awardType } from "../utils/awardClass";
+import { countryNavItems } from "../utils/nav";
 
 const origin = Astro.url.origin;
 const code = Astro.url.searchParams.get("code") || "";
@@ -27,47 +30,40 @@ for (const p of Object.values(participants)) {
       hallMap.set(p.id, entry);
     }
     entry.participations++;
-    const award = (r.award || "").toLowerCase();
-    if (award.includes("gold")) entry.gold++;
-    else if (award.includes("silver")) entry.silver++;
-    else if (award.includes("bronze")) entry.bronze++;
-    else if (award.includes("honourable") || award.includes("hm")) entry.hm++;
+    const t = awardType(r.award);
+    if (t === "gold") entry.gold++;
+    else if (t === "silver") entry.silver++;
+    else if (t === "bronze") entry.bronze++;
+    else if (t === "hm") entry.hm++;
     entry.total_medals = entry.gold + entry.silver + entry.bronze + entry.hm;
   }
 }
 let rows = Array.from(hallMap.values()).sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze);
 if (column) rows = sortData(rows, column, order);
+
+const cols = [
+  { key: "name", label: "Name" },
+  { key: "participations", label: "Part.", title: "Participations", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", title: "Gold medals", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", title: "Silver medals", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", title: "Bronze medals", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", title: "Honourable Mention", align: "center", defaultOrder: "desc" as const },
+  { key: "total_medals", label: "Total", align: "center", defaultOrder: "desc" as const },
+];
 ---
 
 <Layout title={`${country?.name || code} — Hall of Fame`} description={`Top IMO performers from ${country?.name || code}. Medal counts and participation history for all contestants.`} path={`/country_hall.aspx?code=${code}`}>
   <div class="page-content">
-    <PageHeader title={`${country?.name || code} — Hall of Fame`} navItems={[
-      { label: "Overview", href: `/country_info.aspx?code=${code}` },
-      { label: "Hall of Fame", href: `/country_hall.aspx?code=${code}` },
-      { label: "Individual Results", href: `/country_individual_r.aspx?code=${code}` },
-      { label: "Team Results", href: `/country_team_r.aspx?code=${code}` },
-    ]} currentPath={`/country_hall.aspx?code=${code}`}>
+    <PageHeader title={`${country?.name || code} — Hall of Fame`} navItems={countryNavItems(code)} currentPath={`/country_hall.aspx?code=${code}`}>
       <Fragment slot="title">
         {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
         {country?.name || code} &mdash; Hall of Fame
       </Fragment>
     </PageHeader>
 
-    <p class="page-subtitle">{rows.length} participants with awards</p>
-
     <div class="table-container">
       <table class="data-table">
-        <thead>
-          <tr>
-            <th class="sortable-header"><a href={getSortUrl(Astro.url, "name", column, order)}>Name{sortIndicator("name", column, order)}</a></th>
-            <th class="text-center sortable-header" title="Participations"><a href={getSortUrl(Astro.url, "participations", column, order, "desc")}>Part.{sortIndicator("participations", column, order)}</a></th>
-            <th class="text-center sortable-header" title="Gold medals"><a href={getSortUrl(Astro.url, "gold", column, order, "desc")}>G{sortIndicator("gold", column, order)}</a></th>
-            <th class="text-center sortable-header" title="Silver medals"><a href={getSortUrl(Astro.url, "silver", column, order, "desc")}>S{sortIndicator("silver", column, order)}</a></th>
-            <th class="text-center sortable-header" title="Bronze medals"><a href={getSortUrl(Astro.url, "bronze", column, order, "desc")}>B{sortIndicator("bronze", column, order)}</a></th>
-            <th class="text-center sortable-header" title="Honourable Mention"><a href={getSortUrl(Astro.url, "hm", column, order, "desc")}>HM{sortIndicator("hm", column, order)}</a></th>
-            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "total_medals", column, order, "desc")}>Total{sortIndicator("total_medals", column, order)}</a></th>
-          </tr>
-        </thead>
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
         <tbody>
           {rows.map((row) => (
             <tr>

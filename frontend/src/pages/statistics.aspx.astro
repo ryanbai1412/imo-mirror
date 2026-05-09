@@ -1,0 +1,1216 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ChartLegend from "../components/ChartLegend.astro";
+import { loadResultsYear, loadIndividualResultsByYear, loadYearStatistics } from "../utils/data";
+import { CHART_COLORS } from "../utils/chartColors";
+import { awardType } from "../utils/awardClass";
+
+const origin = Astro.url.origin;
+const [resultsYear, individualResults, yearStats] = await Promise.all([
+  loadResultsYear(origin),
+  loadIndividualResultsByYear(origin),
+  loadYearStatistics(origin),
+]);
+
+// ─── Medal cutoff data ────────────────────────────
+const cutoffData = resultsYear
+  .filter(r => r.gold_cutoff != null && r.year != null)
+  .sort((a, b) => a.year - b.year)
+  .map(r => ({
+    year: r.year,
+    gold: r.gold_cutoff!,
+    silver: r.silver_cutoff!,
+    bronze: r.bronze_cutoff!,
+  }));
+
+// ─── Day 1 vs Day 2 scatter data ──────────────────
+interface DayScatterPoint {
+  year: number;
+  name: string;
+  award: string;
+  day1: number;
+  day2: number;
+}
+const dayScatterAll: DayScatterPoint[] = [];
+
+for (const [yearStr, results] of Object.entries(individualResults)) {
+  const yr = parseInt(yearStr, 10);
+  if (isNaN(yr)) continue;
+  const stat = yearStats[yearStr];
+  if (!stat) continue;
+  const firstRow = Object.values(stat.problems)[0];
+  if (!firstRow) continue;
+  const pKeys = Object.keys(firstRow).sort();
+  if (pKeys.length !== 6 || pKeys.includes('p7')) continue;
+
+  const valid = results.filter((r: any) =>
+    r.p1 != null && r.p2 != null && r.p3 != null &&
+    r.p4 != null && r.p5 != null && r.p6 != null
+  );
+  for (const r of valid) {
+    dayScatterAll.push({
+      year: yr,
+      name: r.name,
+      award: r.award,
+      day1: (r.p1 as number) + (r.p2 as number) + (r.p3 as number),
+      day2: (r.p4 as number) + (r.p5 as number) + (r.p6 as number),
+    });
+  }
+}
+
+// ─── Repeat contestant transition matrix ──────────
+// For each consecutive pair of appearances by the same
+// participant, record previous award → next award.
+// "Consecutive" means the next IMO they appeared in,
+// not necessarily the next calendar year.
+type AwardKey = 'gold' | 'silver' | 'bronze' | 'hm' | 'none';
+
+interface TransitionEntry {
+  fromYear: number;
+  toYear: number;
+  name: string;
+  from: AwardKey;
+  to: AwardKey;
+}
+const transitionsAll: TransitionEntry[] = [];
+
+// Build participant → sorted appearances map
+const participantMap = new Map<number, { year: number; award: string; name: string }[]>();
+for (const [yearStr, results] of Object.entries(individualResults)) {
+  const yr = parseInt(yearStr, 10);
+  if (isNaN(yr)) continue;
+  for (const r of results) {
+    if (!r.participant_id) continue;
+    if (!participantMap.has(r.participant_id)) {
+      participantMap.set(r.participant_id, []);
+    }
+    participantMap.get(r.participant_id)!.push({
+      year: yr, award: r.award, name: r.name,
+    });
+  }
+}
+for (const appearances of participantMap.values()) {
+  if (appearances.length < 2) continue;
+  appearances.sort((a, b) => a.year - b.year);
+  for (let i = 0; i < appearances.length - 1; i++) {
+    transitionsAll.push({
+      fromYear: appearances[i].year,
+      toYear: appearances[i + 1].year,
+      name: appearances[i].name,
+      from: awardType(appearances[i].award),
+      to: awardType(appearances[i + 1].award),
+    });
+  }
+}
+
+// ─── Background table data ────────────────────────
+// For each contestant appearance, row = current award,
+// column = previous result (or 'na' if first-timer).
+type BgKey = AwardKey | 'na';
+interface BackgroundEntry {
+  year: number;
+  name: string;
+  current: AwardKey;
+  previous: BgKey;
+}
+const backgroundAll: BackgroundEntry[] = [];
+for (const appearances of participantMap.values()) {
+  appearances.sort((a, b) => a.year - b.year);
+  // First appearance → previous = 'na'
+  backgroundAll.push({
+    year: appearances[0].year,
+    name: appearances[0].name,
+    current: awardType(appearances[0].award),
+    previous: 'na',
+  });
+  for (let i = 1; i < appearances.length; i++) {
+    backgroundAll.push({
+      year: appearances[i].year,
+      name: appearances[i].name,
+      current: awardType(appearances[i].award),
+      previous: awardType(appearances[i - 1].award),
+    });
+  }
+}
+
+// ─── Per-problem solve counts ─────────────────────
+// "Solved" = scored 7 on a problem.
+// For each problem position (P1–P6), collect how many
+// solved it per year (only 6-problem years).
+interface ProblemSolveEntry {
+  year: number;
+  problem: number; // 1-6
+  solves: number;
+  total: number;   // total contestants
+}
+const problemSolvesAll: ProblemSolveEntry[] = [];
+for (const [yearStr, stat] of Object.entries(yearStats)) {
+  const yr = parseInt(yearStr, 10);
+  if (isNaN(yr)) continue;
+  const probs = stat.problems;
+  const row0 = probs["Num( P# = 0 )"];
+  if (!row0) continue;
+  const pKeys = Object.keys(row0).sort();
+  if (pKeys.length !== 6 || pKeys.includes('p7')) continue;
+  let totalContestants = 0;
+  for (let s = 0; s <= 7; s++) {
+    const row = probs[`Num( P# = ${s} )`];
+    if (row && row.p1) totalContestants += parseInt(row.p1, 10) || 0;
+  }
+  for (let p = 1; p <= 6; p++) {
+    const key = `p${p}`;
+    // Solves = scored >= 5
+    let solves = 0;
+    for (let s = 5; s <= 7; s++) {
+      const row = probs[`Num( P# = ${s} )`];
+      if (row && row[key]) solves += parseInt(row[key], 10) || 0;
+    }
+    problemSolvesAll.push({
+      year: yr, problem: p, solves, total: totalContestants,
+    });
+  }
+}
+
+// ─── Medal count data (for stacked bar + recipient histogram)
+const medalCountData = resultsYear
+  .filter(r => r.year != null && r.gold != null)
+  .sort((a, b) => a.year - b.year)
+  .map(r => ({
+    year: r.year,
+    gold: r.gold,
+    silver: r.silver,
+    bronze: r.bronze,
+    hm: r.hm,
+    total: r.contestants_all ?? 0,
+  }));
+
+// ─── Participation growth data ────────────────────
+const growthData = resultsYear
+  .filter(r => r.num_countries != null && r.year != null)
+  .sort((a, b) => a.year - b.year)
+  .map(r => ({
+    year: r.year,
+    countries: r.num_countries ?? 0,
+    contestants: r.contestants_all ?? 0,
+  }));
+
+// Serialize all data
+const chartColorsJson = JSON.stringify(CHART_COLORS);
+const growthJson = JSON.stringify(growthData);
+const medalCountJson = JSON.stringify(medalCountData);
+const cutoffJson = JSON.stringify(cutoffData);
+const dayScatterJson = JSON.stringify(dayScatterAll);
+const transitionsJson = JSON.stringify(transitionsAll);
+const problemSolvesJson = JSON.stringify(problemSolvesAll);
+const backgroundJson = JSON.stringify(backgroundAll);
+
+// Compute available year range
+const allYears = cutoffData.map(d => d.year);
+const minYear = allYears.length ? Math.min(...allYears) : 2000;
+const maxYear = allYears.length ? Math.max(...allYears) : 2025;
+---
+
+<Layout title="IMO Statistics" description="Cross-year statistics for the International Mathematical Olympiad: medal cutoffs, day 1 vs day 2 analysis, repeat contestant outcomes, and problem difficulty." path="/statistics.aspx">
+  <div class="page-content">
+    <h2>IMO Statistics</h2>
+
+    <div class="range-picker" id="range-picker">
+      <label>Year range:</label>
+      <input type="number" id="range-start" min={minYear} max={maxYear} value="2000" />
+      <span class="range-sep">&ndash;</span>
+      <input type="number" id="range-end" min={minYear} max={maxYear} value={maxYear} />
+      <div class="range-presets" id="range-presets">
+        <button class="range-preset" data-start="2000">Since 2000</button>
+        <button class="range-preset" data-start="1990">Since 1990</button>
+        <button class="range-preset" data-start={String(minYear)}>All time</button>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <h3>Participation Growth</h3>
+      <div class="chart-wrapper">
+        <canvas id="growth-chart" width="900" height="320"></canvas>
+      </div>
+      <ChartLegend items={[
+        { color: CHART_COLORS.line, label: "Countries", line: true },
+        { color: "#b45309", label: "Contestants", line: true },
+      ]} />
+    </div>
+
+    <div class="charts-row">
+      <div class="stats-section" id="section-cutoffs">
+        <h3>Medal Cutoffs</h3>
+        <div class="problem-picker" id="cutoff-picker">
+          <button class="problem-pill problem-pill--wide active" data-medal="gold">Gold</button>
+          <button class="problem-pill problem-pill--wide" data-medal="silver">Silver</button>
+          <button class="problem-pill problem-pill--wide" data-medal="bronze">Bronze</button>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="cutoff-chart" width="700" height="340"></canvas>
+        </div>
+      </div>
+      <div class="stats-section">
+        <h3>Medal Recipients</h3>
+        <div class="problem-picker" id="medal-recipient-picker">
+          <button class="problem-pill problem-pill--wide active" data-level="gold">Gold</button>
+          <button class="problem-pill problem-pill--wide" data-level="silver">&ge; Silver</button>
+          <button class="problem-pill problem-pill--wide" data-level="bronze">&ge; Bronze</button>
+          <label class="chart-check">
+            <input type="checkbox" id="pct-toggle" />
+            Use %
+          </label>
+        </div>
+        <div class="chart-wrapper">
+          <canvas id="medal-recipient-chart" width="700" height="340"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="stats-section">
+        <h3>Cutoff Scores Over Time</h3>
+        <div class="chart-wrapper">
+          <canvas id="cutoff-line-chart" width="700" height="320"></canvas>
+        </div>
+        <ChartLegend items={[
+          { color: CHART_COLORS.gold, label: "Gold cutoff", line: true },
+          { color: CHART_COLORS.silver, label: "Silver cutoff", line: true },
+          { color: CHART_COLORS.bronze, label: "Bronze cutoff", line: true },
+        ]} />
+      </div>
+      <div class="stats-section">
+        <h3>Medal Counts Over Time</h3>
+        <div class="chart-wrapper">
+          <canvas id="medal-time-chart" width="700" height="320"></canvas>
+        </div>
+        <ChartLegend items={[
+          { color: CHART_COLORS.gold, label: "Gold" },
+          { color: CHART_COLORS.silver, label: "Silver" },
+          { color: CHART_COLORS.bronze, label: "Bronze" },
+          { color: CHART_COLORS.hm, label: "HM" },
+        ]} />
+      </div>
+    </div>
+
+    <div class="stats-section" id="section-scatter">
+      <h3>Day 1 vs Day 2</h3>
+      <div class="scatter-grid">
+        <div class="scatter-cell">
+          <div class="scatter-corr" id="day-score-corr"></div>
+          <div class="chart-wrapper">
+            <canvas id="day-score-scatter" width="400" height="400"></canvas>
+          </div>
+        </div>
+        <div class="scatter-cell">
+          <div class="scatter-corr" id="day-rank-corr"></div>
+          <div class="chart-wrapper">
+            <canvas id="day-rank-scatter" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+      <ChartLegend items={[
+        { color: CHART_COLORS.gold, label: "Gold" },
+        { color: CHART_COLORS.silver, label: "Silver" },
+        { color: CHART_COLORS.bronze, label: "Bronze" },
+        { color: CHART_COLORS.hm, label: "HM" },
+        { color: CHART_COLORS.none, label: "None" },
+      ]} />
+    </div>
+
+    <div class="stats-section" id="section-transitions">
+      <h3>Repeat Contestant Outcomes</h3>
+      <div class="table-container">
+        <table class="data-table transition-table" id="transition-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="text-center" title="Next: Gold">&#8594; Gold</th>
+              <th class="text-center" title="Next: Silver">&#8594; Silver</th>
+              <th class="text-center" title="Next: Bronze">&#8594; Bronze</th>
+              <th class="text-center" title="Next: HM">&#8594; HM</th>
+              <th class="text-center" title="Next: None">&#8594; None</th>
+              <th class="text-center">Total</th>
+            </tr>
+          </thead>
+          <tbody id="transition-tbody"></tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top: 32px;">Contestant Background</h3>
+      <div class="table-container">
+        <table class="data-table transition-table" id="background-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="text-center" title="Previous: Gold">&#8592; Gold</th>
+              <th class="text-center" title="Previous: Silver">&#8592; Silver</th>
+              <th class="text-center" title="Previous: Bronze">&#8592; Bronze</th>
+              <th class="text-center" title="Previous: HM">&#8592; HM</th>
+              <th class="text-center" title="Previous: None">&#8592; None</th>
+              <th class="text-center" title="First-timer">N/A</th>
+              <th class="text-center">Total</th>
+            </tr>
+          </thead>
+          <tbody id="background-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="stats-section" id="section-solves">
+      <h3>Problem Difficulty</h3>
+      <p class="chart-note">Solves are &ge; 5 points</p>
+      <div class="problem-picker" id="solve-picker">
+        <button class="problem-pill active" data-problem="1">P1</button>
+        <button class="problem-pill" data-problem="2">P2</button>
+        <button class="problem-pill" data-problem="3">P3</button>
+        <button class="problem-pill" data-problem="4">P4</button>
+        <button class="problem-pill" data-problem="5">P5</button>
+        <button class="problem-pill" data-problem="6">P6</button>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="solve-chart" width="900" height="360"></canvas>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script is:inline define:vars={{ chartColorsJson, growthJson, medalCountJson, cutoffJson, dayScatterJson, transitionsJson, backgroundJson, problemSolvesJson, minYear, maxYear }}>
+var CC = JSON.parse(chartColorsJson);
+var allGrowth = JSON.parse(growthJson);
+var allMedalCounts = JSON.parse(medalCountJson);
+var allCutoffs = JSON.parse(cutoffJson);
+var allDayScatter = JSON.parse(dayScatterJson);
+var allTransitions = JSON.parse(transitionsJson);
+var allBackground = JSON.parse(backgroundJson);
+var allProblemSolves = JSON.parse(problemSolvesJson);
+var rangeStart = 2000;
+var rangeEnd = maxYear;
+var activeSolveProblem = 1;
+
+// ─── Year range picker ────────────────────────────
+function clampYear(v) {
+  if (isNaN(v) || v < minYear) return minYear;
+  if (v > maxYear) return maxYear;
+  return v;
+}
+var _statsAC = null;
+function initRangePicker(signal) {
+  var inpStart = document.getElementById('range-start');
+  var inpEnd = document.getElementById('range-end');
+  if (!inpStart || !inpEnd) return;
+  inpStart.value = String(rangeStart);
+  inpEnd.value = String(rangeEnd);
+  function applyRange() {
+    var s = clampYear(parseInt(inpStart.value, 10));
+    var e = clampYear(parseInt(inpEnd.value, 10));
+    if (s > e) { var tmp = s; s = e; e = tmp; }
+    rangeStart = s; rangeEnd = e;
+    inpStart.value = String(s);
+    inpEnd.value = String(e);
+    drawAll();
+  }
+  inpStart.addEventListener('change', applyRange, { signal: signal });
+  inpEnd.addEventListener('change', applyRange, { signal: signal });
+  var presets = document.getElementById('range-presets');
+  if (presets) {
+    var btns = presets.querySelectorAll('.range-preset');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        rangeStart = parseInt(btn.getAttribute('data-start'), 10);
+        rangeEnd = maxYear;
+        inpStart.value = String(rangeStart);
+        inpEnd.value = String(rangeEnd);
+        drawAll();
+      }, { signal: signal });
+    });
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────
+function inRange(y) { return y >= rangeStart && y <= rangeEnd; }
+
+function pearson(xs, ys) {
+  var n = xs.length;
+  if (n < 2) return 0;
+  var mx = 0, my = 0;
+  for (var i = 0; i < n; i++) { mx += xs[i]; my += ys[i]; }
+  mx /= n; my /= n;
+  var num = 0, dx2 = 0, dy2 = 0;
+  for (var i = 0; i < n; i++) {
+    var dx = xs[i] - mx, dy = ys[i] - my;
+    num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
+  }
+  var denom = Math.sqrt(dx2 * dy2);
+  return denom === 0 ? 0 : num / denom;
+}
+
+
+// ─── Growth Chart (dual-axis) ────────────────────
+function drawGrowthChart() {
+  var data = allGrowth.filter(function(d) { return inRange(d.year); });
+  var pad = { top: 20, right: 52, bottom: 36, left: 46 };
+  var c = chartSetup('growth-chart', CC, 0, 320, pad);
+  if (!c || !data.length) return;
+  var ctx = c.ctx, canvas = c.canvas, cw = c.cw, ch = c.ch, W = c.W, H = c.H;
+
+  var cVals = data.map(function(d) { return d.countries; });
+  var tVals = data.map(function(d) { return d.contestants; });
+  var cMax = Math.max.apply(null, cVals);
+  var tMax = Math.max.apply(null, tVals);
+  var cStep = cMax > 50 ? 20 : 10;
+  var tStep = tMax > 500 ? 100 : tMax > 200 ? 50 : 20;
+  var yMaxL = Math.ceil(cMax / cStep) * cStep || cStep;
+  var yMaxR = Math.ceil(tMax / tStep) * tStep || tStep;
+
+  drawYGrid(ctx, CC, pad, W, ch, yMaxL);
+  drawYGridRight(ctx, CC, pad, W, ch, yMaxR);
+
+  drawLineChart(ctx, data, pad, cw, ch, yMaxL, 'countries', CC.line);
+
+  // Draw contestants line using right axis scale
+  var xScale = function(i) { return pad.left + (i / Math.max(1, data.length - 1)) * cw; };
+  var yScaleR = function(v) { return pad.top + ch - (v / yMaxR) * ch; };
+  var contestantColor = '#b45309';
+  // area fill
+  ctx.beginPath();
+  ctx.moveTo(xScale(0), pad.top + ch);
+  for (var i = 0; i < data.length; i++) {
+    ctx.lineTo(xScale(i), yScaleR(data[i].contestants || 0));
+  }
+  ctx.lineTo(xScale(data.length - 1), pad.top + ch);
+  ctx.closePath();
+  ctx.fillStyle = contestantColor + '18';
+  ctx.fill();
+  // line
+  ctx.beginPath();
+  ctx.strokeStyle = contestantColor;
+  ctx.lineWidth = 2;
+  for (var i = 0; i < data.length; i++) {
+    var x = xScale(i);
+    var y = yScaleR(data[i].contestants || 0);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  // dots
+  for (var i = 0; i < data.length; i++) {
+    ctx.fillStyle = contestantColor;
+    ctx.beginPath();
+    ctx.arc(xScale(i), yScaleR(data[i].contestants || 0), 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawXLabelsLine(ctx, CC, data, pad, cw, ch);
+
+  setupTooltip(canvas, data, W, H, pad, ch, {
+    getIdx: lineGetIdx(data, pad, cw),
+    isHidden: function() { return false; },
+    getHtml: function(d) {
+      return '<b>IMO ' + d.year + '</b><br>'
+        + tooltipRow(CC.line, 'Countries', d.countries)
+        + tooltipRow(contestantColor, 'Contestants', d.contestants);
+    }
+  });
+}
+
+// ─── Medal Cutoff Chart ──────────────────────────
+var activeMedal = 'gold';
+function drawCutoffChart() {
+  var data = allCutoffs.filter(function(d) { return inRange(d.year); });
+  var H = 340;
+  var pad = { top: 30, right: 16, bottom: 36, left: 40 };
+  var c = chartSetup('cutoff-chart', CC, 0, H, pad);
+  if (!c) return;
+  var ctx = c.ctx, canvas = c.canvas;
+  var cw = c.cw, ch = c.ch, W = c.W;
+  if (!data.length) {
+    ctx.fillStyle = CC.label;
+    ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('No data in selected range', W / 2, H / 2);
+    return;
+  }
+  var medalColor = activeMedal === 'gold' ? CC.gold : activeMedal === 'silver' ? CC.silver : CC.bronze;
+  var medalLabel = activeMedal.charAt(0).toUpperCase() + activeMedal.slice(1);
+  // Build histogram: score -> list of years
+  var buckets = {};
+  for (var s = 1; s <= 42; s++) buckets[s] = [];
+  for (var i = 0; i < data.length; i++) {
+    var score = data[i][activeMedal];
+    if (score >= 1 && score <= 42) buckets[score].push(data[i].year);
+  }
+  var maxCount = 0;
+  for (var s = 1; s <= 42; s++) {
+    if (buckets[s].length > maxCount) maxCount = buckets[s].length;
+  }
+  var yMax = Math.ceil(maxCount / 2) * 2 || 2;
+  var totalYears = data.length;
+  var barW = cw / 42;
+  var gap = Math.max(1, barW * 0.2);
+
+  drawYGrid(ctx, CC, pad, W, ch, yMax);
+
+  var barData = [];
+  for (var s = 1; s <= 42; s++) {
+    var count = buckets[s].length;
+    barData.push({ score: s, count: count, years: buckets[s] });
+    if (!count) continue;
+    var h = (count / yMax) * ch;
+    var x = pad.left + (s - 1) * barW + gap / 2;
+    var y = pad.top + ch - h;
+    ctx.fillStyle = medalColor;
+    ctx.fillRect(x, y, barW - gap, h);
+  }
+  // X-axis labels
+  ctx.fillStyle = CC.label;
+  ctx.font = '10px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  for (var s = 1; s <= 42; s++) {
+    if (s % 3 === 0 || s === 1 || s === 42) {
+      var x = pad.left + (s - 1) * barW + barW / 2;
+      ctx.fillText(String(s), x, pad.top + ch + 14);
+    }
+  }
+  ctx.fillText('Cutoff Score', W / 2, H - 4);
+  drawTitle(ctx, CC, medalLabel + ' Cutoff Distribution', W, pad);
+
+  setupTooltip(canvas, barData, W, H, pad, ch, {
+    getIdx: function(mx) {
+      var idx = Math.floor((mx - pad.left) / barW);
+      return idx >= 0 && idx < 42 ? idx : -1;
+    },
+    isHidden: function(my, idx) {
+      var d = barData[idx];
+      return !d.count || my < pad.top + ch - (d.count / yMax) * ch;
+    },
+    getHtml: function(d) {
+      if (!d.count) return '';
+      var cumul = 0;
+      for (var s = 1; s <= d.score; s++) cumul += barData[s - 1].count;
+      var pctile = totalYears > 0 ? Math.round(cumul / totalYears * 100) : 0;
+      var yrs = d.years.slice().sort().join(', ');
+      return '<b>' + medalLabel + ' cutoff = ' + d.score + '</b><br>'
+        + d.count + ' of ' + totalYears + ' years (' + pctile + '%)<br>'
+        + '<span style="font-size:11px;color:#ccc">' + yrs + '</span>';
+    }
+  });
+}
+function initCutoffPicker(signal) {
+  var picker = document.getElementById('cutoff-picker');
+  if (!picker) return;
+  var btns = picker.querySelectorAll('.problem-pill');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeMedal = btn.getAttribute('data-medal');
+      drawCutoffChart();
+    }, { signal: signal });
+  });
+}
+
+// ─── Cutoff Line Chart ──────────────────────────
+function drawCutoffLineChart() {
+  var data = allCutoffs.filter(function(d) { return inRange(d.year); });
+  var pad = { top: 20, right: 16, bottom: 36, left: 40 };
+  var c = chartSetup('cutoff-line-chart', CC, 0, 320, pad);
+  if (!c) return;
+  var ctx = c.ctx, canvas = c.canvas, cw = c.cw, ch = c.ch, W = c.W, H = c.H;
+  if (!data.length) {
+    ctx.fillStyle = CC.label; ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText('No data in selected range', W / 2, H / 2);
+    return;
+  }
+  var allVals = data.flatMap(function(d) { return [d.gold, d.silver, d.bronze].filter(function(v) { return v != null; }); });
+  var yMax = Math.ceil(Math.max.apply(null, allVals) / 5) * 5 || 42;
+  var lines = [
+    { key: 'gold', color: CC.gold }, { key: 'silver', color: CC.silver }, { key: 'bronze', color: CC.bronze },
+  ];
+  drawYGrid(ctx, CC, pad, W, ch, yMax);
+  drawMultiLine(ctx, data, pad, cw, ch, yMax, lines);
+  drawXLabelsLine(ctx, CC, data, pad, cw, ch);
+  var yScale = function(v) { return pad.top + ch - (v / yMax) * ch; };
+  setupTooltip(canvas, data, W, H, pad, ch, {
+    getIdx: lineGetIdx(data, pad, cw),
+    isHidden: function() { return false; },
+    getHtml: function(d) {
+      var html = '<b>IMO ' + d.year + '</b><br>';
+      if (d.gold != null) html += tooltipRow(CC.gold, 'Gold', d.gold);
+      if (d.silver != null) html += tooltipRow(CC.silver, 'Silver', d.silver);
+      if (d.bronze != null) html += tooltipRow(CC.bronze, 'Bronze', d.bronze);
+      return html;
+    }
+  });
+}
+
+// ─── Medal Counts Stacked Bar ────────────────────
+function drawMedalTimeChart() {
+  var data = allMedalCounts.filter(function(d) { return inRange(d.year); });
+  var layers = [
+    { key: 'gold', color: CC.gold }, { key: 'silver', color: CC.silver },
+    { key: 'bronze', color: CC.bronze }, { key: 'hm', color: CC.hm },
+  ];
+  drawMedalStackedChart('medal-time-chart', data, CC, layers, {
+    yStep: 50, minGap: 0.5,
+    getHtml: function(d) {
+      var html = '<b>IMO ' + d.year + '</b><br>';
+      var running = 0;
+      for (var i = 0; i < layers.length; i++) {
+        var v = d[layers[i].key] || 0;
+        if (!v) continue;
+        running += v;
+        html += tooltipRow(layers[i].color,
+          layers[i].key.charAt(0).toUpperCase() + layers[i].key.slice(1),
+          v + ' (top ' + running + ')');
+      }
+      return html;
+    }
+  });
+}
+
+// ─── Medal Recipient Histogram ──────────────────
+var activeRecipientLevel = 'gold';
+var recipientShowPct = false;
+function drawMedalRecipientChart() {
+  var data = allMedalCounts.filter(function(d) { return inRange(d.year); });
+  var H = 340;
+  var pad = { top: 30, right: 16, bottom: 36, left: 40 };
+  var c = chartSetup('medal-recipient-chart', CC, 0, H, pad);
+  if (!c) return;
+  var ctx = c.ctx, canvas = c.canvas;
+  var cw = c.cw, ch = c.ch, W = c.W;
+  if (!data.length) {
+    ctx.fillStyle = CC.label; ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText('No data in selected range', W / 2, H / 2);
+    return;
+  }
+  var levelLabel = activeRecipientLevel === 'gold' ? 'Gold'
+    : activeRecipientLevel === 'silver' ? '\u2265 Silver'
+    : '\u2265 Bronze';
+  // Compute recipient counts per year
+  var counts = [];
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    var count;
+    if (activeRecipientLevel === 'gold') count = d.gold;
+    else if (activeRecipientLevel === 'silver') count = d.gold + d.silver;
+    else count = d.gold + d.silver + d.bronze;
+    var pct = d.total > 0 ? Math.round(count / d.total * 100) : 0;
+    counts.push({ year: d.year, count: count, total: d.total, pct: pct });
+  }
+  // Bucket into histogram bins
+  var allCounts = counts.map(function(d) { return recipientShowPct ? d.pct : d.count; });
+  var minC = Math.min.apply(null, allCounts);
+  var maxC = Math.max.apply(null, allCounts);
+  var range = maxC - minC;
+  var binSize = range > 200 ? 20 : range > 100 ? 10 : range > 40 ? 5 : range > 15 ? 2 : 1;
+  var binStart = Math.floor(minC / binSize) * binSize;
+  var binEnd = Math.ceil((maxC + 1) / binSize) * binSize;
+  var numBins = Math.max(1, (binEnd - binStart) / binSize);
+  var buckets = [];
+  for (var b = 0; b < numBins; b++) {
+    buckets.push({ lo: binStart + b * binSize, hi: binStart + (b + 1) * binSize - 1, years: [] });
+  }
+  for (var i = 0; i < counts.length; i++) {
+    var val = recipientShowPct ? counts[i].pct : counts[i].count;
+    var idx = Math.min(Math.floor((val - binStart) / binSize), numBins - 1);
+    buckets[idx].years.push(counts[i]);
+  }
+  var maxFreq = 0;
+  for (var b = 0; b < buckets.length; b++) {
+    if (buckets[b].years.length > maxFreq) maxFreq = buckets[b].years.length;
+  }
+  var yMax = Math.ceil(maxFreq / 2) * 2 || 2;
+  var barW = cw / numBins;
+  var gap = Math.max(1, barW * 0.2);
+  drawYGrid(ctx, CC, pad, W, ch, yMax);
+  var barColor = activeRecipientLevel === 'gold' ? CC.gold
+    : activeRecipientLevel === 'silver' ? CC.silver : CC.bronze;
+  var barData = [];
+  for (var b = 0; b < buckets.length; b++) {
+    var freq = buckets[b].years.length;
+    barData.push({ lo: buckets[b].lo, hi: buckets[b].hi, count: freq, years: buckets[b].years });
+    if (!freq) continue;
+    var h = (freq / yMax) * ch;
+    var x = pad.left + b * barW + gap / 2;
+    var y = pad.top + ch - h;
+    ctx.fillStyle = barColor;
+    ctx.fillRect(x, y, barW - gap, h);
+  }
+  // X-axis labels
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  var labelStep = numBins > 20 ? 4 : numBins > 10 ? 2 : 1;
+  for (var b = 0; b < numBins; b += labelStep) {
+    var lbl = binSize === 1 ? String(barData[b].lo) : barData[b].lo + '\u2013' + barData[b].hi;
+    ctx.fillText(lbl, pad.left + b * barW + barW / 2, pad.top + ch + 14);
+  }
+  var suffix = recipientShowPct ? ' (%)' : '';
+  drawTitle(ctx, CC, levelLabel + suffix, W, pad);
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(recipientShowPct ? '% of contestants' : 'Recipients', pad.left + cw / 2, H - 4);
+  setupTooltip(canvas, barData, W, H, pad, ch, {
+    getIdx: function(mx) {
+      var idx = Math.floor((mx - pad.left) / barW);
+      return idx >= 0 && idx < numBins ? idx : -1;
+    },
+    isHidden: function(my, idx) {
+      return !barData[idx].count || my < pad.top + ch - (barData[idx].count / yMax) * ch;
+    },
+    getHtml: function(d) {
+      if (!d.count) return '';
+      var unit = recipientShowPct ? '%' : ' recipients';
+      var rangeLabel = binSize === 1 ? d.lo + unit : d.lo + '\u2013' + d.hi + unit;
+      var yrs = d.years.slice().sort(function(a, b) { return a.year - b.year; })
+        .map(function(e) { return e.year + ' (' + e.count + (e.total ? ', ' + Math.round(e.count / e.total * 100) + '%' : '') + ')'; }).join(', ');
+      return '<b>' + rangeLabel + '</b><br>'
+        + d.count + ' of ' + data.length + ' years<br>'
+        + '<span style="font-size:11px;color:#ccc">' + yrs + '</span>';
+    }
+  });
+}
+function initRecipientPicker(signal) {
+  var picker = document.getElementById('medal-recipient-picker');
+  if (!picker) return;
+  var btns = picker.querySelectorAll('.problem-pill');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeRecipientLevel = btn.getAttribute('data-level');
+      drawMedalRecipientChart();
+    }, { signal: signal });
+  });
+  var toggle = document.getElementById('pct-toggle');
+  if (toggle) {
+    toggle.checked = recipientShowPct;
+    toggle.addEventListener('change', function() {
+      recipientShowPct = toggle.checked;
+      drawMedalRecipientChart();
+    }, { signal: signal });
+  }
+}
+
+// ─── Day 1 vs Day 2 Scatter ──────────────────────
+function drawDayScatters() {
+  var data = allDayScatter.filter(function(d) { return inRange(d.year); });
+  var corrEl1 = document.getElementById('day-score-corr');
+  var corrEl2 = document.getElementById('day-rank-corr');
+  if (!data.length) {
+    if (corrEl1) corrEl1.textContent = '';
+    if (corrEl2) corrEl2.textContent = '';
+    var c1 = chartSetup('day-score-scatter', CC, 0, 400);
+    if (c1) {
+      c1.ctx.fillStyle = CC.label; c1.ctx.font = '13px system-ui, sans-serif';
+      c1.ctx.textAlign = 'center'; c1.ctx.fillText('No data in selected range', c1.W / 2, 200);
+    }
+    var c2 = chartSetup('day-rank-scatter', CC, 0, 400);
+    if (c2) {
+      c2.ctx.fillStyle = CC.label; c2.ctx.font = '13px system-ui, sans-serif';
+      c2.ctx.textAlign = 'center'; c2.ctx.fillText('No data in selected range', c2.W / 2, 200);
+    }
+    return;
+  }
+
+  // Compute ranks within each year separately
+  var byYear = {};
+  for (var i = 0; i < data.length; i++) {
+    var yr = data[i].year;
+    if (!byYear[yr]) byYear[yr] = [];
+    byYear[yr].push(data[i]);
+  }
+  var maxRankPerYear = 1;
+  for (var yr in byYear) {
+    var group = byYear[yr];
+    var s1 = group.slice().sort(function(a, b) { return b.day1 - a.day1; });
+    var s2 = group.slice().sort(function(a, b) { return b.day2 - a.day2; });
+    var r = 1;
+    for (var i = 0; i < s1.length; i++) {
+      if (i > 0 && s1[i].day1 < s1[i - 1].day1) r = i + 1;
+      s1[i]._d1rank = r;
+    }
+    r = 1;
+    for (var i = 0; i < s2.length; i++) {
+      if (i > 0 && s2[i].day2 < s2[i - 1].day2) r = i + 1;
+      s2[i]._d2rank = r;
+    }
+    if (group.length > maxRankPerYear) maxRankPerYear = group.length;
+  }
+
+  var scoreCorr = pearson(
+    data.map(function(d) { return d.day1; }),
+    data.map(function(d) { return d.day2; })
+  );
+  var rankCorr = pearson(
+    data.map(function(d) { return d._d1rank; }),
+    data.map(function(d) { return d._d2rank; })
+  );
+
+  if (corrEl1) corrEl1.textContent = 'r = ' + scoreCorr.toFixed(3) + ', r\u00B2 = ' + (scoreCorr * scoreCorr).toFixed(3);
+  if (corrEl2) corrEl2.textContent = 'r = ' + rankCorr.toFixed(3) + ', r\u00B2 = ' + (rankCorr * rankCorr).toFixed(3);
+
+  var maxRank = maxRankPerYear;
+
+  var scatterGroupHtml = function(xLbl, yLbl) {
+    return function(pt) {
+      var g = pt.g;
+      var n = g.items.length;
+      var html = '<b>' + xLbl + ': ' + g.x + ', ' + yLbl + ': ' + g.y + '</b><br>'
+        + n + ' contestant' + (n === 1 ? '' : 's');
+      if (n <= 8) {
+        for (var i = 0; i < n; i++) {
+          var d = g.items[i];
+          html += '<br><span style="color:' + awardColor(d.award, CC) + '">\u25CF</span> '
+            + d.name + ' (' + d.year + ')';
+        }
+      }
+      return html;
+    };
+  };
+  drawScatterPlot('day-score-scatter', data, 'day1', 'day2',
+    'Day 1 Score', 'Day 2 Score', 'Day 1 vs Day 2 \u2014 Scores', CC,
+    { xMin: 0, xMax: 21, yMin: 0, yMax: 21, xTicks: 3, yTicks: 3, getGroupHtml: scatterGroupHtml('Day 1', 'Day 2') });
+  drawScatterPlot('day-rank-scatter', data, '_d1rank', '_d2rank',
+    'Day 1 Rank', 'Day 2 Rank', 'Day 1 vs Day 2 \u2014 Ranks', CC,
+    { xMin: 1, xMax: maxRank, yMin: 1, yMax: maxRank, invertX: true, invertY: true, dotMin: 1, dotMax: 3, getGroupHtml: scatterGroupHtml('Day 1 Rank', 'Day 2 Rank') });
+}
+
+// ─── Transition Matrix ───────────────────────────
+function drawTransitionTable() {
+  var data = allTransitions.filter(function(d) { return inRange(d.toYear); });
+  var tbody = document.getElementById('transition-tbody');
+  if (!tbody) return;
+  var labels = ['gold', 'silver', 'bronze', 'hm', 'none'];
+  var dispLabels = ['Gold', 'Silver', 'Bronze', 'HM', 'None'];
+  var matrix = {};
+  for (var r = 0; r < labels.length; r++) {
+    matrix[labels[r]] = {};
+    for (var col = 0; col < labels.length; col++) {
+      matrix[labels[r]][labels[col]] = 0;
+    }
+  }
+  for (var i = 0; i < data.length; i++) {
+    matrix[data[i].from][data[i].to]++;
+  }
+  var html = '';
+  for (var r = 0; r < labels.length; r++) {
+    var rowTotal = 0;
+    for (var col = 0; col < labels.length; col++) rowTotal += matrix[labels[r]][labels[col]];
+    html += '<tr><td class="stat-label">' + dispLabels[r] + ' \u2192</td>';
+    for (var col = 0; col < labels.length; col++) {
+      var count = matrix[labels[r]][labels[col]];
+      var pct = rowTotal > 0 ? (count / rowTotal * 100).toFixed(1) : '0.0';
+      var cls = 'text-center';
+      if (labels[r] === labels[col]) cls += ' transition-diagonal';
+      html += '<td class="' + cls + '" title="' + count + ' of ' + rowTotal + ' (' + pct + '%)">';
+      html += count > 0 ? count + ' <span class="transition-pct">(' + pct + '%)</span>' : '0';
+      html += '</td>';
+    }
+    html += '<td class="text-center" style="font-weight:600">' + rowTotal + '</td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+// ─── Contestant Background Table ─────────────────
+function drawBackgroundTable() {
+  var data = allBackground.filter(function(d) { return inRange(d.year); });
+  var tbody = document.getElementById('background-tbody');
+  if (!tbody) return;
+  var rowLabels = ['gold', 'silver', 'bronze', 'hm', 'none'];
+  var colLabels = ['gold', 'silver', 'bronze', 'hm', 'none', 'na'];
+  var dispRows = ['Gold', 'Silver', 'Bronze', 'HM', 'None'];
+  var matrix = {};
+  for (var r = 0; r < rowLabels.length; r++) {
+    matrix[rowLabels[r]] = {};
+    for (var c = 0; c < colLabels.length; c++) {
+      matrix[rowLabels[r]][colLabels[c]] = 0;
+    }
+  }
+  for (var i = 0; i < data.length; i++) {
+    matrix[data[i].current][data[i].previous]++;
+  }
+  var html = '';
+  for (var r = 0; r < rowLabels.length; r++) {
+    var rowTotal = 0;
+    for (var c = 0; c < colLabels.length; c++) rowTotal += matrix[rowLabels[r]][colLabels[c]];
+    html += '<tr><td class="stat-label">' + dispRows[r] + '</td>';
+    for (var c = 0; c < colLabels.length; c++) {
+      var count = matrix[rowLabels[r]][colLabels[c]];
+      var pct = rowTotal > 0 ? (count / rowTotal * 100).toFixed(1) : '0.0';
+      var cls = 'text-center';
+      if (rowLabels[r] === colLabels[c]) cls += ' transition-diagonal';
+      html += '<td class="' + cls + '" title="' + count + ' of ' + rowTotal + ' (' + pct + '%)">';
+      html += count > 0 ? count + ' <span class="transition-pct">(' + pct + '%)</span>' : '0';
+      html += '</td>';
+    }
+    html += '<td class="text-center" style="font-weight:600">' + rowTotal + '</td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+}
+
+// ─── Problem Solve Chart ─────────────────────────
+function drawSolveChart() {
+  var p = activeSolveProblem;
+  var data = allProblemSolves.filter(function(d) {
+    return d.problem === p && inRange(d.year);
+  });
+  var H = 360;
+  var pad = { top: 30, right: 16, bottom: 56, left: 40 };
+  var c = chartSetup('solve-chart', CC, 0, H, pad);
+  if (!c) return;
+  var ctx = c.ctx, canvas = c.canvas;
+  var cw = c.cw, ch = c.ch, W = c.W;
+  if (!data.length) {
+    ctx.fillStyle = CC.label; ctx.font = '13px system-ui, sans-serif';
+    ctx.textAlign = 'center'; ctx.fillText('No data in selected range', W / 2, H / 2);
+    return;
+  }
+  // Bucket solves — smaller buckets for harder problems
+  var BUCKET_SIZE = (p === 3 || p === 6) ? 10 : 25;
+  var globalMax = 0;
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].solves > globalMax) globalMax = data[i].solves;
+  }
+  var numBuckets = Math.floor(globalMax / BUCKET_SIZE) + 1;
+  var buckets = [];
+  for (var b = 0; b < numBuckets; b++) buckets.push({ lo: b * BUCKET_SIZE, hi: (b + 1) * BUCKET_SIZE - 1, years: [] });
+  for (var i = 0; i < data.length; i++) {
+    var b = Math.floor(data[i].solves / BUCKET_SIZE);
+    if (b >= 0 && b < numBuckets) buckets[b].years.push({ year: data[i].year, solves: data[i].solves });
+  }
+  var maxCount = 0;
+  for (var b = 0; b < numBuckets; b++) {
+    if (buckets[b].years.length > maxCount) maxCount = buckets[b].years.length;
+  }
+  var totalYears = data.length;
+  var yMax = Math.ceil(maxCount / 2) * 2 || 2;
+  var barW = cw / numBuckets;
+  var gap = Math.max(1, barW * 0.2);
+
+  drawYGrid(ctx, CC, pad, W, ch, yMax);
+
+  var barData = [];
+  for (var b = 0; b < numBuckets; b++) {
+    var count = buckets[b].years.length;
+    barData.push({ lo: buckets[b].lo, hi: buckets[b].hi, count: count, years: buckets[b].years });
+    if (!count) continue;
+    var h = (count / yMax) * ch;
+    var x = pad.left + b * barW + gap / 2;
+    var y = pad.top + ch - h;
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillRect(x, y, barW - gap, h);
+  }
+  // X-axis labels — rotated 45°
+  ctx.fillStyle = CC.label;
+  ctx.font = '10px system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  for (var b = 0; b < numBuckets; b++) {
+    var x = pad.left + b * barW + barW / 2;
+    var label = buckets[b].lo === buckets[b].hi ? String(buckets[b].lo) : buckets[b].lo + '\u2013' + buckets[b].hi;
+    ctx.save();
+    ctx.translate(x, pad.top + ch + 10);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  }
+  drawTitle(ctx, CC, 'P' + p + ' \u2014 Solve Distribution', W, pad);
+
+  setupTooltip(canvas, barData, W, H, pad, ch, {
+    getIdx: function(mx) {
+      var idx = Math.floor((mx - pad.left) / barW);
+      return idx >= 0 && idx < numBuckets ? idx : -1;
+    },
+    isHidden: function(my, idx) {
+      var d = barData[idx];
+      return !d.count || my < pad.top + ch - (d.count / yMax) * ch;
+    },
+    getHtml: function(d) {
+      if (!d.count) return '';
+      var cumul = 0;
+      for (var b = 0; b < barData.length; b++) {
+        if (barData[b].lo <= d.lo) cumul += barData[b].count;
+      }
+      var pctile = totalYears > 0 ? Math.round(cumul / totalYears * 100) : 0;
+      var yrs = d.years.slice().sort(function(a, b) { return a.year - b.year; })
+        .map(function(e) { return e.year + ' (' + e.solves + ')'; }).join(', ');
+      var rangeLabel = d.lo === d.hi ? d.lo + ' solves' : d.lo + '\u2013' + d.hi + ' solves';
+      return '<b>P' + p + ': ' + rangeLabel + '</b><br>'
+        + d.count + ' of ' + totalYears + ' years (' + pctile + '%)<br>'
+        + '<span style="font-size:11px;color:#ccc">' + yrs + '</span>';
+    }
+  });
+}
+
+function initSolvePicker(signal) {
+  var picker = document.getElementById('solve-picker');
+  if (!picker) return;
+  var btns = picker.querySelectorAll('.problem-pill');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeSolveProblem = parseInt(btn.getAttribute('data-problem'), 10);
+      drawSolveChart();
+    }, { signal: signal });
+  });
+}
+
+// ─── Info icon tooltips ──────────────────────────
+function initInfoIcons() {
+  var icons = document.querySelectorAll('.info-icon');
+  icons.forEach(function(icon) {
+    var tip = icon.getAttribute('data-tooltip');
+    if (!tip) return;
+    var el = document.createElement('span');
+    el.className = 'info-tooltip';
+    el.textContent = tip;
+    icon.appendChild(el);
+  });
+}
+
+// ─── Draw all ────────────────────────────────────
+function drawAll() {
+  drawGrowthChart();
+  drawCutoffChart();
+  drawCutoffLineChart();
+  drawMedalTimeChart();
+  drawMedalRecipientChart();
+  drawDayScatters();
+  drawTransitionTable();
+  drawBackgroundTable();
+  drawSolveChart();
+}
+
+function initAll() {
+  if (!document.getElementById('cutoff-chart')) return;
+  if (_statsAC) _statsAC.abort();
+  _statsAC = new AbortController();
+  var signal = _statsAC.signal;
+  initRangePicker(signal);
+  initInfoIcons();
+  initCutoffPicker(signal);
+  initRecipientPicker(signal);
+  initSolvePicker(signal);
+  drawAll();
+}
+
+initAll();
+if (!window._statsPageLoadBound) {
+  window._statsPageLoadBound = true;
+  document.addEventListener('astro:page-load', initAll);
+}
+</script>
+
+<style>
+  .range-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .range-picker label {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .range-picker input[type="number"] {
+    width: 64px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    font-size: 13px;
+    font-family: var(--font-body);
+    color: var(--text);
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+  .range-picker input[type="number"]::-webkit-inner-spin-button,
+  .range-picker input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  .range-sep {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  .range-presets {
+    display: flex;
+    gap: 6px;
+    margin-left: 8px;
+  }
+  .range-preset {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: var(--font-body);
+    white-space: nowrap;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+  }
+  .range-preset:hover {
+    color: var(--text);
+    text-decoration-color: var(--text-secondary);
+  }
+  .scatter-corr {
+    min-height: 22px;
+  }
+  .transition-table td {
+    font-variant-numeric: tabular-nums;
+  }
+  .transition-pct {
+    font-size: 0.75em;
+    color: var(--text-secondary);
+  }
+  .transition-diagonal {
+    background: color-mix(in srgb, var(--gold) 8%, transparent);
+  }
+  .info-icon {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+    font-size: 15px;
+    color: var(--text-secondary);
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+  .info-tooltip {
+    display: none;
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    background: var(--navy);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    width: 280px;
+    z-index: 100;
+    white-space: normal;
+    pointer-events: none;
+  }
+  .info-icon:hover .info-tooltip {
+    display: block;
+  }
+  @media (max-width: 768px) {
+    .range-presets {
+      margin-left: 0;
+      margin-top: 6px;
+    }
+  }
+</style>

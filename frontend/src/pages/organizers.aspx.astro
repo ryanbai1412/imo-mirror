@@ -1,7 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { loadTimeline, loadCountries, formatDate } from "../utils/data";
-import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { sortData, parseSortParams } from "../utils/sort";
+import SortableTableHead from "../components/SortableTableHead.astro";
+import ChartLegend from "../components/ChartLegend.astro";
 import { CHART_COLORS } from "../utils/chartColors";
 
 const origin = Astro.url.origin;
@@ -30,6 +32,7 @@ const cols = [
   { key: "city", label: "City" },
   { key: "num_countries", label: "Countries", align: "center", defaultOrder: "desc" as const },
   { key: "contestants_all", label: "Contestants", align: "center", defaultOrder: "desc" as const },
+  { key: "date", label: "Date", sortable: false },
 ];
 ---
 
@@ -38,34 +41,21 @@ const cols = [
     <h2>Timeline</h2>
 
     {chrono.length > 1 && (
-      <div class="charts-row">
-        <div class="stats-section">
-          <h3>Participating Countries</h3>
-          <div class="chart-wrapper">
-            <canvas id="countries-chart" width="700" height="280"></canvas>
-          </div>
+      <div class="stats-section">
+        <h3>Participation Growth</h3>
+        <div class="chart-wrapper">
+          <canvas id="growth-chart" width="900" height="320"></canvas>
         </div>
-        <div class="stats-section">
-          <h3>Total Contestants</h3>
-          <div class="chart-wrapper">
-            <canvas id="contestants-chart" width="700" height="280"></canvas>
-          </div>
-        </div>
+        <ChartLegend items={[
+          { color: CHART_COLORS.line, label: "Countries", line: true },
+          { color: "#b45309", label: "Contestants", line: true },
+        ]} />
       </div>
     )}
 
     <div class="table-container">
       <table class="data-table">
-        <thead>
-          <tr>
-            {cols.map(col => (
-              <th class:list={[col.align === "center" && "text-center", "sortable-header"]} title={col.title}>
-                <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
-              </th>
-            ))}
-            <th>Date</th>
-          </tr>
-        </thead>
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
         <tbody>
           {sorted.map((entry) => (
             <tr>
@@ -84,149 +74,70 @@ const cols = [
   </div>
 </Layout>
 
-<script define:vars={{ growthData, chartColorsJson }}>
-const CC = JSON.parse(chartColorsJson);
-function drawGrowthCharts() {
-  const data = JSON.parse(growthData);
-  drawLineChart('countries-chart', data, 'countries',
-    CC.line, 'Participating countries');
-  drawLineChart('contestants-chart', data, 'contestants',
-    '#b45309', 'Total contestants');
-}
+<script is:inline define:vars={{ growthData, chartColorsJson }}>
+var CC = JSON.parse(chartColorsJson);
+function drawGrowthChart() {
+  var data = JSON.parse(growthData);
+  var pad = { top: 20, right: 52, bottom: 36, left: 46 };
+  var c = chartSetup('growth-chart', CC, 0, 320, pad);
+  if (!c || !data.length) return;
+  var ctx = c.ctx, canvas = c.canvas, cw = c.cw, ch = c.ch, W = c.W, H = c.H;
 
-function drawLineChart(id, data, key, color, title) {
-  const canvas = document.getElementById(id);
-  if (!canvas || !data.length) return;
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  const W = 700, H = 280;
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(dpr, dpr);
+  var cVals = data.map(function(d) { return d.countries; });
+  var tVals = data.map(function(d) { return d.contestants; });
+  var cMax = Math.max.apply(null, cVals);
+  var tMax = Math.max.apply(null, tVals);
+  var cStep = cMax > 50 ? 20 : 10;
+  var tStep = tMax > 500 ? 100 : tMax > 200 ? 50 : 20;
+  var yMaxL = Math.ceil(cMax / cStep) * cStep || cStep;
+  var yMaxR = Math.ceil(tMax / tStep) * tStep || tStep;
 
-  const pad = { top: 20, right: 16, bottom: 36, left: 46 };
-  const cw = W - pad.left - pad.right;
-  const ch = H - pad.top - pad.bottom;
+  drawYGrid(ctx, CC, pad, W, ch, yMaxL);
+  drawYGridRight(ctx, CC, pad, W, ch, yMaxR);
 
-  const vals = data.map(d => d[key]);
-  const maxVal = Math.max(...vals);
-  const step = maxVal > 500 ? 100 : maxVal > 200 ? 50 : maxVal > 50 ? 20 : 10;
-  const yMax = Math.ceil(maxVal / step) * step || step;
+  drawLineChart(ctx, data, pad, cw, ch, yMaxL, 'countries', CC.line);
 
-  const xScale = (i) => pad.left + (i / (data.length - 1)) * cw;
-  const yScale = (v) => pad.top + ch - (v / yMax) * ch;
-
-  ctx.fillStyle = CC.bg;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.strokeStyle = CC.grid;
-  ctx.lineWidth = 0.5;
-  ctx.font = '11px system-ui, sans-serif';
-  ctx.fillStyle = CC.label;
-  ctx.textAlign = 'right';
-  const ticks = 5;
-  for (let i = 0; i <= ticks; i++) {
-    const v = Math.round(yMax * i / ticks);
-    const y = yScale(v);
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(W - pad.right, y);
-    ctx.stroke();
-    ctx.fillText(String(v), pad.left - 6, y + 4);
-  }
-
-  // area fill
+  var xScale = function(i) { return pad.left + (i / Math.max(1, data.length - 1)) * cw; };
+  var yScaleR = function(v) { return pad.top + ch - (v / yMaxR) * ch; };
+  var contestantColor = '#b45309';
   ctx.beginPath();
-  ctx.moveTo(xScale(0), yScale(0));
-  for (let i = 0; i < data.length; i++) {
-    ctx.lineTo(xScale(i), yScale(data[i][key]));
+  ctx.moveTo(xScale(0), pad.top + ch);
+  for (var i = 0; i < data.length; i++) {
+    ctx.lineTo(xScale(i), yScaleR(data[i].contestants || 0));
   }
-  ctx.lineTo(xScale(data.length - 1), yScale(0));
+  ctx.lineTo(xScale(data.length - 1), pad.top + ch);
   ctx.closePath();
-  ctx.fillStyle = color + '18';
+  ctx.fillStyle = contestantColor + '18';
   ctx.fill();
-
-  // line
   ctx.beginPath();
-  ctx.strokeStyle = color;
+  ctx.strokeStyle = contestantColor;
   ctx.lineWidth = 2;
-  for (let i = 0; i < data.length; i++) {
-    const x = xScale(i), y = yScale(data[i][key]);
+  for (var i = 0; i < data.length; i++) {
+    var x = xScale(i);
+    var y = yScaleR(data[i].contestants || 0);
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   ctx.stroke();
-
-  // dots
-  for (let i = 0; i < data.length; i++) {
-    ctx.fillStyle = color;
+  for (var i = 0; i < data.length; i++) {
+    ctx.fillStyle = contestantColor;
     ctx.beginPath();
-    ctx.arc(xScale(i), yScale(data[i][key]), 2, 0, Math.PI * 2);
+    ctx.arc(xScale(i), yScaleR(data[i].contestants || 0), 2, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // x labels
-  ctx.fillStyle = CC.label;
-  ctx.font = '11px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  const labelStep = Math.max(1, Math.ceil(data.length / 15));
-  for (let i = 0; i < data.length; i++) {
-    if (i % labelStep === 0 || i === data.length - 1) {
-      ctx.fillText("'" + String(data[i].year).slice(-2),
-        xScale(i), pad.top + ch + 16);
-    }
-  }
+  drawXLabelsLine(ctx, CC, data, pad, cw, ch);
 
-  // tooltip
-  const existing = canvas.parentElement.querySelector('.chart-tooltip');
-  if (existing) existing.remove();
-  const tip = document.createElement('div');
-  tip.className = 'chart-tooltip';
-  canvas.parentElement.appendChild(tip);
-  let lastIdx = -1;
-  canvas.addEventListener('mousemove', function(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mx = (e.clientX - rect.left) * (W / rect.width);
-    const my = (e.clientY - rect.top) * (H / rect.height);
-    const closest = data.reduce((best, d, i) => {
-      const dist = Math.abs(mx - xScale(i));
-      return dist < best.dist ? { dist, i } : best;
-    }, { dist: Infinity, i: -1 });
-    if (closest.i < 0 || closest.dist > 20 || my > pad.top + ch || my < pad.top) {
-      tip.classList.remove('visible'); lastIdx = -1; return;
+  setupTooltip(canvas, data, W, H, pad, ch, {
+    getIdx: lineGetIdx(data, pad, cw),
+    isHidden: function() { return false; },
+    getHtml: function(d) {
+      return '<b>IMO ' + d.year + '</b><br>'
+        + tooltipRow(CC.line, 'Countries', d.countries)
+        + tooltipRow(contestantColor, 'Contestants', d.contestants);
     }
-    const idx = closest.i;
-    const pointY = yScale(data[idx][key]);
-    if (my < pointY) {
-      tip.classList.remove('visible'); lastIdx = -1; return;
-    }
-    const ox = canvas.offsetLeft;
-    const oy = canvas.offsetTop;
-    const curX = e.clientX - rect.left;
-    const wrapW = canvas.parentElement.offsetWidth;
-    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
-    const ty = oy + (e.clientY - rect.top) - 10;
-    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
-    if (idx === lastIdx) {
-      tip.style.left = tx + 'px';
-      tip.style.top = ty + 'px';
-      return;
-    }
-    lastIdx = idx;
-    const d = data[idx];
-    tip.innerHTML = '<b>IMO ' + d.year + '</b><br>'
-      + title + ': ' + d[key];
-    tip.classList.add('visible');
-    tip.style.left = tx + 'px';
-    tip.style.top = ty + 'px';
-  });
-  canvas.addEventListener('mouseleave', function() {
-    tip.classList.remove('visible'); lastIdx = -1;
   });
 }
-
-drawGrowthCharts();
-document.addEventListener('astro:page-load', drawGrowthCharts);
+drawGrowthChart();
+document.addEventListener('astro:page-load', drawGrowthChart);
 </script>

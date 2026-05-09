@@ -2,6 +2,7 @@
 import { ClientRouter } from "astro:transitions";
 import { SITE_NAME, BASE_URL, DEFAULT_DESCRIPTION } from "../utils/seo";
 import CommandPalette from "../components/CommandPalette.astro";
+import Icon from "../components/Icon.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -18,13 +19,15 @@ const pageDescription = description || DEFAULT_DESCRIPTION;
 const canonicalUrl = path ? `${BASE_URL}${path}` : undefined;
 
 const NAV_ITEMS = [
-  { label: "Timeline", href: "/organizers.aspx" },
-  { label: "Countries", href: "/countries.aspx" },
-  { label: "Results", href: "/results.aspx" },
-  { label: "Hall of Fame", href: "/hall.aspx" },
+  { label: "Timeline", href: "/organizers.aspx", prefixes: ["/organizers.aspx", "/year_info.aspx", "/year_country_r.aspx", "/year_individual_r.aspx", "/year_statistics.aspx"] },
+  { label: "Countries", href: "/countries.aspx", prefixes: ["/countries.aspx", "/country_info.aspx", "/country_team_r.aspx", "/country_individual_r.aspx", "/country_hall.aspx", "/team_r.aspx"] },
+  { label: "Results", href: "/results_country.aspx", prefixes: ["/results_country.aspx", "/results_year.aspx", "/results_matrix.aspx"] },
+  { label: "Hall of Fame", href: "/hall.aspx", prefixes: ["/hall.aspx", "/hall_of_fame.aspx", "/participant_r.aspx"] },
+  { label: "Statistics", href: "/statistics.aspx", prefixes: ["/statistics.aspx"] },
 ];
 
 const currentPath = Astro.url.pathname;
+const isActive = (item: typeof NAV_ITEMS[number]) => item.prefixes.some(p => currentPath === p);
 ---
 
 <!doctype html>
@@ -45,7 +48,7 @@ const currentPath = Astro.url.pathname;
   <meta name="twitter:title" content={pageTitle} />
   <meta name="twitter:description" content={pageDescription} />
   {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
-  {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  {jsonLd && <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
   <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16" />
   <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -53,6 +56,7 @@ const currentPath = Astro.url.pathname;
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script is:inline src="/js/chart-utils.js"></script>
   <ClientRouter />
 </head>
 <body>
@@ -65,10 +69,10 @@ const currentPath = Astro.url.pathname;
         </a>
         <nav class="main-nav">
           {NAV_ITEMS.map(item => (
-            <a href={item.href} class={currentPath === item.href ? "active" : ""}>{item.label}</a>
+            <a href={item.href} class={isActive(item) ? "active" : ""}>{item.label}</a>
           ))}
           <button id="cmd-trigger" class="header-search-box" aria-label="Search (Cmd+K)">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <Icon name="Search" size={13} />
             <span>Search</span>
             <kbd class="nav-kbd">⌘K</kbd>
           </button>
@@ -82,6 +86,7 @@ const currentPath = Astro.url.pathname;
       <div class="footer-inner">
         <span>Static mirror of <a href="https://www.imo-official.org" target="_blank" rel="noopener noreferrer">imo-official.org</a></span>
         <span>This site is <a href="https://github.com/ryanbai1412/imo-mirror" target="_blank" rel="noopener noreferrer">open source</a>.</span>
+        <span><a href="https://github.com/ryanbai1412/imo-mirror/issues/new" target="_blank" rel="noopener noreferrer">Report a bug</a></span>
       </div>
     </footer>
   </div>
@@ -137,18 +142,6 @@ const currentPath = Astro.url.pathname;
   .main-nav a.active {
     color: var(--gold-light);
   }
-  .main-nav a.header-search-link {
-    color: rgba(255,255,255,0.6);
-    padding: 6px 10px; font-size: 13px;
-    border-radius: 4px;
-    display: flex; align-items: center; gap: 4px;
-    transition: all var(--transition);
-  }
-  .main-nav a.header-search-link:hover {
-    color: #fff;
-    background: rgba(255,255,255,0.08);
-    text-decoration: none;
-  }
   .site-footer {
     background: var(--navy);
     color: rgba(255,255,255,0.5);
@@ -166,6 +159,34 @@ const currentPath = Astro.url.pathname;
     max-width: var(--max-width); margin: 0 auto;
     display: flex; align-items: center;
     justify-content: space-between; gap: 16px;
+  }
+  .header-search-box {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: var(--radius);
+    color: rgba(255,255,255,0.55);
+    font-size: 13px; font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-left: 6px;
+  }
+  .header-search-box:hover {
+    background: rgba(255,255,255,0.14);
+    border-color: rgba(255,255,255,0.28);
+    color: rgba(255,255,255,0.85);
+  }
+  .nav-kbd {
+    font-size: 11px; font-family: var(--font-body);
+    padding: 1px 5px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.4;
+    margin-left: 2px;
   }
   @media (max-width: 768px) {
     .header-inner {

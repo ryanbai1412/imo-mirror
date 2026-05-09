@@ -12,9 +12,9 @@ export const CHART_COLORS = {
 } as const;
 
 export const STACKED_BAR_ORDER = [
-  { key: 'none',   color: CHART_COLORS.none },
-  { key: 'hm',     color: CHART_COLORS.hm },
-  { key: 'bronze', color: CHART_COLORS.bronze },
-  { key: 'silver', color: CHART_COLORS.silver },
   { key: 'gold',   color: CHART_COLORS.gold },
+  { key: 'silver', color: CHART_COLORS.silver },
+  { key: 'bronze', color: CHART_COLORS.bronze },
+  { key: 'hm',     color: CHART_COLORS.hm },
+  { key: 'none',   color: CHART_COLORS.none },
 ] as const;

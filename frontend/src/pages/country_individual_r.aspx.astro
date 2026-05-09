@@ -1,68 +1,125 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
-import { loadIndividualResultsByYear, loadCountries } from "../utils/data";
-import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
-import { awardClass } from "../utils/awardClass";
+import { loadIndividualResultsByYear, loadCountries, loadTimeline, type CountryIndivRow } from "../utils/data";
+import { CHART_COLORS, STACKED_BAR_ORDER } from "../utils/chartColors";
+import ChartLegend from "../components/ChartLegend.astro";
+import { sortData, parseSortParams } from "../utils/sort";
+import SortableTableHead from "../components/SortableTableHead.astro";
+import { awardType } from "../utils/awardClass";
+import AwardLabel from "../components/AwardLabel.astro";
+import { countryNavItems } from "../utils/nav";
 
 const origin = Astro.url.origin;
 const code = Astro.url.searchParams.get("code") || "";
 if (!code) return Astro.redirect("/countries.aspx");
 
-const [individualResults, countries] = await Promise.all([
+const [individualResults, countries, timeline] = await Promise.all([
   loadIndividualResultsByYear(origin),
   loadCountries(origin),
+  loadTimeline(origin),
 ]);
 
 const country = countries.find(c => c.code === code);
 const { column, order } = parseSortParams(Astro.url.searchParams);
 
-interface IndivRow { year: number; name: string; participant_id: number | null; p1: number | null; p2: number | null; p3: number | null; p4: number | null; p5: number | null; p6: number | null; total: number | null; rank: number | null; award: string; }
-const allRows: IndivRow[] = [];
+const allRows: CountryIndivRow[] = [];
 for (const [year, results] of Object.entries(individualResults)) {
   for (const r of results) {
     if (r.country_code === code) {
-      allRows.push({ year: Number(year), name: r.name, participant_id: r.participant_id, p1: r.p1, p2: r.p2, p3: r.p3, p4: r.p4, p5: r.p5, p6: r.p6, total: r.total, rank: r.rank, award: r.award });
+      allRows.push({ year: Number(year), name: r.name, participant_id: r.participant_id, p1: r.p1, p2: r.p2, p3: r.p3, p4: r.p4, p5: r.p5, p6: r.p6, p7: r.p7, total: r.total, rank: r.rank, award: r.award });
     }
   }
 }
 allRows.sort((a, b) => b.year - a.year || a.name.localeCompare(b.name));
 const rows = column ? sortData(allRows, column, order) : allRows;
+
+const hasP7 = allRows.some(r => r.p7 != null);
+
+const cols = [
+  { key: "year", label: "Year", align: "center" },
+  { key: "name", label: "Contestant" },
+  { key: "p1", label: "P1", title: "Problem 1", align: "center", sortable: false },
+  { key: "p2", label: "P2", title: "Problem 2", align: "center", sortable: false },
+  { key: "p3", label: "P3", title: "Problem 3", align: "center", sortable: false },
+  { key: "p4", label: "P4", title: "Problem 4", align: "center", sortable: false },
+  { key: "p5", label: "P5", title: "Problem 5", align: "center", sortable: false },
+  { key: "p6", label: "P6", title: "Problem 6", align: "center", sortable: false },
+  ...(hasP7 ? [{ key: "p7", label: "P7", title: "Problem 7", align: "center", sortable: false }] : []),
+  { key: "total", label: "Total", align: "center", defaultOrder: "desc" as const },
+  { key: "rank", label: "Rank", align: "center" },
+  { key: "award", label: "Award", sortable: false },
+];
+
+const timelineByYear = new Map(timeline.map(t => [t.year, t]));
+const countryYears = new Set(allRows.map(r => r.year));
+const rankChartData: { year: number; edition: number; gold: number; silver: number; bronze: number; hm: number; none: number; ranks: number[]; cg: number; cs: number; cb: number; ch: number }[] = [];
+for (const [yearStr, results] of Object.entries(individualResults)) {
+  const yr = Number(yearStr);
+  const tl = timelineByYear.get(yr);
+  if (!tl) continue;
+  let gold = 0, silver = 0, bronze = 0, hm = 0, none = 0;
+  for (const r of results) {
+    const t = awardType(r.award);
+    if (t === "gold") gold++;
+    else if (t === "silver") silver++;
+    else if (t === "bronze") bronze++;
+    else if (t === "hm") hm++;
+    else none++;
+  }
+  const countryRanks: number[] = [];
+  let cg = 0, cs = 0, cb = 0, ch = 0;
+  if (countryYears.has(yr)) {
+    for (const r of allRows) {
+      if (r.year !== yr) continue;
+      if (r.rank != null) countryRanks.push(r.rank);
+      const t = awardType(r.award);
+      if (t === "gold") cg++;
+      else if (t === "silver") cs++;
+      else if (t === "bronze") cb++;
+      else if (t === "hm") ch++;
+    }
+  }
+  rankChartData.push({ year: yr, edition: tl.edition, gold, silver, bronze, hm, none, ranks: countryRanks, cg, cs, cb, ch });
+}
+rankChartData.sort((a, b) => a.edition - b.edition);
+const rankChartJson = JSON.stringify(rankChartData);
+const chartColorsJson = JSON.stringify(CHART_COLORS);
+const stackedBarOrderJson = JSON.stringify(STACKED_BAR_ORDER);
 ---
 
 <Layout title={`${country?.name || code} — Individual Results`} description={`All individual IMO results for ${country?.name || code}. Problem scores, totals, ranks, and awards for every contestant.`} path={`/country_individual_r.aspx?code=${code}`}>
   <div class="page-content">
-    <PageHeader title={`${country?.name || code} — Individual Results`} navItems={[
-      { label: "Overview", href: `/country_info.aspx?code=${code}` },
-      { label: "Hall of Fame", href: `/country_hall.aspx?code=${code}` },
-      { label: "Individual Results", href: `/country_individual_r.aspx?code=${code}` },
-      { label: "Team Results", href: `/country_team_r.aspx?code=${code}` },
-    ]} currentPath={`/country_individual_r.aspx?code=${code}`}>
+    <PageHeader title={`${country?.name || code} — Individual Results`} navItems={countryNavItems(code)} currentPath={`/country_individual_r.aspx?code=${code}`}>
       <Fragment slot="title">
         {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
         {country?.name || code} &mdash; Individual Results
       </Fragment>
     </PageHeader>
 
-    <p class="page-subtitle">{rows.length} individual results</p>
+    {rankChartData.length > 1 && (
+      <div class="stats-section">
+        <h3>Individual Rankings</h3>
+        <div class="chart-wrapper">
+          <canvas id="country-rank-chart" width="700" height="320"></canvas>
+        </div>
+        <ChartLegend items={[
+          { color: CHART_COLORS.gold, label: "Gold" },
+          { color: CHART_COLORS.silver, label: "Silver" },
+          { color: CHART_COLORS.bronze, label: "Bronze" },
+          { color: CHART_COLORS.none, label: "No medal" },
+          { color: CHART_COLORS.line, label: `${country?.name || code} contestants`, line: true },
+        ]} />
+      </div>
+    )}
 
     <div class="table-container">
       <table class="data-table">
-        <thead>
-          <tr>
-            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
-            <th class="sortable-header"><a href={getSortUrl(Astro.url, "name", column, order)}>Contestant{sortIndicator("name", column, order)}</a></th>
-            <th class="text-center" title="Problem 1">P1</th><th class="text-center" title="Problem 2">P2</th><th class="text-center" title="Problem 3">P3</th>
-            <th class="text-center" title="Problem 4">P4</th><th class="text-center" title="Problem 5">P5</th><th class="text-center" title="Problem 6">P6</th>
-            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "total", column, order, "desc")}>Total{sortIndicator("total", column, order)}</a></th>
-            <th class="text-center sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
-            <th>Award</th>
-          </tr>
-        </thead>
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
         <tbody>
           {rows.map((row, i) => (
             <tr class:list={[i > 0 && rows[i - 1].year !== row.year && "year-group-start"]}>
-              <td class="text-center"><a href={`/year_individual_r.aspx?year=${row.year}`}>{row.year}</a></td>
+              <td class="text-center"><a href={`/year_info.aspx?year=${row.year}`}>{row.year}</a></td>
               <td>{row.participant_id ? <a href={`/participant_r.aspx?id=${row.participant_id}`}>{row.name}</a> : row.name}</td>
               <td class="text-center">{row.p1 ?? ""}</td>
               <td class="text-center">{row.p2 ?? ""}</td>
@@ -70,9 +127,10 @@ const rows = column ? sortData(allRows, column, order) : allRows;
               <td class="text-center">{row.p4 ?? ""}</td>
               <td class="text-center">{row.p5 ?? ""}</td>
               <td class="text-center">{row.p6 ?? ""}</td>
+              {hasP7 && <td class="text-center">{row.p7 ?? ""}</td>}
               <td class="text-center">{row.total ?? ""}</td>
               <td class="text-center">{row.rank ?? ""}</td>
-              <td><span class={awardClass(row.award)}>{row.award}</span></td>
+              <td><AwardLabel award={row.award} /></td>
             </tr>
           ))}
         </tbody>
@@ -80,3 +138,45 @@ const rows = column ? sortData(allRows, column, order) : allRows;
     </div>
   </div>
 </Layout>
+
+<script is:inline define:vars={{ rankChartJson, chartColorsJson, stackedBarOrderJson, code }}>
+var CC = JSON.parse(chartColorsJson);
+var colors = JSON.parse(stackedBarOrderJson);
+function drawCountryRankChart() {
+  var data = JSON.parse(rankChartJson);
+  var r = drawMedalStackedChart('country-rank-chart', data, CC, colors, {
+    yStep: 50, pad: { top: 30, right: 16, bottom: 36, left: 40 },
+    sumFn: medalTotal,
+    getHtml: function(d) {
+      var total = medalTotal(d);
+      var html = '<b>IMO ' + d.year + '</b> (' + total + ' contestants)<br>';
+      if (d.ranks && d.ranks.length) {
+        var sorted = d.ranks.slice().sort(function(a, b) { return a - b; });
+        html += rankLabel(sorted[0], sorted[sorted.length - 1]) + '<br>';
+        html += tooltipRow(CC.gold, 'Gold', d.cg) + tooltipRow(CC.silver, 'Silver', d.cs)
+          + tooltipRow(CC.bronze, 'Bronze', d.cb) + tooltipRow(CC.hm, 'HM', d.ch);
+      }
+      return html;
+    }
+  });
+  if (!r) return;
+  // Draw multiple rank dots per bar (unique to country individual)
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    if (!d.ranks || !d.ranks.length) continue;
+    var cx2 = r.pad.left + i * r.barW + (r.barW - r.gap) / 2 + r.gap / 2;
+    var total = medalTotal(d);
+    for (var ri = 0; ri < d.ranks.length; ri++) {
+      var rv = Math.min(d.ranks[ri], total);
+      var y = r.pad.top + r.ch - (rv / r.yMax) * r.ch;
+      r.ctx.fillStyle = CC.line;
+      r.ctx.beginPath(); r.ctx.arc(cx2, y, 3.5, 0, Math.PI * 2); r.ctx.fill();
+      r.ctx.fillStyle = CC.bg;
+      r.ctx.beginPath(); r.ctx.arc(cx2, y, 1.5, 0, Math.PI * 2); r.ctx.fill();
+    }
+  }
+  drawTitle(r.ctx, CC, 'Individual rankings - ' + code, r.W, r.pad);
+}
+drawCountryRankChart();
+document.addEventListener('astro:page-load', drawCountryRankChart);
+</script>

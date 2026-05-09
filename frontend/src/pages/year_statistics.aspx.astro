@@ -1,12 +1,14 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
-import { loadYearStatistics, loadTimeline, loadIndividualResultsByYear } from "../utils/data";
+import { loadYearStatistics, loadTimeline, loadIndividualResultsByYear, buildDistBuckets } from "../utils/data";
 import { CHART_COLORS, STACKED_BAR_ORDER } from "../utils/chartColors";
+import ChartLegend from "../components/ChartLegend.astro";
+import { yearNavItems } from "../utils/nav";
 
 const origin = Astro.url.origin;
 const year = Astro.url.searchParams.get("year") || "";
-if (!year) return Astro.redirect("/results.aspx");
+if (!year) return Astro.redirect("/results_year.aspx");
 
 const [statsMap, timeline, individualResults] = await Promise.all([
   loadYearStatistics(origin),
@@ -16,27 +18,14 @@ const [statsMap, timeline, individualResults] = await Promise.all([
 const stats = statsMap[year];
 const results = individualResults[year] || [];
 
-const maxScore = 42;
-const distBuckets: { score: number; gold: number; silver: number; bronze: number; hm: number; none: number }[] = [];
-for (let s = 0; s <= maxScore; s++) {
-  distBuckets.push({ score: s, gold: 0, silver: 0, bronze: 0, hm: 0, none: 0 });
-}
-for (const r of results) {
-  if (r.total == null || r.total < 0 || r.total > maxScore) continue;
-  const bucket = distBuckets[r.total];
-  const award = (r.award || "").toLowerCase();
-  if (award.includes("gold")) bucket.gold++;
-  else if (award.includes("silver")) bucket.silver++;
-  else if (award.includes("bronze")) bucket.bronze++;
-  else if (award.includes("honourable") || award.includes("hm")) bucket.hm++;
-  else bucket.none++;
-}
+const distBuckets = buildDistBuckets(results);
 const chartData = JSON.stringify(distBuckets);
 const chartColorsJson = JSON.stringify(CHART_COLORS);
 const stackedBarOrderJson = JSON.stringify(STACKED_BAR_ORDER);
 const yearNum = Number(year);
-const prevYear = timeline.find(t => t.year === yearNum - 1);
-const nextYear = timeline.find(t => t.year === yearNum + 1);
+const sortedYears = timeline.map(t => t.year).sort((a, b) => a - b);
+const prevYear = timeline.find(t => t.year === sortedYears.filter(y => y < yearNum).pop());
+const nextYear = timeline.find(t => t.year === sortedYears.find(y => y > yearNum));
 
 const firstRow = stats ? Object.values(stats.problems)[0] : undefined;
 const problemKeys = firstRow ? Object.keys(firstRow).sort() : [];
@@ -47,6 +36,83 @@ const allRows = stats ? Object.entries(stats.problems) : [];
 const distributionRows = allRows.filter(([label]) => label.startsWith("Num("));
 const summaryRows = allRows.filter(([label]) => label.startsWith("Mean(") || label.startsWith("Max(") || label.startsWith("\u03c3("));
 const correlationRows = allRows.filter(([label]) => label.startsWith("Corr("));
+
+// Build per-problem score distribution for the bar chart
+// { p1: [{score:0,count:60},{score:1,count:26},...], p2: [...], ... }
+const problemDistData: Record<string, {score:number, count:number}[]> = {};
+for (const key of problemKeys) {
+  const buckets: {score:number, count:number}[] = [];
+  for (const [label, values] of distributionRows) {
+    const m = label.match(/Num\(\s*P#\s*=\s*(\d+)\s*\)/);
+    if (m) {
+      buckets.push({ score: parseInt(m[1], 10), count: parseInt(values[key] || "0", 10) || 0 });
+    }
+  }
+  buckets.sort((a, b) => a.score - b.score);
+  if (buckets.length > 0) problemDistData[key] = buckets;
+}
+const problemDistJson = JSON.stringify(problemDistData);
+const problemLabels = problemKeys.map(k => k.toUpperCase());
+const problemLabelsJson = JSON.stringify(problemLabels);
+const problemKeysJson = JSON.stringify(problemKeys);
+
+// Day 1 vs Day 2 scatter data (only for 6-problem years)
+const hasSixProblems = problemKeys.length === 6 && !problemKeys.includes('p7');
+interface DayPoint {
+  name: string;
+  award: string;
+  day1: number;
+  day2: number;
+  day1rank: number;
+  day2rank: number;
+}
+let dayPoints: DayPoint[] = [];
+let dayScoreCorr = 0;
+let dayRankCorr = 0;
+if (hasSixProblems && results.length > 0) {
+  const raw = results
+    .filter((r: any) => r.p1 != null && r.p2 != null && r.p3 != null && r.p4 != null && r.p5 != null && r.p6 != null)
+    .map((r: any) => ({
+      name: r.name as string,
+      award: r.award as string,
+      day1: (r.p1 as number) + (r.p2 as number) + (r.p3 as number),
+      day2: (r.p4 as number) + (r.p5 as number) + (r.p6 as number),
+      day1rank: 0,
+      day2rank: 0,
+    }));
+  // Compute ranks for each day (1-based, dense)
+  const byDay1 = [...raw].sort((a, b) => b.day1 - a.day1);
+  const byDay2 = [...raw].sort((a, b) => b.day2 - a.day2);
+  const assignRanks = (sorted: typeof raw, key: 'day1rank' | 'day2rank', scoreKey: 'day1' | 'day2') => {
+    let rank = 1;
+    for (let i = 0; i < sorted.length; i++) {
+      if (i > 0 && sorted[i][scoreKey] < sorted[i - 1][scoreKey]) rank = i + 1;
+      sorted[i][key] = rank;
+    }
+  };
+  assignRanks(byDay1, 'day1rank', 'day1');
+  assignRanks(byDay2, 'day2rank', 'day2');
+  dayPoints = raw;
+  // Pearson correlation helper
+  const pearson = (xs: number[], ys: number[]) => {
+    const n = xs.length;
+    if (n < 2) return 0;
+    const mx = xs.reduce((a, b) => a + b, 0) / n;
+    const my = ys.reduce((a, b) => a + b, 0) / n;
+    let num = 0, dx2 = 0, dy2 = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - mx, dy = ys[i] - my;
+      num += dx * dy; dx2 += dx * dx; dy2 += dy * dy;
+    }
+    const denom = Math.sqrt(dx2 * dy2);
+    return denom === 0 ? 0 : num / denom;
+  };
+  dayScoreCorr = pearson(raw.map(r => r.day1), raw.map(r => r.day2));
+  dayRankCorr = pearson(raw.map(r => r.day1rank), raw.map(r => r.day2rank));
+}
+const dayPointsJson = JSON.stringify(dayPoints);
+const dayScoreCorrVal = 'r = ' + dayScoreCorr.toFixed(3) + ', r\u00B2 = ' + (dayScoreCorr * dayScoreCorr).toFixed(3);
+const dayRankCorrVal = 'r = ' + dayRankCorr.toFixed(3) + ', r\u00B2 = ' + (dayRankCorr * dayRankCorr).toFixed(3);
 
 interface Section {
   title: string;
@@ -62,12 +128,7 @@ const sections: Section[] = [
 
 <Layout title={`IMO ${year} - Statistics`} description={`Score distribution statistics for the ${year} International Mathematical Olympiad. Problem-by-problem analysis.`} path={`/year_statistics.aspx?year=${year}`}>
   <div class="page-content">
-    <PageHeader title={`IMO ${year} — Statistics`} navItems={[
-      { label: "Overview", href: `/year_info.aspx?year=${year}` },
-      { label: "Country Results", href: `/year_country_r.aspx?year=${year}` },
-      { label: "Individual Results", href: `/year_individual_r.aspx?year=${year}` },
-      { label: "Statistics", href: `/year_statistics.aspx?year=${year}` },
-    ]} currentPath={`/year_statistics.aspx?year=${year}`}
+    <PageHeader title={`IMO ${year} — Statistics`} navItems={yearNavItems(year)} currentPath={`/year_statistics.aspx?year=${year}`}
       prevHref={prevYear ? `/year_statistics.aspx?year=${prevYear.year}` : undefined}
       nextHref={nextYear ? `/year_statistics.aspx?year=${nextYear.year}` : undefined}
     />
@@ -78,13 +139,54 @@ const sections: Section[] = [
         <div class="chart-wrapper">
           <canvas id="dist-chart" width="700" height="320"></canvas>
         </div>
-        <div class="chart-legend">
-          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.gold}`}></span>Gold medal</span>
-          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.silver}`}></span>Silver medal</span>
-          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.bronze}`}></span>Bronze medal</span>
-          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.hm}`}></span>Honourable mention</span>
-          <span class="legend-item"><span class="legend-swatch" style={`background:${CHART_COLORS.none}`}></span>Nothing</span>
+        <ChartLegend items={[
+          { color: CHART_COLORS.gold, label: "Gold medal" },
+          { color: CHART_COLORS.silver, label: "Silver medal" },
+          { color: CHART_COLORS.bronze, label: "Bronze medal" },
+          { color: CHART_COLORS.hm, label: "Honourable mention" },
+          { color: CHART_COLORS.none, label: "Nothing" },
+        ]} />
+      </div>
+    )}
+
+    {stats && problemKeys.length > 0 && Object.keys(problemDistData).length > 0 && (
+      <div class="stats-section">
+        <h3>Per-Problem Score Distribution</h3>
+        <div class="problem-picker" id="problem-picker">
+          {problemKeys.map((k, i) => (
+            <button class:list={["problem-pill", { active: i === 0 }]} data-problem={k}>{problemLabels[i]}</button>
+          ))}
         </div>
+        <div class="chart-wrapper">
+          <canvas id="problem-dist-chart" width="700" height="300"></canvas>
+        </div>
+      </div>
+    )}
+
+    {dayPoints.length > 0 && (
+      <div class="stats-section">
+        <h3>Day 1 vs Day 2</h3>
+        <div class="scatter-grid">
+          <div class="scatter-cell">
+            <div class="scatter-corr">{dayScoreCorrVal}</div>
+            <div class="chart-wrapper">
+              <canvas id="day-score-scatter" width="400" height="400"></canvas>
+            </div>
+          </div>
+          <div class="scatter-cell">
+            <div class="scatter-corr">{dayRankCorrVal}</div>
+            <div class="chart-wrapper">
+              <canvas id="day-rank-scatter" width="400" height="400"></canvas>
+            </div>
+          </div>
+        </div>
+        <ChartLegend items={[
+          { color: CHART_COLORS.gold, label: "Gold" },
+          { color: CHART_COLORS.silver, label: "Silver" },
+          { color: CHART_COLORS.bronze, label: "Bronze" },
+          { color: CHART_COLORS.hm, label: "HM" },
+          { color: CHART_COLORS.none, label: "None" },
+        ]} />
       </div>
     )}
 
@@ -122,137 +224,148 @@ const sections: Section[] = [
   </div>
 </Layout>
 
-<script define:vars={{ chartData, chartColorsJson, stackedBarOrderJson }}>
+<script is:inline define:vars={{ chartData, chartColorsJson, stackedBarOrderJson, problemDistJson, problemKeysJson, problemLabelsJson, dayPointsJson, dayScoreCorrVal, dayRankCorrVal }}>
+var CC = JSON.parse(chartColorsJson);
+var colors = JSON.parse(stackedBarOrderJson);
+var problemDist = JSON.parse(problemDistJson);
+var problemKeys = JSON.parse(problemKeysJson);
+var problemLabels = JSON.parse(problemLabelsJson);
+var dayPts = JSON.parse(dayPointsJson);
+var activeProblem = problemKeys.length > 0 ? problemKeys[0] : null;
+
 function drawStatsDistChart() {
-  const data = JSON.parse(chartData);
-  const canvas = document.getElementById('dist-chart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  const W = 700, H = 320;
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(dpr, dpr);
+  drawDistChart('dist-chart', JSON.parse(chartData), colors, CC);
+}
 
-  const pad = { top: 30, right: 16, bottom: 36, left: 40 };
-  const cw = W - pad.left - pad.right;
-  const ch = H - pad.top - pad.bottom;
-
-  const maxTotal = data.reduce((m, d) =>
-    Math.max(m, d.gold + d.silver + d.bronze + d.hm + d.none), 0);
-  const yMax = Math.ceil(maxTotal / 5) * 5 || 5;
-  const barW = cw / data.length;
-  const gap = Math.max(1, barW * 0.15);
-
-  const CC = JSON.parse(chartColorsJson);
-  const colors = JSON.parse(stackedBarOrderJson);
-
-  ctx.fillStyle = CC.bg;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.strokeStyle = CC.grid;
-  ctx.lineWidth = 0.5;
-  ctx.font = '11px system-ui, sans-serif';
-  ctx.fillStyle = CC.label;
-  ctx.textAlign = 'right';
-  const ticks = 5;
-  for (let i = 0; i <= ticks; i++) {
-    const v = Math.round(yMax * i / ticks);
-    const y = pad.top + ch - (v / yMax) * ch;
+function drawProblemDistChart() {
+  if (!activeProblem || !problemDist[activeProblem]) return;
+  var data = problemDist[activeProblem];
+  var idx = problemKeys.indexOf(activeProblem);
+  var label = idx >= 0 ? problemLabels[idx] : activeProblem.toUpperCase();
+  var H = 300;
+  var pad = { top: 30, right: 16, bottom: 36, left: 44 };
+  var c = chartSetup('problem-dist-chart', CC, 0, H, pad);
+  if (!c) return;
+  var ctx = c.ctx, canvas = c.canvas;
+  var cw = c.cw, ch = c.ch, W = c.W;
+  var maxCount = data.reduce(function(m, d) { return Math.max(m, d.count); }, 0);
+  var yMax = Math.ceil(maxCount / 5) * 5 || 5;
+  var barW = cw / data.length;
+  var gap = Math.max(2, barW * 0.2);
+  drawYGrid(ctx, CC, pad, W, ch, yMax);
+  // Draw bars
+  var barColor = '#3b82f6';
+  for (var i = 0; i < data.length; i++) {
+    var d = data[i];
+    if (!d.count) continue;
+    var x = pad.left + i * barW + gap / 2;
+    var bw = barW - gap;
+    var h = (d.count / yMax) * ch;
+    var y = pad.top + ch - h;
+    ctx.fillStyle = barColor;
     ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(W - pad.right, y);
-    ctx.stroke();
-    ctx.fillText(String(v), pad.left - 6, y + 4);
-  }
-
-  for (let i = 0; i < data.length; i++) {
-    const d = data[i];
-    const x = pad.left + i * barW + gap / 2;
-    const bw = barW - gap;
-    let y = pad.top + ch;
-    for (const c of colors) {
-      const val = d[c.key];
-      if (!val) continue;
-      const h = (val / yMax) * ch;
-      y -= h;
-      ctx.fillStyle = c.color;
-      ctx.fillRect(x, y, bw, h);
+    var r = Math.min(3, bw / 2, h);
+    if (r > 0 && h > r) {
+      ctx.moveTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.arcTo(x + bw, y, x + bw, y + r, r);
+      ctx.lineTo(x + bw, pad.top + ch);
+      ctx.lineTo(x, pad.top + ch);
+    } else {
+      ctx.rect(x, y, bw, h);
     }
-
-    if (i % 5 === 0 || i === data.length - 1) {
+    ctx.fill();
+    // Count label above bar
+    if (d.count > 0) {
       ctx.fillStyle = CC.label;
+      ctx.font = '11px system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(String(d.score),
-        x + bw / 2, pad.top + ch + 16);
+      ctx.fillText(String(d.count), x + bw / 2, y - 4);
     }
   }
-
-  ctx.fillStyle = CC.title;
-  ctx.font = 'bold 13px system-ui, sans-serif';
+  // X-axis labels (score values)
+  ctx.fillStyle = CC.label;
+  ctx.font = '11px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('Total Score', W / 2, H - 4);
-
-  const existing = canvas.parentElement.querySelector('.chart-tooltip');
-  if (existing) existing.remove();
-  const tip = document.createElement('div');
-  tip.className = 'chart-tooltip';
-  canvas.parentElement.appendChild(tip);
-  let lastIdx = -1;
-  canvas.addEventListener('mousemove', function(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mx = (e.clientX - rect.left) * (W / rect.width);
-    const my = (e.clientY - rect.top) * (H / rect.height);
-    const idx = Math.floor((mx - pad.left) / barW);
-    if (idx < 0 || idx >= data.length || my > pad.top + ch) {
-      tip.classList.remove('visible'); lastIdx = -1; return;
+  for (var i = 0; i < data.length; i++) {
+    var x = pad.left + i * barW + gap / 2 + (barW - gap) / 2;
+    ctx.fillText(String(data[i].score), x, pad.top + ch + 16);
+  }
+  ctx.fillText('Score', W / 2, H - 4);
+  drawTitle(ctx, CC, label + ' — Score Distribution', W, pad);
+  // Tooltip
+  setupTooltip(canvas, data, W, H, pad, ch, {
+    getIdx: barGetIdx(pad, barW),
+    isHidden: function(my, idx) {
+      var d = data[idx];
+      return !d.count || my < pad.top + ch - (d.count / yMax) * ch;
+    },
+    getHtml: function(d) {
+      var pct = maxCount > 0 ? (d.count / data.reduce(function(s, b) { return s + b.count; }, 0) * 100).toFixed(1) : '0';
+      return '<b>Score ' + d.score + '</b><br>' + d.count + ' contestant' + (d.count === 1 ? '' : 's') + ' (' + pct + '%)';
     }
-    const d0 = data[idx];
-    const barTotal = d0.gold + d0.silver + d0.bronze + d0.hm + d0.none;
-    const barTopY = pad.top + ch - (barTotal / yMax) * ch;
-    if (my < barTopY) {
-      tip.classList.remove('visible'); lastIdx = -1; return;
-    }
-    const ox = canvas.offsetLeft;
-    const oy = canvas.offsetTop;
-    const curX = e.clientX - rect.left;
-    const wrapW = canvas.parentElement.offsetWidth;
-    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
-    const ty = oy + (e.clientY - rect.top) - 10;
-    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
-    if (idx === lastIdx) {
-      tip.style.left = tx + 'px';
-      tip.style.top = ty + 'px';
-      return;
-    }
-    lastIdx = idx;
-    const d = data[idx];
-    const total = d.gold + d.silver + d.bronze + d.hm + d.none;
-    let html = '<b>Score ' + d.score + '</b> (' + total + ' contestants)<br>';
-    if (d.gold) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.gold + '"></span>Gold: ' + d.gold + '</div>';
-    if (d.silver) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.silver + '"></span>Silver: ' + d.silver + '</div>';
-    if (d.bronze) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.bronze + '"></span>Bronze: ' + d.bronze + '</div>';
-    if (d.hm) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.hm + '"></span>HM: ' + d.hm + '</div>';
-    if (d.none) html += '<div class="chart-tooltip-row"><span class="chart-tooltip-swatch" style="background:' + CC.none + '"></span>None: ' + d.none + '</div>';
-    tip.innerHTML = html;
-    tip.classList.add('visible');
-    tip.style.left = tx + 'px';
-    tip.style.top = ty + 'px';
-  });
-  canvas.addEventListener('mouseleave', function() {
-    tip.classList.remove('visible'); lastIdx = -1;
   });
 }
-drawStatsDistChart();
-document.addEventListener('astro:page-load', drawStatsDistChart);
+
+var _yearStatsAC = null;
+function initProblemPicker() {
+  if (_yearStatsAC) _yearStatsAC.abort();
+  _yearStatsAC = new AbortController();
+  var signal = _yearStatsAC.signal;
+  var picker = document.getElementById('problem-picker');
+  if (!picker) return;
+  var btns = picker.querySelectorAll('.problem-pill');
+  btns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      btns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      activeProblem = btn.getAttribute('data-problem');
+      drawProblemDistChart();
+    }, { signal: signal });
+  });
+}
+
+
+function drawDayScatters() {
+  if (!dayPts.length) return;
+  var maxRank = dayPts.reduce(function(m, d) {
+    return Math.max(m, d.day1rank, d.day2rank);
+  }, 1);
+  var dayTooltip = function(pt) {
+    var d = pt.d;
+    return '<b>' + d.name + '</b><br>'
+      + 'Day 1: ' + d.day1 + ' (Rank ' + d.day1rank + ')<br>'
+      + 'Day 2: ' + d.day2 + ' (Rank ' + d.day2rank + ')<br>'
+      + '<span style="color:' + awardColor(d.award, CC) + '">\u25CF</span> ' + (d.award || 'None');
+  };
+  drawScatterPlot('day-score-scatter', dayPts.slice(), 'day1', 'day2',
+    'Day 1 Score', 'Day 2 Score',
+    'Day 1 vs Day 2 \u2014 Scores', CC,
+    { xMin: 0, xMax: 21, yMin: 0, yMax: 21, xTicks: 3, yTicks: 3, groupMode: 'jitter', getHtml: dayTooltip });
+  drawScatterPlot('day-rank-scatter', dayPts.slice(), 'day1rank', 'day2rank',
+    'Day 1 Rank', 'Day 2 Rank',
+    'Day 1 vs Day 2 \u2014 Ranks', CC,
+    { xMin: 1, xMax: maxRank, yMin: 1, yMax: maxRank, invertX: true, invertY: true, groupMode: 'jitter', getHtml: dayTooltip });
+}
+
+function drawAllStatsCharts() {
+  drawStatsDistChart();
+  drawProblemDistChart();
+  initProblemPicker();
+  drawDayScatters();
+}
+drawAllStatsCharts();
+if (!window._yearStatsPageLoadBound) {
+  window._yearStatsPageLoadBound = true;
+  document.addEventListener('astro:page-load', drawAllStatsCharts);
+}
 </script>
 
 <style>
   .stats-table .stat-label {
     white-space: nowrap;
     font-weight: 500;
+    text-transform: none;
   }
   .stats-table td.text-center,
   .stats-table th.text-center {

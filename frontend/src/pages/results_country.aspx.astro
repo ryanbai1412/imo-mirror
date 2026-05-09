@@ -1,13 +1,16 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
 import { loadResultsCountry, isIndividualContestant } from "../utils/data";
-import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { resultsNavItems } from "../utils/nav";
+import { sortData, parseSortParams } from "../utils/sort";
+import SortableTableHead from "../components/SortableTableHead.astro";
 
 const origin = Astro.url.origin;
 const rawCountryData = await loadResultsCountry(origin);
 const countryData = rawCountryData.filter(r => !isIndividualContestant(r.code));
 const { column, order } = parseSortParams(Astro.url.searchParams);
-const sorted = column ? sortData(countryData, column, order) : countryData;
+const sorted = column ? sortData(countryData, column, order) : sortData(countryData, "gold", "desc");
 
 const cols = [
   { key: "code", label: "Code" },
@@ -26,18 +29,11 @@ const cols = [
 
 <Layout title="Results by Country" description="Comprehensive IMO results by country. Medal counts, participation history, and contestant statistics for all participating nations." path="/results_country.aspx">
   <div class="page-content">
-    <h2>Results by Country</h2>
+    <PageHeader title="Results by Country" navItems={resultsNavItems} currentPath="/results_country.aspx" />
+
     <div class="table-container">
       <table class="data-table">
-        <thead>
-          <tr>
-            {cols.map(col => (
-              <th class:list={[col.align === "center" && "text-center", "sortable-header"]} title={col.title}>
-                <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
-              </th>
-            ))}
-          </tr>
-        </thead>
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
         <tbody>
           {sorted.map((row) => (
             <tr>

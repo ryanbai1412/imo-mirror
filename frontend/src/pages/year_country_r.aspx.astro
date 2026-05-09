@@ -1,25 +1,26 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
-import { loadCountryResultsByYear, loadYearInfo, loadTimeline } from "../utils/data";
-import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { loadCountryResultsByYear, loadTimeline } from "../utils/data";
+import { sortData, parseSortParams } from "../utils/sort";
 import { CHART_COLORS } from "../utils/chartColors";
+import { yearNavItems } from "../utils/nav";
+import SortableTableHead from "../components/SortableTableHead.astro";
 
 const origin = Astro.url.origin;
 const year = Astro.url.searchParams.get("year") || "";
-if (!year) return Astro.redirect("/results.aspx");
+if (!year) return Astro.redirect("/results_year.aspx");
 
-const [countryResults, yearInfoMap, timeline] = await Promise.all([
+const [countryResults, timeline] = await Promise.all([
   loadCountryResultsByYear(origin),
-  loadYearInfo(origin),
   loadTimeline(origin),
 ]);
 
 const results = countryResults[year] || [];
-const info = yearInfoMap[year];
 const yearNum = Number(year);
-const prevYear = timeline.find(t => t.year === yearNum - 1);
-const nextYear = timeline.find(t => t.year === yearNum + 1);
+const sortedYears = timeline.map(t => t.year).sort((a, b) => a - b);
+const prevYear = timeline.find(t => t.year === sortedYears.filter(y => y < yearNum).pop());
+const nextYear = timeline.find(t => t.year === sortedYears.find(y => y > yearNum));
 const { column, order } = parseSortParams(Astro.url.searchParams);
 const sorted = column ? sortData(results, column, order) : results;
 
@@ -27,19 +28,28 @@ const binSize = 10;
 const maxPossible = 252;
 const numBins = Math.ceil(maxPossible / binSize) + 1;
 const countryBins: number[] = Array(numBins).fill(0);
+const binRanks: { min: number; max: number }[] = Array.from({ length: numBins }, () => ({ min: Infinity, max: -Infinity }));
 for (const r of results) {
   if (r.total == null) continue;
   const bin = Math.min(Math.floor(r.total / binSize), numBins - 1);
   countryBins[bin]++;
+  if (r.rank != null) {
+    binRanks[bin].min = Math.min(binRanks[bin].min, r.rank);
+    binRanks[bin].max = Math.max(binRanks[bin].max, r.rank);
+  }
 }
 const countryDistData = JSON.stringify(
   countryBins.map((count, i) => ({
     label: `${i * binSize}–${i * binSize + binSize - 1}`,
     lo: i * binSize,
     count,
+    rankMin: binRanks[i].min === Infinity ? null : binRanks[i].min,
+    rankMax: binRanks[i].max === -Infinity ? null : binRanks[i].max,
   }))
 );
 const chartColorsJson = JSON.stringify(CHART_COLORS);
+
+const hasP7 = results.some(r => r.p7 != null);
 
 const cols = [
   { key: "rank", label: "Rank", align: "center" },
@@ -52,6 +62,7 @@ const cols = [
   { key: "p4", label: "P4", title: "Problem 4", align: "center", defaultOrder: "desc" as const },
   { key: "p5", label: "P5", title: "Problem 5", align: "center", defaultOrder: "desc" as const },
   { key: "p6", label: "P6", title: "Problem 6", align: "center", defaultOrder: "desc" as const },
+  ...(hasP7 ? [{ key: "p7", label: "P7", title: "Problem 7", align: "center", defaultOrder: "desc" as const }] : []),
   { key: "total", label: "Total", align: "center", defaultOrder: "desc" as const },
   { key: "awards_gold", label: "G", title: "Gold medals", align: "center", defaultOrder: "desc" as const },
   { key: "awards_silver", label: "S", title: "Silver medals", align: "center", defaultOrder: "desc" as const },
@@ -64,12 +75,7 @@ const cols = [
 
 <Layout title={`IMO ${year} - Country Results`} description={`Country results for the ${year} International Mathematical Olympiad. Rankings, scores, and medal counts for all participating countries.`} path={`/year_country_r.aspx?year=${year}`}>
   <div class="page-content">
-    <PageHeader title={`IMO ${year} — Country Results`} navItems={[
-      { label: "Overview", href: `/year_info.aspx?year=${year}` },
-      { label: "Country Results", href: `/year_country_r.aspx?year=${year}` },
-      { label: "Individual Results", href: `/year_individual_r.aspx?year=${year}` },
-      { label: "Statistics", href: `/year_statistics.aspx?year=${year}` },
-    ]} currentPath={`/year_country_r.aspx?year=${year}`}
+    <PageHeader title={`IMO ${year} — Country Results`} navItems={yearNavItems(year)} currentPath={`/year_country_r.aspx?year=${year}`}
       prevHref={prevYear ? `/year_country_r.aspx?year=${prevYear.year}` : undefined}
       nextHref={nextYear ? `/year_country_r.aspx?year=${nextYear.year}` : undefined}
     />
@@ -85,21 +91,13 @@ const cols = [
 
     <div class="table-container">
       <table class="data-table">
-        <thead>
-          <tr>
-            {cols.map(col => (
-              <th class:list={[col.align === "center" && "text-center", "sortable-header"]} title={col.title}>
-                <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
-              </th>
-            ))}
-          </tr>
-        </thead>
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
         <tbody>
           {sorted.map((row) => (
             <tr>
               <td class="text-center">{row.rank ?? ""}</td>
-              <td><a href={`/country_info.aspx?code=${row.code}`}>{row.country}</a></td>
-              <td><a href={`/country_info.aspx?code=${row.code}`}>{row.code}</a></td>
+              <td><a href={`/team_r.aspx?code=${row.code}&year=${year}`}>{row.country}</a></td>
+              <td><a href={`/team_r.aspx?code=${row.code}&year=${year}`}>{row.code}</a></td>
               <td class="text-center">{row.team_size_all ?? ""}</td>
               <td class="text-center">{row.p1 ?? ""}</td>
               <td class="text-center">{row.p2 ?? ""}</td>
@@ -107,6 +105,7 @@ const cols = [
               <td class="text-center">{row.p4 ?? ""}</td>
               <td class="text-center">{row.p5 ?? ""}</td>
               <td class="text-center">{row.p6 ?? ""}</td>
+              {hasP7 && <td class="text-center">{row.p7 ?? ""}</td>}
               <td class="text-center">{row.total ?? ""}</td>
               <td class="text-center">{row.awards_gold ? <span class="award-gold-medal">{row.awards_gold}</span> : ""}</td>
               <td class="text-center">{row.awards_silver ? <span class="award-silver-medal">{row.awards_silver}</span> : ""}</td>
@@ -122,122 +121,52 @@ const cols = [
   </div>
 </Layout>
 
-<script define:vars={{ countryDistData, year, chartColorsJson }}>
+<script is:inline define:vars={{ countryDistData, year, chartColorsJson }}>
+var CC = JSON.parse(chartColorsJson);
 function drawCountryDistChart() {
-  const data = JSON.parse(countryDistData);
-  const canvas = document.getElementById('country-dist-chart');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  const W = 700, H = 320;
-  canvas.width = W * dpr;
-  canvas.height = H * dpr;
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  ctx.scale(dpr, dpr);
-
-  const pad = { top: 30, right: 16, bottom: 48, left: 40 };
-  const cw = W - pad.left - pad.right;
-  const ch = H - pad.top - pad.bottom;
-
-  const last = data.findLastIndex(d => d.count > 0);
-  const visible = data.slice(0, Math.max(last + 2, 10));
-
-  const maxCount = visible.reduce((m, d) => Math.max(m, d.count), 0);
-  const yMax = Math.ceil(maxCount / 5) * 5 || 5;
-  const barW = cw / visible.length;
-  const gap = Math.max(1, barW * 0.15);
-
-  const CC = JSON.parse(chartColorsJson);
-
-  ctx.fillStyle = CC.bg;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.strokeStyle = CC.grid;
-  ctx.lineWidth = 0.5;
-  ctx.font = '11px system-ui, sans-serif';
-  ctx.fillStyle = CC.label;
-  ctx.textAlign = 'right';
-  const ticks = 5;
-  for (let i = 0; i <= ticks; i++) {
-    const v = Math.round(yMax * i / ticks);
-    const y = pad.top + ch - (v / yMax) * ch;
-    ctx.beginPath();
-    ctx.moveTo(pad.left, y);
-    ctx.lineTo(W - pad.right, y);
-    ctx.stroke();
-    ctx.fillText(String(v), pad.left - 6, y + 4);
-  }
-
-  for (let i = 0; i < visible.length; i++) {
-    const d = visible[i];
-    const x = pad.left + i * barW + gap / 2;
-    const bw = barW - gap;
+  var data = JSON.parse(countryDistData);
+  var pad = { top: 30, right: 16, bottom: 48, left: 40 };
+  var c = chartSetup('country-dist-chart', CC, 0, 320, pad);
+  if (!c) return;
+  var ctx = c.ctx, canvas = c.canvas, cw = c.cw, ch = c.ch, W = c.W, H = c.H;
+  var last = data.findLastIndex(function(d) { return d.count > 0; });
+  var visible = data.slice(0, Math.max(last + 2, 10));
+  var maxCount = visible.reduce(function(m, d) { return Math.max(m, d.count); }, 0);
+  var yMax = Math.ceil(maxCount / 5) * 5 || 5;
+  var barW = cw / visible.length;
+  var gap = Math.max(1, barW * 0.15);
+  drawYGrid(ctx, CC, pad, W, ch, yMax);
+  for (var i = 0; i < visible.length; i++) {
+    var d = visible[i];
+    var x = pad.left + i * barW + gap / 2;
+    var bw = barW - gap;
     if (d.count > 0) {
-      const h = (d.count / yMax) * ch;
+      var h = (d.count / yMax) * ch;
       ctx.fillStyle = CC.line;
       ctx.fillRect(x, pad.top + ch - h, bw, h);
     }
     ctx.fillStyle = CC.label;
     ctx.textAlign = 'center';
     ctx.font = '10px system-ui, sans-serif';
-    ctx.fillText(String(d.lo),
-      x + bw / 2, pad.top + ch + 14);
+    ctx.fillText(String(d.lo), x + bw / 2, pad.top + ch + 14);
   }
-
-  ctx.fillStyle = CC.title;
-  ctx.font = 'bold 13px system-ui, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Country total score — IMO ' + year,
-    W / 2, pad.top - 10);
+  drawTitle(ctx, CC, 'Country total score \u2014 IMO ' + year, W, pad);
   ctx.font = '11px system-ui, sans-serif';
   ctx.fillStyle = CC.label;
   ctx.fillText('Total Score', W / 2, H - 4);
-
-  const existing = canvas.parentElement.querySelector('.chart-tooltip');
-  if (existing) existing.remove();
-  const tip = document.createElement('div');
-  tip.className = 'chart-tooltip';
-  canvas.parentElement.appendChild(tip);
-  let lastIdx = -1;
-  canvas.addEventListener('mousemove', function(e) {
-    const rect = canvas.getBoundingClientRect();
-    const mx = (e.clientX - rect.left) * (W / rect.width);
-    const my = (e.clientY - rect.top) * (H / rect.height);
-    const idx = Math.floor((mx - pad.left) / barW);
-    if (idx < 0 || idx >= visible.length || my > pad.top + ch) {
-      tip.classList.remove('visible'); lastIdx = -1; return;
+  setupTooltip(canvas, visible, W, H, pad, ch, {
+    getIdx: barGetIdx(pad, barW),
+    isHidden: function(my, idx) {
+      var d0 = visible[idx];
+      if (!d0.count) return true;
+      return my < pad.top + ch - (d0.count / yMax) * ch;
+    },
+    getHtml: function(d) {
+      var html = '<b>' + d.label + ' pts</b><br>' + d.count + (d.count === 1 ? ' country' : ' countries');
+      var rl = rankLabel(d.rankMin, d.rankMax);
+      if (rl) html += '<br>' + rl;
+      return html;
     }
-    const d0 = visible[idx];
-    if (!d0.count) {
-      tip.classList.remove('visible'); lastIdx = -1; return;
-    }
-    const barH = (d0.count / yMax) * ch;
-    if (my < pad.top + ch - barH) {
-      tip.classList.remove('visible'); lastIdx = -1; return;
-    }
-    const ox = canvas.offsetLeft;
-    const oy = canvas.offsetTop;
-    const curX = e.clientX - rect.left;
-    const wrapW = canvas.parentElement.offsetWidth;
-    const tx = (ox + curX + 160 > wrapW) ? ox + curX - 12 : ox + curX + 12;
-    const ty = oy + (e.clientY - rect.top) - 10;
-    tip.style.transform = (ox + curX + 160 > wrapW) ? 'translateX(-100%)' : '';
-    if (idx === lastIdx) {
-      tip.style.left = tx + 'px';
-      tip.style.top = ty + 'px';
-      return;
-    }
-    lastIdx = idx;
-    const d = visible[idx];
-    tip.innerHTML = '<b>' + d.label + ' pts</b><br>'
-      + d.count + ' countries';
-    tip.classList.add('visible');
-    tip.style.left = tx + 'px';
-    tip.style.top = ty + 'px';
-  });
-  canvas.addEventListener('mouseleave', function() {
-    tip.classList.remove('visible'); lastIdx = -1;
   });
 }
 drawCountryDistChart();

@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import PageHeader from "../components/PageHeader.astro";
 import { loadResultsMatrix, loadTimeline, isIndividualContestant } from "../utils/data";
+import { resultsNavItems } from "../utils/nav";
 
 const origin = Astro.url.origin;
 const [matrix, timeline] = await Promise.all([
@@ -21,11 +22,7 @@ const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
 
 <Layout title="Results Matrix" description="Visual matrix of IMO country rankings across all years. Quick overview of every country's performance history." path="/results_matrix.aspx">
   <div class="page-content">
-    <PageHeader title="Results Matrix" navItems={[
-      { label: "By Country", href: "/results.aspx" },
-      { label: "By Year", href: "/results.aspx?view=year" },
-      { label: "Results Matrix", href: "/results_matrix.aspx" },
-    ]} currentPath="/results_matrix.aspx" />
+    <PageHeader title="Results Matrix" navItems={resultsNavItems} currentPath="/results_matrix.aspx" />
 
     <div class="matrix-container">
       <table class="data-table matrix-table">

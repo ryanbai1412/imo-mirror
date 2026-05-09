@@ -1,15 +1,23 @@
 ---
 // Command Palette (Cmd+K) - Global search across countries, contestants, and pages
+import { Globe, User, Calendar, FileText, Search as SearchIcon, ChevronRight } from "lucide-static";
+import { resizeSvg } from "../utils/svgResize";
+
+const iconMap = {
+  country: resizeSvg(Globe, 15),
+  person: resizeSvg(User, 15),
+  year: resizeSvg(Calendar, 15),
+  page: resizeSvg(FileText, 15),
+  arrow: resizeSvg(ChevronRight, 14),
+  search: resizeSvg(SearchIcon, 18),
+};
 ---
 
 <div id="cmd-palette-overlay" class="cmd-overlay" aria-hidden="true">
   <div class="cmd-backdrop"></div>
   <div class="cmd-dialog" role="dialog" aria-modal="true" aria-label="Global search">
     <div class="cmd-input-wrapper">
-      <svg class="cmd-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
+      <span class="cmd-search-icon" set:html={iconMap.search} />
       <input
         id="cmd-input"
         type="text"
@@ -26,6 +34,7 @@
     </div>
   </div>
 </div>
+<script is:inline id="cmd-icon-data" type="application/json" set:html={JSON.stringify(iconMap)} />
 
 <style is:global>
   .cmd-overlay {
@@ -47,7 +56,7 @@
   .cmd-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.6);
+    background: var(--backdrop);
     backdrop-filter: blur(4px);
   }
   .cmd-dialog {
@@ -55,7 +64,7 @@
     width: 100%;
     max-width: 580px;
     margin: 0 16px;
-    background: #fff;
+    background: var(--surface);
     border-radius: 12px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
     overflow: hidden;
@@ -70,32 +79,32 @@
     align-items: center;
     gap: 10px;
     padding: 14px 16px;
-    border-bottom: 1px solid #e2e0db;
+    border-bottom: 1px solid var(--border);
   }
   .cmd-search-icon {
     flex-shrink: 0;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
   #cmd-input {
     flex: 1;
     border: none;
     outline: none;
     font-size: 15px;
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    color: #1e1e1e;
+    font-family: var(--font-body);
+    color: var(--text);
     background: transparent;
   }
   #cmd-input::placeholder {
-    color: #94a3b8;
+    color: var(--text-muted);
   }
   .cmd-kbd {
     flex-shrink: 0;
     padding: 2px 6px;
     font-size: 11px;
     font-family: inherit;
-    color: #64748b;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
+    color: var(--text-secondary);
+    background: var(--kbd-bg);
+    border: 1px solid var(--kbd-border);
     border-radius: 4px;
   }
   .cmd-results {
@@ -106,14 +115,14 @@
   .cmd-empty {
     padding: 32px 16px;
     text-align: center;
-    color: #94a3b8;
+    color: var(--text-muted);
     font-size: 14px;
   }
   .cmd-section-label {
     padding: 10px 14px 6px;
     font-size: 11px;
     font-weight: 600;
-    color: #94a3b8;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -124,15 +133,15 @@
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 14px;
-    color: #475569;
+    color: var(--navy-mid);
     cursor: pointer;
     text-decoration: none;
     transition: background 80ms ease;
   }
   .cmd-row:hover, .cmd-row.active {
-    background: #f1f5f9;
+    background: var(--kbd-bg);
     text-decoration: none;
-    color: #1e293b;
+    color: var(--navy-light);
   }
   .cmd-row-icon {
     width: 28px;
@@ -141,46 +150,49 @@
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    font-size: 14px;
     flex-shrink: 0;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--icon-bg);
+    border: 1px solid var(--kbd-border);
+    color: var(--text-secondary);
+  }
+  .cmd-row-icon svg {
+    width: 15px;
+    height: 15px;
   }
   .cmd-row-body {
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 8px;
   }
   .cmd-row-prefix {
     font-weight: 600;
-    color: #1e293b;
+    color: var(--navy-light);
   }
   .cmd-row-sep {
-    color: #cbd5e1;
+    color: var(--text-muted);
   }
   .cmd-row-desc {
-    color: #64748b;
+    color: var(--text-secondary);
   }
   .cmd-row-title {
     font-size: 14px;
     font-weight: 500;
-    color: #1e293b;
+    color: var(--navy-light);
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex-shrink: 0;
   }
   .cmd-row-subtitle {
     font-size: 12px;
-    color: #64748b;
+    color: var(--text-secondary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .cmd-row-arrow {
     flex-shrink: 0;
-    color: #cbd5e1;
+    color: var(--text-muted);
     font-size: 14px;
     opacity: 0;
     transition: opacity 80ms ease;
@@ -194,8 +206,8 @@
     align-items: center;
     gap: 16px;
     padding: 10px 16px;
-    border-top: 1px solid #e2e0db;
-    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    background: var(--icon-bg);
     border-radius: 0 0 12px 12px;
   }
   .cmd-footer-hint {
@@ -203,7 +215,7 @@
     align-items: center;
     gap: 4px;
     font-size: 12px;
-    color: #94a3b8;
+    color: var(--text-muted);
   }
   .cmd-footer-hint kbd {
     display: inline-flex;
@@ -214,26 +226,30 @@
     padding: 0 4px;
     font-size: 11px;
     font-family: inherit;
-    color: #64748b;
-    background: #fff;
-    border: 1px solid #e2e8f0;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--kbd-border);
     border-radius: 4px;
   }
   .cmd-icon-country {
     background: #eff6ff;
     border-color: #bfdbfe;
+    color: #3b82f6;
   }
   .cmd-icon-person {
     background: #f0fdf4;
     border-color: #bbf7d0;
+    color: #22c55e;
   }
   .cmd-icon-year {
     background: #fffbeb;
     border-color: #fde68a;
+    color: #f59e0b;
   }
   .cmd-icon-page {
     background: #f5f3ff;
     border-color: #ddd6fe;
+    color: #8b5cf6;
   }
   @media (max-width: 768px) {
     .cmd-overlay {
@@ -250,6 +266,8 @@
     subtitle: string;
     href: string;
     type: 'country' | 'person' | 'year' | 'page';
+    keywords?: string;
+    displaySuffix?: string;
   }
 
   let searchIndex: SearchItem[] | null = null;
@@ -257,21 +275,18 @@
   let activeIndex = -1;
   let abortController: AbortController | null = null;
 
+  const ICONS: Record<string, string> = JSON.parse(
+    document.getElementById('cmd-icon-data')!.textContent!
+  );
+
   const STATIC_PAGES: SearchItem[] = [
     { title: 'Timeline', subtitle: 'IMO editions by year', href: '/organizers.aspx', type: 'page' },
     { title: 'Countries', subtitle: 'All participating countries', href: '/countries.aspx', type: 'page' },
-    { title: 'Results', subtitle: 'Competition results overview', href: '/results.aspx', type: 'page' },
     { title: 'Results by Country', subtitle: 'Country-level result summaries', href: '/results_country.aspx', type: 'page' },
     { title: 'Results by Year', subtitle: 'Year-level result summaries', href: '/results_year.aspx', type: 'page' },
     { title: 'Results Matrix', subtitle: 'Country rankings across years', href: '/results_matrix.aspx', type: 'page' },
     { title: 'Hall of Fame', subtitle: 'Top IMO performers', href: '/hall.aspx', type: 'page' },
-    { title: 'Problems', subtitle: 'Problem archive by year', href: '/problems.aspx', type: 'page' },
-    { title: 'About IMO', subtitle: 'General information', href: '/general.aspx', type: 'page' },
-    { title: 'Links', subtitle: 'Related websites', href: '/links.aspx', type: 'page' },
-    { title: 'Advisory Board', subtitle: 'IMO board members', href: '/advisory.aspx', type: 'page' },
-    { title: 'Code of Ethics', subtitle: 'IMO ethics guidelines', href: '/ethics.aspx', type: 'page' },
-    { title: 'Documents', subtitle: 'Official documents', href: '/documents.aspx', type: 'page' },
-    { title: 'Search Participants', subtitle: 'Full participant search', href: '/search.aspx', type: 'page' },
+    { title: 'Statistics', subtitle: 'Cross-year IMO statistics and trends', href: '/statistics.aspx', type: 'page' },
   ];
 
   async function loadSearchIndex(): Promise<SearchItem[]> {
@@ -287,10 +302,12 @@
         ]);
 
         const countries: { code: string; name: string }[] = await countriesRes.json();
-        const participants: Record<string, { id: number; name: string; results: { year: number }[] }> = await participantsRes.json();
+        const participants: Record<string, { id: number; name: string; results: { year: number; country?: string; country_code?: string }[] }> = await participantsRes.json();
         const timeline: { year: number; country: string; city: string }[] = await timelineRes.json();
 
         const items: SearchItem[] = [...STATIC_PAGES];
+
+        const countryByCode = new Map(countries.map(c => [c.code, c.name]));
 
         for (const c of countries) {
           items.push({
@@ -298,24 +315,97 @@
             subtitle: `Country \u2022 ${c.code}`,
             href: `/country_info.aspx?code=${c.code}`,
             type: 'country',
+            keywords: c.code,
+          });
+          items.push({
+            title: `${c.name} \u2014 Individual Results`,
+            subtitle: `Country \u2022 ${c.code}`,
+            href: `/country_individual_r.aspx?code=${c.code}`,
+            type: 'country',
+            keywords: c.code + ' individual',
+          });
+          items.push({
+            title: `${c.name} \u2014 Team Results`,
+            subtitle: `Country \u2022 ${c.code}`,
+            href: `/country_team_r.aspx?code=${c.code}`,
+            type: 'country',
+            keywords: c.code + ' team',
+          });
+          items.push({
+            title: `${c.name} \u2014 Hall of Fame`,
+            subtitle: `Country \u2022 ${c.code}`,
+            href: `/country_hall.aspx?code=${c.code}`,
+            type: 'country',
+            keywords: c.code + ' hall fame',
           });
         }
 
         for (const entry of timeline) {
           if (entry.year) {
+            const y = entry.year;
+            const loc = `${entry.city ? entry.city + ', ' : ''}${entry.country}`;
             items.push({
-              title: `IMO ${entry.year}`,
-              subtitle: `${entry.city ? entry.city + ', ' : ''}${entry.country}`,
-              href: `/year_info.aspx?year=${entry.year}`,
+              title: `IMO ${y}`,
+              subtitle: loc,
+              href: `/year_info.aspx?year=${y}`,
               type: 'year',
+            });
+            items.push({
+              title: `IMO ${y} \u2014 Country Results`,
+              subtitle: loc,
+              href: `/year_country_r.aspx?year=${y}`,
+              type: 'year',
+              keywords: 'country team',
+            });
+            items.push({
+              title: `IMO ${y} \u2014 Individual Results`,
+              subtitle: loc,
+              href: `/year_individual_r.aspx?year=${y}`,
+              type: 'year',
+              keywords: 'individual',
+            });
+            items.push({
+              title: `IMO ${y} \u2014 Statistics`,
+              subtitle: loc,
+              href: `/year_statistics.aspx?year=${y}`,
+              type: 'year',
+              keywords: 'statistics stats',
             });
           }
         }
 
+        // Country @ Year entries
+        try {
+          const cbyRes = await fetch('/data/country_results_by_year.json');
+          const cbyData: Record<string, { code: string; country: string }[]> = await cbyRes.json();
+          for (const [yr, entries] of Object.entries(cbyData)) {
+            for (const e of entries) {
+              const name = countryByCode.get(e.code) || e.country || e.code;
+              items.push({
+                title: `${name} @ IMO ${yr}`,
+                subtitle: `${e.code} \u2022 ${yr}`,
+                href: `/team_r.aspx?code=${e.code}&year=${yr}`,
+                type: 'country',
+                keywords: `${e.code} ${yr}`,
+              });
+            }
+          }
+        } catch (_) {
+          // country_results_by_year not available
+        }
+
         for (const p of Object.values(participants)) {
+          const countryNames = [...new Set(
+            p.results
+              .map(r => r.country_code)
+              .filter(Boolean)
+          )];
+          const countryPart = countryNames.length
+            ? countryNames.join(', ') : '';
           items.push({
             title: p.name,
-            subtitle: `Contestant \u2022 ${p.results.length} participation${p.results.length !== 1 ? 's' : ''}`,
+            subtitle: `Contestant \u00a0\u2022\u00a0 ${p.results.length} participation${p.results.length !== 1 ? 's' : ''}`,
+            displaySuffix: countryPart,
             href: `/participant_r.aspx?id=${p.id}`,
             type: 'person',
           });
@@ -339,10 +429,14 @@
     'y:': 'year',
   };
 
+  function stripDiacritics(s: string): string {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
   function search(query: string, items: SearchItem[]): SearchItem[] {
     if (!query || query.length < 1) return [];
 
-    let q = query.toLowerCase().trim();
+    let q = stripDiacritics(query.toLowerCase().trim());
     let filterType: SearchItem['type'] | null = null;
 
     for (const [prefix, type] of Object.entries(PREFIXES)) {
@@ -361,8 +455,9 @@
     for (const item of items) {
       if (filterType && item.type !== filterType) continue;
 
-      const titleLower = item.title.toLowerCase();
-      const subtitleLower = item.subtitle.toLowerCase();
+      const titleLower = stripDiacritics(item.title.toLowerCase());
+      const subtitleLower = stripDiacritics(item.subtitle.toLowerCase());
+      const kwLower = stripDiacritics(item.keywords?.toLowerCase() || '');
 
       if (terms.length === 0) {
         scored.push({ item, score: 0 });
@@ -375,20 +470,39 @@
       for (const term of terms) {
         const inTitle = titleLower.includes(term);
         const inSubtitle = subtitleLower.includes(term);
-        if (!inTitle && !inSubtitle) {
+        const inKeywords = kwLower.includes(term);
+        if (!inTitle && !inSubtitle && !inKeywords) {
           match = false;
           break;
         }
         if (inTitle) score += 10;
         if (titleLower.startsWith(term)) score += 20;
         if (titleLower === q) score += 50;
+        if (inKeywords && kwLower === term) score += 40;
+        if (inKeywords) score += 10;
         if (inSubtitle) score += 2;
       }
 
       if (match) {
         if (item.type === 'page') score += 5;
-        if (item.type === 'country') score += 3;
-        if (item.type === 'year') score += 2;
+
+        // Bonus: all terms found in title
+        if (terms.length > 1 &&
+            terms.every(t => titleLower.includes(t))) {
+          score += 15;
+          // Extra bonus: terms appear in order in
+          // title (e.g. "2023 sta" → "IMO 2023 —
+          // Statistics")
+          let pos = 0;
+          const inOrder = terms.every(t => {
+            const i = titleLower.indexOf(t, pos);
+            if (i === -1) return false;
+            pos = i + t.length;
+            return true;
+          });
+          if (inOrder) score += 25;
+        }
+
         scored.push({ item, score });
       }
     }
@@ -406,31 +520,32 @@
     }
   }
 
-  function getIconSymbol(type: string): string {
-    switch (type) {
-      case 'country': return '\u{1F30D}';
-      case 'person': return '\u{1F464}';
-      case 'year': return '\u{1F4C5}';
-      default: return '\u{1F4C4}';
-    }
+  function getIconSvg(type: string): string {
+    return ICONS[type] || ICONS['page'] || '';
   }
 
   function renderTips(): string {
+    const arrow = ICONS['arrow'] || '';
     return `<div class="cmd-section-label">Search tips</div>
       <div class="cmd-row active" data-prefix="p:">
-        <div class="cmd-row-icon cmd-icon-person">\u{1F464}</div>
-        <div class="cmd-row-body"><span class="cmd-row-prefix">p:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search contestants</span></div>
-        <span class="cmd-row-arrow">\u2192</span>
+        <div class="cmd-row-icon cmd-icon-person">${ICONS['person']}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">p:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search people (contestants)</span></div>
+        <span class="cmd-row-arrow">${arrow}</span>
       </div>
       <div class="cmd-row" data-prefix="c:">
-        <div class="cmd-row-icon cmd-icon-country">\u{1F30D}</div>
+        <div class="cmd-row-icon cmd-icon-country">${ICONS['country']}</div>
         <div class="cmd-row-body"><span class="cmd-row-prefix">c:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search countries</span></div>
-        <span class="cmd-row-arrow">\u2192</span>
+        <span class="cmd-row-arrow">${arrow}</span>
       </div>
       <div class="cmd-row" data-prefix="y:">
-        <div class="cmd-row-icon cmd-icon-year">\u{1F4C5}</div>
+        <div class="cmd-row-icon cmd-icon-year">${ICONS['year']}</div>
         <div class="cmd-row-body"><span class="cmd-row-prefix">y:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search years</span></div>
-        <span class="cmd-row-arrow">\u2192</span>
+        <span class="cmd-row-arrow">${arrow}</span>
+      </div>
+      <div class="cmd-row" data-prefix="pg:">
+        <div class="cmd-row-icon cmd-icon-page">${ICONS['page']}</div>
+        <div class="cmd-row-body"><span class="cmd-row-prefix">pg:</span><span class="cmd-row-sep">&mdash;</span><span class="cmd-row-desc">Search pages</span></div>
+        <span class="cmd-row-arrow">${arrow}</span>
       </div>`;
   }
 
@@ -449,35 +564,16 @@
       return;
     }
 
-    const groups: Record<string, SearchItem[]> = {};
-    const order = ['page', 'country', 'year', 'person'];
-    for (const item of results) {
-      if (!groups[item.type]) groups[item.type] = [];
-      groups[item.type].push(item);
-    }
-
-    const labels: Record<string, string> = {
-      page: 'Pages',
-      country: 'Countries',
-      year: 'Years',
-      person: 'Contestants',
-    };
-
     let html = '';
-    for (const type of order) {
-      const items = groups[type];
-      if (!items) continue;
-      html += `<div class="cmd-section-label">${labels[type]}</div>`;
-      for (const item of items) {
-        html += `<a href="${escapeHtml(item.href)}" class="cmd-row" data-href="${escapeHtml(item.href)}">
-          <div class="cmd-row-icon ${getIconClass(item.type)}">${getIconSymbol(item.type)}</div>
-          <div class="cmd-row-body">
-            <div class="cmd-row-title">${escapeHtml(item.title)}</div>
-            <div class="cmd-row-subtitle">${escapeHtml(item.subtitle)}</div>
-          </div>
-          <span class="cmd-row-arrow">\u2192</span>
-        </a>`;
-      }
+    for (const item of results) {
+      html += `<a href="${escapeHtml(item.href)}" class="cmd-row" data-href="${escapeHtml(item.href)}">
+        <div class="cmd-row-icon ${getIconClass(item.type)}">${getIconSvg(item.type)}</div>
+        <div class="cmd-row-body">
+          <div class="cmd-row-title">${escapeHtml(item.title)}</div>
+          <div class="cmd-row-subtitle">${escapeHtml(item.subtitle)}${item.displaySuffix ? ' \u2022 ' + escapeHtml(item.displaySuffix) : ''}</div>
+        </div>
+        <span class="cmd-row-arrow">${ICONS['arrow'] || ''}</span>
+      </a>`;
     }
 
     container.innerHTML = html;

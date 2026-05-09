@@ -16,6 +16,7 @@ const EMAIL_RE =
 export function linkifyEmails(
   input: string
 ): TextSegment[] {
+  EMAIL_RE.lastIndex = 0;
   const segments: TextSegment[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;

@@ -2,7 +2,8 @@
 import Layout from "../layouts/Layout.astro";
 import CountryLink from "../components/CountryLink.astro";
 import { loadHallOfFame } from "../utils/data";
-import { sortData, parseSortParams, getSortUrl, sortIndicator } from "../utils/sort";
+import { sortData, parseSortParams } from "../utils/sort";
+import SortableTableHead from "../components/SortableTableHead.astro";
 
 const origin = Astro.url.origin;
 const hallOfFame = await loadHallOfFame(origin);
@@ -27,15 +28,7 @@ const cols = [
     <h2>Hall of Fame</h2>
     <div class="table-container">
       <table class="data-table">
-        <thead>
-          <tr>
-            {cols.map(col => (
-              <th class:list={[col.align === "center" && "text-center", "sortable-header"]} title={col.title}>
-                <a href={getSortUrl(Astro.url, col.key, column, order, col.defaultOrder)}>{col.label}{sortIndicator(col.key, column, order)}</a>
-              </th>
-            ))}
-          </tr>
-        </thead>
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
         <tbody>
           {sorted.map((entry) => (
             <tr>

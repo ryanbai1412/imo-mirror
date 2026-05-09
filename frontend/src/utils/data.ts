@@ -1,3 +1,5 @@
+import { awardType } from "./awardClass";
+
 export interface TimelineEntry {
   edition: number;
   year: number;
@@ -155,6 +157,33 @@ export interface ResultsMatrixData {
   [countryCode: string]: Record<string, number>;
 }
 
+export interface CountryTeamRow {
+  year: number;
+  team_size_all: number | null;
+  p1: number | null; p2: number | null; p3: number | null;
+  p4: number | null; p5: number | null; p6: number | null;
+  p7: number | null;
+  total: number | null;
+  rank: number | null;
+  awards_gold: number | null;
+  awards_silver: number | null;
+  awards_bronze: number | null;
+  awards_hm: number | null;
+  leader: string;
+  deputy_leader: string;
+}
+
+export interface CountryIndivRow {
+  year: number;
+  name: string;
+  participant_id: number | null;
+  p1: number | null; p2: number | null; p3: number | null;
+  p4: number | null; p5: number | null; p6: number | null;
+  p7: number | null;
+  total: number | null;
+  rank: number | null;
+  award: string;
+}
 
 /**
  * Format a date string like "10.7. - 20.7." into
@@ -191,6 +220,50 @@ export function formatDate(
 
 export function isIndividualContestant(code: string): boolean {
   return /^C\d+$/.test(code);
+}
+
+export interface DistBucket {
+  score: number;
+  gold: number;
+  silver: number;
+  bronze: number;
+  hm: number;
+  none: number;
+  rankMin: number | null;
+  rankMax: number | null;
+}
+
+export function buildDistBuckets(
+  results: IndividualResult[],
+  maxScore = 42,
+): DistBucket[] {
+  const buckets: DistBucket[] = [];
+  for (let s = 0; s <= maxScore; s++) {
+    buckets.push({
+      score: s,
+      gold: 0, silver: 0, bronze: 0,
+      hm: 0, none: 0,
+      rankMin: null, rankMax: null,
+    });
+  }
+  for (const r of results) {
+    if (r.total == null || r.total < 0
+      || r.total > maxScore) continue;
+    const bucket = buckets[r.total];
+    const t = awardType(r.award);
+    if (t === "gold") bucket.gold++;
+    else if (t === "silver") bucket.silver++;
+    else if (t === "bronze") bucket.bronze++;
+    else if (t === "hm") bucket.hm++;
+    else bucket.none++;
+    if (r.rank != null) {
+      bucket.rankMin = bucket.rankMin == null
+        ? r.rank : Math.min(bucket.rankMin, r.rank);
+      bucket.rankMax = bucket.rankMax == null
+        ? r.rank : Math.max(bucket.rankMax, r.rank);
+    }
+  }
+  return buckets;
 }
 
 export type AssetFetcher = (req: Request) => Promise<Response>;

@@ -1,9 +1,28 @@
-export function awardClass(award: string): string {
+export type AwardType =
+  | "gold"
+  | "silver"
+  | "bronze"
+  | "hm"
+  | "none";
+
+export function awardType(award: string): AwardType {
   const a = (award || "").toLowerCase();
-  if (a.includes("gold")) return "award-gold-medal";
-  if (a.includes("silver")) return "award-silver-medal";
-  if (a.includes("bronze")) return "award-bronze-medal";
+  if (a.includes("gold")) return "gold";
+  if (a.includes("silver")) return "silver";
+  if (a.includes("bronze")) return "bronze";
   if (a.includes("honourable") || a.includes("hm"))
-    return "award-honourable-mention";
-  return "";
+    return "hm";
+  return "none";
+}
+
+const CLASS_MAP: Record<AwardType, string> = {
+  gold: "award-gold-medal",
+  silver: "award-silver-medal",
+  bronze: "award-bronze-medal",
+  hm: "award-honourable-mention",
+  none: "",
+};
+
+export function awardClass(award: string): string {
+  return CLASS_MAP[awardType(award)];
 }

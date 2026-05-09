@@ -16,11 +16,6 @@ const jsonLd = {
   name: "IMO Mirror",
   url: BASE_URL,
   description: "Fast, static mirror of the International Mathematical Olympiad official website.",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${BASE_URL}/search.aspx?name={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
 };
 ---
 
@@ -48,7 +43,7 @@ const jsonLd = {
       <div class="hero-links">
         {latest && <a href={`/year_info.aspx?year=${latest.year}`} class="btn btn--pill btn--ghost">Latest IMO {latest.year} &rarr;</a>}
         <a href="/organizers.aspx" class="btn btn--pill btn--ghost">Full Timeline &rarr;</a>
-        <a href="/results.aspx" class="btn btn--pill btn--ghost">All Results &rarr;</a>
+        <a href="/results_country.aspx" class="btn btn--pill btn--ghost">All Results &rarr;</a>
       </div>
     </div>
 
@@ -69,7 +64,7 @@ const jsonLd = {
           <p>Explore participating nations, their contact information, and hosting history.</p>
         </div>
       </a>
-      <a href="/results.aspx" class="home-card-link">
+      <a href="/results_country.aspx" class="home-card-link">
         <div class="card home-card">
           <h3>Results</h3>
           <p>Comprehensive results by country and year. Medal counts, rankings, and statistics.</p>
@@ -79,12 +74,6 @@ const jsonLd = {
         <div class="card home-card">
           <h3>Hall of Fame</h3>
           <p>Top performers across all IMOs. Gold medalists, perfect scorers, and record holders.</p>
-        </div>
-      </a>
-      <a href="/search.aspx" class="home-card-link">
-        <div class="card home-card">
-          <h3>Search</h3>
-          <p>Find any participant by name. View their complete competition history and scores.</p>
         </div>
       </a>
     </div>
@@ -142,8 +131,7 @@ const jsonLd = {
   }
   .home-grid {
     display: grid;
-    grid-template-columns:
-      repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px; margin-bottom: 32px;
   }
   .home-card {
@@ -165,6 +153,9 @@ const jsonLd = {
   }
   .home-card-link:hover {
     text-decoration: none; color: inherit;
+  }
+  @media (max-width: 960px) {
+    .home-grid { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 768px) {
     .home-hero { padding: 28px 20px; }
