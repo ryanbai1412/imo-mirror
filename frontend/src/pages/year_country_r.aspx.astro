@@ -33,6 +33,8 @@ const cols = [
   { key: "awards_silver", label: "S", align: "right" },
   { key: "awards_bronze", label: "B", align: "right" },
   { key: "awards_hm", label: "HM", align: "right" },
+  { key: "leader", label: "Leader" },
+  { key: "deputy_leader", label: "Deputy Leader" },
 ];
 ---
 
@@ -76,6 +78,8 @@ const cols = [
               <td class="text-right">{row.awards_silver ? <span class="award-silver-medal">{row.awards_silver}</span> : ""}</td>
               <td class="text-right">{row.awards_bronze ? <span class="award-bronze-medal">{row.awards_bronze}</span> : ""}</td>
               <td class="text-right">{row.awards_hm ? <span class="award-honourable-mention">{row.awards_hm}</span> : ""}</td>
+              <td>{row.leader || ""}</td>
+              <td>{row.deputy_leader || ""}</td>
             </tr>
           ))}
         </tbody>
