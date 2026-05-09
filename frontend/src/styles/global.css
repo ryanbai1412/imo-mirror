@@ -141,9 +141,8 @@ a:hover { color: var(--link-hover); }
 }
 .data-table th a { color: #fff; text-decoration: none; }
 .data-table th a:hover { color: var(--gold-light); }
-.data-table tbody tr { transition: background var(--transition); cursor: default; }
+.data-table tbody tr { transition: background var(--transition); }
 .data-table tbody tr:hover { background: #f8f7f4; }
-.data-table tbody tr:has(a):hover { cursor: pointer; }
 .data-table tr.even { background: var(--surface); }
 .data-table tr.odd { background: #fdfcfa; }
 .data-table tr.even:hover, .data-table tr.odd:hover { background: #f5f3ef; }
