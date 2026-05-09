@@ -151,8 +151,8 @@ a:hover { color: var(--link-hover); }
 .sortable-header:hover { background: var(--navy-light); }
 
 /* Flags */
-.country-flag { height: 13px; vertical-align: middle; border-radius: 1px; }
-.country-flag-large { height: 22px; vertical-align: middle; margin-right: 10px; border-radius: 2px; box-shadow: var(--shadow-sm); }
+.country-flag { width: 21px; height: 14px; object-fit: cover; vertical-align: middle; border-radius: 1px; }
+.country-flag-large { width: 33px; height: 22px; object-fit: cover; vertical-align: middle; margin-right: 10px; border-radius: 2px; box-shadow: var(--shadow-sm); }
 
 /* Awards */
 .award-gold-medal { color: var(--medal-gold); font-weight: 600; }
