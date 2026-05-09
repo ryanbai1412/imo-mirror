@@ -145,6 +145,18 @@ def strip_wayback_prefix(url):
     return url
 
 
+def clean_wayback_html(html):
+    """Strip Wayback Machine artifacts from HTML content (img src, etc.)."""
+    if not html:
+        return html
+    html = re.sub(r'/web/\d+im_/(https?://)', r'\1', html)
+    html = re.sub(
+        r'((?:href|src)=["\'])(?:https?://web\.archive\.org)?/web/\d+(?:im_)?/(https?://)',
+        r'\1\2', html,
+    )
+    return html
+
+
 def scrape_timeline():
     """Scrape organizers.aspx to get timeline of all IMOs."""
     print("Scraping timeline...")
