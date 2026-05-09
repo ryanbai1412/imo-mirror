@@ -8,6 +8,9 @@
   import Icon from "$lib/components/Icon.svelte";
   import CommandPalette from "$lib/components/CommandPalette.svelte";
 
+  import dmSansLatin from "$lib/fonts/dm-sans-latin.woff2?url";
+  import dmSerifLatin from "$lib/fonts/dm-serif-display-latin.woff2?url";
+
   const NAV_ITEMS = [
     {
       label: "Timeline",
@@ -84,15 +87,19 @@
 </script>
 
 <svelte:head>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
+    rel="preload"
+    href={dmSansLatin}
+    as="font"
+    type="font/woff2"
     crossorigin="anonymous"
   />
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap"
-    rel="stylesheet"
+    rel="preload"
+    href={dmSerifLatin}
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
   />
   <meta property="og:site_name" content="IMO Mirror" />
   <meta property="og:type" content="website" />
