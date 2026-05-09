@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { loadParticipants, type ParticipantInfo } from '../utils/data';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -36,6 +37,7 @@ export default function SearchPage() {
 
   return (
     <div className="page-content">
+      <SEO title={query ? `Search: ${query}` : 'Search Participants'} description="Search for IMO participants by name. Find competition results, scores, and awards for any International Mathematical Olympiad contestant." path="/search.aspx" />
       <h2>Search Participants</h2>
       <form className="search-form" onSubmit={handleSubmit}>
         <div className="search-input-group">

@@ -9,6 +9,7 @@ import {
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'year', label: 'Year', align: 'right' },
@@ -63,6 +64,7 @@ export default function CountryIndividualResultsPage() {
 
   return (
     <div className="page-content">
+      <SEO title={`${country?.name || code} — Individual Results`} description={`All individual IMO results for ${country?.name || code}. Problem scores, totals, ranks, and awards for every contestant.`} path={`/country_individual_r.aspx?code=${code}`} />
       <h2>
         {country?.flag_url && (
           <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} className="country-flag-large" />

@@ -4,6 +4,7 @@ import { loadCountryResultsByYear, loadYearInfo, type CountryResult, type YearIn
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'country', label: 'Country' },
@@ -57,6 +58,7 @@ export default function YearCountryResultsPage() {
 
   return (
     <div className="page-content">
+      <SEO title={`IMO ${year} — Country Results`} description={`Country team results for the ${year} International Mathematical Olympiad. Scores, ranks, and medal counts by country.`} path={`/year_country_r.aspx?year=${year}`} />
       <h2>Country results &mdash; IMO {year}</h2>
 
       <div className="year-nav">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { loadResultsMatrix, loadTimeline, type ResultsMatrixData, type TimelineEntry } from '../utils/data';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 export default function ResultsMatrixPage() {
   const [matrix, setMatrix] = useState<ResultsMatrixData>({});
@@ -33,6 +34,7 @@ export default function ResultsMatrixPage() {
 
   return (
     <div className="page-content">
+      <SEO title="Results Matrix" description="Visual matrix of IMO country rankings across all years. Quick overview of every country's performance history at the International Mathematical Olympiad." path="/results_matrix.aspx" />
       <h2>Results Matrix</h2>
       <p>
         <Link to="/results.aspx">← Back to Results</Link>

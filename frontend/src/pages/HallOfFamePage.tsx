@@ -4,6 +4,7 @@ import { loadHallOfFame, type HallOfFameEntry } from '../utils/data';
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'name', label: 'Name' },
@@ -36,6 +37,7 @@ export default function HallOfFamePage() {
 
   return (
     <div className="page-content">
+      <SEO title="Hall of Fame" description="Top performers in the history of the International Mathematical Olympiad. Ranked by gold, silver, bronze medals, and special prizes." path="/hall.aspx" />
       <h2>Hall of Fame</h2>
       <p>Top performers in the history of the International Mathematical Olympiad.</p>
 

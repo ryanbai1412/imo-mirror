@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { loadYearInfo, loadTimeline, type YearInfo, type TimelineEntry } from '../utils/data';
 import Loading from '../components/Loading';
+import SEO, { BASE_URL } from '../components/SEO';
 
 export default function YearInfoPage() {
   const [searchParams] = useSearchParams();
@@ -35,6 +36,21 @@ export default function YearInfoPage() {
 
   return (
     <div className="page-content">
+      <SEO
+        title={`IMO ${year}${timelineEntry ? ` — ${timelineEntry.city}, ${timelineEntry.country}` : ''}`}
+        description={`Results and information for the ${year} International Mathematical Olympiad.${info ? ` ${info.num_countries ?? ''} countries, ${info.num_contestants ?? ''} contestants.` : ''}`}
+        path={`/year_info.aspx?year=${year}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Event',
+          name: `International Mathematical Olympiad ${year}`,
+          description: `The ${year} International Mathematical Olympiad${timelineEntry ? ` held in ${timelineEntry.city}, ${timelineEntry.country}` : ''}`,
+          ...(timelineEntry?.date ? { startDate: timelineEntry.date } : {}),
+          ...(timelineEntry ? { location: { '@type': 'Place', name: `${timelineEntry.city}, ${timelineEntry.country}` } } : {}),
+          organizer: { '@type': 'Organization', name: 'International Mathematical Olympiad' },
+          url: `${BASE_URL}/year_info.aspx?year=${year}`,
+        }}
+      />
       <h2>
         IMO {year}
         {timelineEntry && ` — ${timelineEntry.city}, ${timelineEntry.country}`}

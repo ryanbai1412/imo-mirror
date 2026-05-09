@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { loadYearStatistics, type YearStatistics } from '../utils/data';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 export default function YearStatisticsPage() {
   const [searchParams] = useSearchParams();
@@ -38,6 +39,7 @@ export default function YearStatisticsPage() {
 
   return (
     <div className="page-content">
+      <SEO title={`IMO ${year} — Statistics`} description={`Detailed statistics for the ${year} International Mathematical Olympiad. Score distributions, problem difficulty, and medal cutoffs.`} path={`/year_statistics.aspx?year=${year}`} />
       <h2>Statistics &mdash; IMO {year}</h2>
 
       <div className="year-nav">

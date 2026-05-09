@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { loadTimeline, type TimelineEntry } from '../utils/data';
 import Loading from '../components/Loading';
+import SEO, { BASE_URL } from '../components/SEO';
 
 export default function HomePage() {
   const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
@@ -20,6 +21,23 @@ export default function HomePage() {
 
   return (
     <>
+      <SEO
+        title="International Mathematical Olympiad"
+        description="Fast, static mirror of the International Mathematical Olympiad official website. Complete results, 15,000+ participants, and problems archive from 1959 to present."
+        path="/"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebSite',
+          name: 'IMO Mirror — International Mathematical Olympiad',
+          url: BASE_URL,
+          description: 'Fast, static mirror of the International Mathematical Olympiad official website. Complete results, participant data, and problem archive from 1959 to present.',
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: { '@type': 'EntryPoint', urlTemplate: `${BASE_URL}/search.aspx?name={search_term_string}` },
+            'query-input': 'required name=search_term_string',
+          },
+        }}
+      />
       <section className="hero">
         <h2>International Mathematical Olympiad</h2>
         <p>

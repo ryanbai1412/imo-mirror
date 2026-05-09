@@ -4,6 +4,7 @@ import { loadIndividualResultsByYear, loadYearInfo, type IndividualResult, type 
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'name', label: 'Contestant' },
@@ -51,6 +52,7 @@ export default function YearIndividualResultsPage() {
 
   return (
     <div className="page-content">
+      <SEO title={`IMO ${year} — Individual Results`} description={`Individual contestant results for the ${year} International Mathematical Olympiad. Problem scores, totals, ranks, and awards.`} path={`/year_individual_r.aspx?year=${year}`} />
       <h2>Individual results &mdash; IMO {year}</h2>
 
       <div className="year-nav">

@@ -4,6 +4,7 @@ import { loadCountries, type Country } from '../utils/data';
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'code', label: 'Code' },
@@ -32,6 +33,7 @@ export default function CountriesPage() {
 
   return (
     <div className="page-content">
+      <SEO title="Participating Countries" description="All countries that have participated in the International Mathematical Olympiad. Contact information and national math olympiad websites." path="/countries.aspx" />
       <h2>Participating Countries</h2>
       <SortableTable
         columns={COLUMNS}

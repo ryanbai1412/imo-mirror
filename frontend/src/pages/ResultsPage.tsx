@@ -4,6 +4,7 @@ import { loadResultsCountry, loadResultsYear, type ResultsCountryEntry, type Res
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COUNTRY_COLUMNS: Column[] = [
   { key: 'code', label: 'Code' },
@@ -69,6 +70,7 @@ export default function ResultsPage() {
     const sorted = column ? sortData(yearData, column, order) : yearData;
     return (
       <div className="page-content">
+        <SEO title="Results by Year" description="IMO results by year. Medal counts, cutoff scores, and participation statistics for every International Mathematical Olympiad." path="/results.aspx?view=year" />
         <h2>Results</h2>
         <div className="view-toggle">
           <button onClick={() => switchView('country')}>By Country</button>
@@ -97,6 +99,7 @@ export default function ResultsPage() {
   const sorted = column ? sortData(countryData, column, order) : countryData;
   return (
     <div className="page-content">
+      <SEO title="Results by Country" description="IMO results by country. Medal totals, participation history, and rankings for all countries in the International Mathematical Olympiad." path="/results.aspx" />
       <h2>Results</h2>
       <div className="view-toggle">
         <button className="active" onClick={() => switchView('country')}>By Country</button>

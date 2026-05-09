@@ -4,6 +4,7 @@ import { loadResultsCountry, type ResultsCountryEntry } from '../utils/data';
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'code', label: 'Code' },
@@ -38,6 +39,7 @@ export default function ResultsCountryPage() {
 
   return (
     <div className="page-content">
+      <SEO title="Results by Country" description="Comprehensive IMO results by country. Medal counts, participation history, and contestant statistics for all participating nations." path="/results_country.aspx" />
       <h2>Results by Country</h2>
       <SortableTable
         columns={COLUMNS}

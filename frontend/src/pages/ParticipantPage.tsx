@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { loadParticipants, type ParticipantInfo } from '../utils/data';
 import Loading from '../components/Loading';
+import SEO, { BASE_URL } from '../components/SEO';
 
 export default function ParticipantPage() {
   const [searchParams] = useSearchParams();
@@ -34,6 +35,18 @@ export default function ParticipantPage() {
 
   return (
     <div className="page-content">
+      <SEO
+        title={participant.name}
+        description={`IMO participant ${participant.name}. ${participant.results.length} participation(s), ${totalGold} gold, ${totalSilver} silver, ${totalBronze} bronze medals.`}
+        path={`/participant_r.aspx?id=${id}`}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          name: participant.name,
+          url: `${BASE_URL}/participant_r.aspx?id=${id}`,
+          description: `IMO participant with ${participant.results.length} participation(s), ${totalGold} gold, ${totalSilver} silver, ${totalBronze} bronze medals`,
+        }}
+      />
       <h2>{participant.name}</h2>
 
       <div className="participant-summary">

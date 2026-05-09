@@ -9,6 +9,7 @@ import {
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'year', label: 'Year', align: 'right' },
@@ -67,6 +68,7 @@ export default function CountryTeamResultsPage() {
 
   return (
     <div className="page-content">
+      <SEO title={`${country?.name || code} — Team Results`} description={`IMO team results for ${country?.name || code}. Yearly rankings, scores, medal counts, and team leaders.`} path={`/country_team_r.aspx?code=${code}`} />
       <h2>
         {country?.flag_url && (
           <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} className="country-flag-large" />

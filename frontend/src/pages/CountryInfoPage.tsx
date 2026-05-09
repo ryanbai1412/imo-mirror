@@ -13,6 +13,7 @@ import {
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const YEAR_COLUMNS: Column[] = [
   { key: 'year', label: 'Year', align: 'right' },
@@ -127,6 +128,7 @@ export default function CountryInfoPage() {
 
   return (
     <div className="page-content">
+      <SEO title={`${country.name} (${country.code})`} description={`IMO results and participation history for ${country.name}. Individual and team results across all years.`} path={`/country_info.aspx?code=${code}`} />
       <h2>
         {country.flag_url && (
           <img

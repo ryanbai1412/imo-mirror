@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { loadStaticPages, type StaticPageData } from '../utils/data';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 interface StaticPageProps {
   pageKey: string;
@@ -29,6 +30,7 @@ export default function StaticPage({ pageKey }: StaticPageProps) {
 
   return (
     <div className="page-content">
+      <SEO title={page.title} description={`${page.title} — International Mathematical Olympiad official information and guidelines.`} path={`/${pageKey}.aspx`} />
       <h2>{page.title}</h2>
       <div
         className="static-content"

@@ -4,6 +4,7 @@ import { loadProblems, type ProblemYear } from '../utils/data';
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'year', label: 'Year', align: 'right' },
@@ -31,6 +32,7 @@ export default function ProblemsPage() {
 
   return (
     <div className="page-content">
+      <SEO title="Problems" description="Archive of all International Mathematical Olympiad problems from 1959 to present. PDF downloads and shortlists available in multiple languages." path="/problems.aspx" />
       <h2>Problems</h2>
 
       <SortableTable

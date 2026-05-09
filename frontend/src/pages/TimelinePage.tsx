@@ -4,6 +4,7 @@ import { loadTimeline, type TimelineEntry } from '../utils/data';
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'edition', label: '#', align: 'right' },
@@ -38,6 +39,7 @@ export default function TimelinePage() {
 
   return (
     <div className="page-content">
+      <SEO title="Timeline" description="Complete timeline of every International Mathematical Olympiad from 1959 to present. Host countries, cities, dates, and participation statistics." path="/organizers.aspx" />
       <h2>Timeline</h2>
       <SortableTable
         columns={COLUMNS}

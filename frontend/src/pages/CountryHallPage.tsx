@@ -8,6 +8,7 @@ import {
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'name', label: 'Name' },
@@ -75,6 +76,7 @@ export default function CountryHallPage() {
 
   return (
     <div className="page-content">
+      <SEO title={`${country?.name || code} — Hall of Fame`} description={`Top IMO performers from ${country?.name || code}. Medal counts and participation history for all contestants.`} path={`/country_hall.aspx?code=${code}`} />
       <h2>
         {country?.flag_url && (
           <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} className="country-flag-large" />

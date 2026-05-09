@@ -4,6 +4,7 @@ import { loadResultsYear, type ResultsYearEntry } from '../utils/data';
 import { sortData, parseSortParams } from '../utils/sort';
 import SortableTable, { type Column } from '../components/SortableTable';
 import Loading from '../components/Loading';
+import SEO from '../components/SEO';
 
 const COLUMNS: Column[] = [
   { key: 'year', label: 'Year', align: 'right' },
@@ -40,6 +41,7 @@ export default function ResultsYearPage() {
 
   return (
     <div className="page-content">
+      <SEO title="Results by Year" description="IMO results by year. Medal counts, cutoff scores, host countries, and participation statistics for every International Mathematical Olympiad." path="/results_year.aspx" />
       <h2>Results by Year</h2>
       <SortableTable
         columns={COLUMNS}
