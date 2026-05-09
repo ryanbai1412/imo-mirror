@@ -164,10 +164,7 @@ export interface ResultsYearEntry {
 }
 
 export interface ResultsMatrixData {
-  [countryCode: string]: {
-    name: string;
-    years: Record<string, number | null>;
-  };
+  [countryCode: string]: Record<string, number>;
 }
 
 export interface StaticPageData {

@@ -6,7 +6,7 @@ import { BASE_URL } from "../utils/seo";
 const origin = Astro.url.origin;
 const timeline = await loadTimeline(origin);
 
-const latest = timeline[timeline.length - 1];
+const latest = timeline[0];
 const totalEditions = timeline.length;
 const totalCountries = new Set(timeline.flatMap(t => [t.country])).size;
 

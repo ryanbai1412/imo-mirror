@@ -44,7 +44,7 @@ const filteredCodes = filterCode ? codes.filter(c => c === filterCode) : codes;
                   <a href={`/country_info.aspx?code=${code}`}>{code}</a>
                 </td>
                 {years.map(y => {
-                  const rank = entry?.years?.[String(y)];
+                  const rank = entry?.[String(y)];
                   return <td class="text-right matrix-cell">{rank != null ? rank : ""}</td>;
                 })}
               </tr>
