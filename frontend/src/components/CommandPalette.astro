@@ -375,10 +375,10 @@
   }
 
   const PREFIXES: Record<string, SearchItem['type']> = {
+    'pg:': 'page',
     'p:': 'person',
     'c:': 'country',
     'y:': 'year',
-    'pg:': 'page',
   };
 
   function search(query: string, items: SearchItem[]): SearchItem[] {
