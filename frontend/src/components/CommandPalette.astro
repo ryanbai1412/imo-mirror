@@ -357,7 +357,7 @@
       if (!items) continue;
       html += `<div class="cmd-group-label">${labels[type]}</div>`;
       for (const item of items) {
-        html += `<a href="${item.href}" class="cmd-item" data-index="${idx}" data-href="${item.href}">
+        html += `<a href="${escapeHtml(item.href)}" class="cmd-item" data-index="${idx}" data-href="${escapeHtml(item.href)}">
           <div class="cmd-item-icon ${getIconClass(item.type)}">${getIconSymbol(item.type)}</div>
           <div class="cmd-item-content">
             <div class="cmd-item-title">${escapeHtml(item.title)}</div>
