@@ -93,10 +93,10 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
             <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
             <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
             <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total", column, order)}>Total{sortIndicator("total", column, order)}</a></th>
-            <th class="text-right">G</th>
-            <th class="text-right">S</th>
-            <th class="text-right">B</th>
-            <th class="text-right">HM</th>
+            <th class="text-right" title="Gold Medals">G</th>
+            <th class="text-right" title="Silver Medals">S</th>
+            <th class="text-right" title="Bronze Medals">B</th>
+            <th class="text-right" title="Honourable Mentions">HM</th>
             <th>Leader</th>
             <th>Deputy Leader</th>
           </tr>

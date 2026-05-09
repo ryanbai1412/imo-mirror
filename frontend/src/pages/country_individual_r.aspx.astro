@@ -51,8 +51,8 @@ const rows = column ? sortData(allRows, column, order) : allRows;
           <tr>
             <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "year", column, order)}>Year{sortIndicator("year", column, order)}</a></th>
             <th class="sortable-header"><a href={getSortUrl(Astro.url, "name", column, order)}>Contestant{sortIndicator("name", column, order)}</a></th>
-            <th class="text-right">P1</th><th class="text-right">P2</th><th class="text-right">P3</th>
-            <th class="text-right">P4</th><th class="text-right">P5</th><th class="text-right">P6</th>
+            <th class="text-right" title="Problem 1">P1</th><th class="text-right" title="Problem 2">P2</th><th class="text-right" title="Problem 3">P3</th>
+            <th class="text-right" title="Problem 4">P4</th><th class="text-right" title="Problem 5">P5</th><th class="text-right" title="Problem 6">P6</th>
             <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total", column, order)}>Total{sortIndicator("total", column, order)}</a></th>
             <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "rank", column, order)}>Rank{sortIndicator("rank", column, order)}</a></th>
             <th>Award</th>

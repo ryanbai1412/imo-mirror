@@ -60,11 +60,11 @@ if (column) rows = sortData(rows, column, order);
         <thead>
           <tr>
             <th class="sortable-header"><a href={getSortUrl(Astro.url, "name", column, order)}>Name{sortIndicator("name", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "participations", column, order)}>Part.{sortIndicator("participations", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "gold", column, order)}>G{sortIndicator("gold", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "silver", column, order)}>S{sortIndicator("silver", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "bronze", column, order)}>B{sortIndicator("bronze", column, order)}</a></th>
-            <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "hm", column, order)}>HM{sortIndicator("hm", column, order)}</a></th>
+            <th class="text-right sortable-header" title="Participations"><a href={getSortUrl(Astro.url, "participations", column, order)}>Part.{sortIndicator("participations", column, order)}</a></th>
+            <th class="text-right sortable-header" title="Gold Medals"><a href={getSortUrl(Astro.url, "gold", column, order)}>G{sortIndicator("gold", column, order)}</a></th>
+            <th class="text-right sortable-header" title="Silver Medals"><a href={getSortUrl(Astro.url, "silver", column, order)}>S{sortIndicator("silver", column, order)}</a></th>
+            <th class="text-right sortable-header" title="Bronze Medals"><a href={getSortUrl(Astro.url, "bronze", column, order)}>B{sortIndicator("bronze", column, order)}</a></th>
+            <th class="text-right sortable-header" title="Honourable Mentions"><a href={getSortUrl(Astro.url, "hm", column, order)}>HM{sortIndicator("hm", column, order)}</a></th>
             <th class="text-right sortable-header"><a href={getSortUrl(Astro.url, "total_medals", column, order)}>Total{sortIndicator("total_medals", column, order)}</a></th>
           </tr>
         </thead>

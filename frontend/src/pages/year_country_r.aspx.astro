@@ -22,18 +22,18 @@ const cols = [
   { key: "rank", label: "Rank", align: "right" },
   { key: "country", label: "Country" },
   { key: "code", label: "Code" },
-  { key: "team_size_all", label: "#", align: "right" },
-  { key: "p1", label: "P1", align: "right" },
-  { key: "p2", label: "P2", align: "right" },
-  { key: "p3", label: "P3", align: "right" },
-  { key: "p4", label: "P4", align: "right" },
-  { key: "p5", label: "P5", align: "right" },
-  { key: "p6", label: "P6", align: "right" },
+  { key: "team_size_all", label: "#", align: "right", tooltip: "Team Size" },
+  { key: "p1", label: "P1", align: "right", tooltip: "Problem 1" },
+  { key: "p2", label: "P2", align: "right", tooltip: "Problem 2" },
+  { key: "p3", label: "P3", align: "right", tooltip: "Problem 3" },
+  { key: "p4", label: "P4", align: "right", tooltip: "Problem 4" },
+  { key: "p5", label: "P5", align: "right", tooltip: "Problem 5" },
+  { key: "p6", label: "P6", align: "right", tooltip: "Problem 6" },
   { key: "total", label: "Total", align: "right" },
-  { key: "awards_gold", label: "G", align: "right" },
-  { key: "awards_silver", label: "S", align: "right" },
-  { key: "awards_bronze", label: "B", align: "right" },
-  { key: "awards_hm", label: "HM", align: "right" },
+  { key: "awards_gold", label: "G", align: "right", tooltip: "Gold Medals" },
+  { key: "awards_silver", label: "S", align: "right", tooltip: "Silver Medals" },
+  { key: "awards_bronze", label: "B", align: "right", tooltip: "Bronze Medals" },
+  { key: "awards_hm", label: "HM", align: "right", tooltip: "Honourable Mentions" },
   { key: "leader", label: "Leader" },
   { key: "deputy_leader", label: "Deputy Leader" },
 ];
@@ -54,7 +54,7 @@ const cols = [
         <thead>
           <tr>
             {cols.map(col => (
-              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+              <th class:list={[col.align === "right" && "text-right", "sortable-header"]} title={col.tooltip}>
                 <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
               </th>
             ))}

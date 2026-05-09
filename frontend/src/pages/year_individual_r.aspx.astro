@@ -21,12 +21,12 @@ const sorted = column ? sortData(results, column, order) : results;
 const cols = [
   { key: "name", label: "Name" },
   { key: "country", label: "Country" },
-  { key: "p1", label: "P1", align: "right" },
-  { key: "p2", label: "P2", align: "right" },
-  { key: "p3", label: "P3", align: "right" },
-  { key: "p4", label: "P4", align: "right" },
-  { key: "p5", label: "P5", align: "right" },
-  { key: "p6", label: "P6", align: "right" },
+  { key: "p1", label: "P1", align: "right", tooltip: "Problem 1" },
+  { key: "p2", label: "P2", align: "right", tooltip: "Problem 2" },
+  { key: "p3", label: "P3", align: "right", tooltip: "Problem 3" },
+  { key: "p4", label: "P4", align: "right", tooltip: "Problem 4" },
+  { key: "p5", label: "P5", align: "right", tooltip: "Problem 5" },
+  { key: "p6", label: "P6", align: "right", tooltip: "Problem 6" },
   { key: "total", label: "Total", align: "right" },
   { key: "rank", label: "Rank", align: "right" },
   { key: "award", label: "Award" },
@@ -48,7 +48,7 @@ const cols = [
         <thead>
           <tr>
             {cols.map(col => (
-              <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+              <th class:list={[col.align === "right" && "text-right", "sortable-header"]} title={col.tooltip}>
                 <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
               </th>
             ))}

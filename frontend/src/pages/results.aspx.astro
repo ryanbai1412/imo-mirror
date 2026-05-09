@@ -20,27 +20,27 @@ const sortedYear = column ? sortData(yearData, column, order) : yearData;
 const cCols = [
   { key: "code", label: "Code" },
   { key: "country", label: "Country" },
-  { key: "first_participation", label: "First", align: "right" },
-  { key: "participations", label: "Part.", align: "right" },
-  { key: "contestants_all", label: "Cont.", align: "right" },
-  { key: "gold", label: "G", align: "right" },
-  { key: "silver", label: "S", align: "right" },
-  { key: "bronze", label: "B", align: "right" },
-  { key: "hm", label: "HM", align: "right" },
+  { key: "first_participation", label: "First", align: "right", tooltip: "First Participation Year" },
+  { key: "participations", label: "Part.", align: "right", tooltip: "Participations" },
+  { key: "contestants_all", label: "Cont.", align: "right", tooltip: "Contestants" },
+  { key: "gold", label: "G", align: "right", tooltip: "Gold Medals" },
+  { key: "silver", label: "S", align: "right", tooltip: "Silver Medals" },
+  { key: "bronze", label: "B", align: "right", tooltip: "Bronze Medals" },
+  { key: "hm", label: "HM", align: "right", tooltip: "Honourable Mentions" },
 ];
 
 const yCols = [
   { key: "year", label: "Year", align: "right" },
   { key: "host_country", label: "Host" },
   { key: "num_countries", label: "Countries", align: "right" },
-  { key: "contestants_all", label: "Cont.", align: "right" },
-  { key: "gold", label: "G", align: "right" },
-  { key: "silver", label: "S", align: "right" },
-  { key: "bronze", label: "B", align: "right" },
-  { key: "hm", label: "HM", align: "right" },
-  { key: "gold_cutoff", label: "G\u2265", align: "right" },
-  { key: "silver_cutoff", label: "S\u2265", align: "right" },
-  { key: "bronze_cutoff", label: "B\u2265", align: "right" },
+  { key: "contestants_all", label: "Cont.", align: "right", tooltip: "Contestants" },
+  { key: "gold", label: "G", align: "right", tooltip: "Gold Medals" },
+  { key: "silver", label: "S", align: "right", tooltip: "Silver Medals" },
+  { key: "bronze", label: "B", align: "right", tooltip: "Bronze Medals" },
+  { key: "hm", label: "HM", align: "right", tooltip: "Honourable Mentions" },
+  { key: "gold_cutoff", label: "G\u2265", align: "right", tooltip: "Gold Cutoff Score" },
+  { key: "silver_cutoff", label: "S\u2265", align: "right", tooltip: "Silver Cutoff Score" },
+  { key: "bronze_cutoff", label: "B\u2265", align: "right", tooltip: "Bronze Cutoff Score" },
 ];
 ---
 
@@ -59,7 +59,7 @@ const yCols = [
           <thead>
             <tr>
               {yCols.map(col => (
-                <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                <th class:list={[col.align === "right" && "text-right", "sortable-header"]} title={col.tooltip}>
                   <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
                 </th>
               ))}
@@ -90,7 +90,7 @@ const yCols = [
           <thead>
             <tr>
               {cCols.map(col => (
-                <th class:list={[col.align === "right" && "text-right", "sortable-header"]}>
+                <th class:list={[col.align === "right" && "text-right", "sortable-header"]} title={col.tooltip}>
                   <a href={getSortUrl(Astro.url, col.key, column, order)}>{col.label}{sortIndicator(col.key, column, order)}</a>
                 </th>
               ))}
