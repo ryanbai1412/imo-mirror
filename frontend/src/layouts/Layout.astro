@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from "astro:transitions";
 import { SITE_NAME, BASE_URL, DEFAULT_DESCRIPTION } from "../utils/seo";
+import CommandPalette from "../components/CommandPalette.astro";
 import "../styles/global.css";
 
 interface Props {
@@ -64,7 +65,11 @@ const currentPath = Astro.url.pathname;
           {NAV_ITEMS.map(item => (
             <a href={item.href} class={currentPath === item.href ? "active" : ""}>{item.label}</a>
           ))}
-          <a href="/search.aspx" class:list={["header-search-link", { active: currentPath === "/search.aspx" }]}>Search</a>
+          <a href="#" id="cmd-trigger" class="header-search-link" aria-label="Search (Cmd+K)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <span>Search</span>
+            <kbd class="nav-kbd">⌘K</kbd>
+          </a>
         </nav>
       </div>
     </header>
@@ -84,5 +89,6 @@ const currentPath = Astro.url.pathname;
       </div>
     </footer>
   </div>
+  <CommandPalette />
 </body>
 </html>

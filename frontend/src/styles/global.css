@@ -81,10 +81,16 @@ a:hover { color: var(--link-hover); }
 .main-nav a.active { color: var(--gold-light); }
 .header-search-link {
   color: rgba(255,255,255,0.6) !important; padding: 6px 10px; font-size: 13px;
-  border-radius: 4px; display: flex; align-items: center; gap: 4px;
-  transition: all var(--transition);
+  border-radius: 4px; display: flex; align-items: center; gap: 6px;
+  transition: all var(--transition); cursor: pointer;
 }
 .header-search-link:hover { color: #fff !important; background: rgba(255,255,255,0.08); text-decoration: none; }
+.nav-kbd {
+  padding: 1px 5px; font-size: 11px; font-family: inherit;
+  color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 3px;
+  line-height: 1.4;
+}
 
 /* Footer */
 .site-footer {
