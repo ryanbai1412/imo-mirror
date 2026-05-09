@@ -8,6 +8,11 @@ if (!year) return Astro.redirect("/results.aspx");
 
 const statsMap = await loadYearStatistics(origin);
 const stats = statsMap[year];
+
+const problemKeys = ["p1", "p2", "p3", "p4", "p5", "p6"];
+const problemHeaders = ["P1", "P2", "P3", "P4", "P5", "P6"];
+
+const rows = stats ? Object.entries(stats.problems) : [];
 ---
 
 <Layout title={`IMO ${year} - Statistics`} description={`Score distribution statistics for the ${year} International Mathematical Olympiad. Problem-by-problem analysis.`} path={`/year_statistics.aspx?year=${year}`}>
@@ -22,35 +27,42 @@ const stats = statsMap[year];
     </div>
 
     {stats ? (
-      <div class="stats-grid">
-        {stats.problems.map(prob => (
-          <div class="stat-problem-card">
-            <h4>Problem {prob.number} {prob.avg != null ? `(avg: ${prob.avg.toFixed(2)})` : ""}</h4>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Score</th>
-                    {Object.keys(prob.distribution).sort((a, b) => Number(a) - Number(b)).map(score => (
-                      <th class="text-right">{score}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Count</td>
-                    {Object.keys(prob.distribution).sort((a, b) => Number(a) - Number(b)).map(score => (
-                      <td class="text-right">{prob.distribution[score]}</td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
+      <div class="table-container">
+        <table class="data-table stats-table">
+          <thead>
+            <tr>
+              <th></th>
+              {problemHeaders.map(h => (
+                <th class="text-right">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([label, values]) => (
+              <tr>
+                <td class="stat-label">{label}</td>
+                {problemKeys.map(key => (
+                  <td class="text-right">{values[key]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     ) : (
       <p>No statistics available for this year.</p>
     )}
   </div>
 </Layout>
+
+<style>
+  .stats-table .stat-label {
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .stats-table td.text-right,
+  .stats-table th.text-right {
+    text-align: right;
+    min-width: 5em;
+  }
+</style>
