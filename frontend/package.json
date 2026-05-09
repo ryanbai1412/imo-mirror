@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/pages-compat.mjs",
+    "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
