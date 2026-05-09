@@ -78,13 +78,7 @@ export interface YearInfo {
 
 export interface YearStatistics {
   year: number;
-  problems: ProblemStat[];
-}
-
-export interface ProblemStat {
-  number: number;
-  avg: number | null;
-  distribution: Record<string, number>;
+  problems: Record<string, Record<string, string>>;
 }
 
 export interface HallOfFameEntry {
