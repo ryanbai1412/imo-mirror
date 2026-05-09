@@ -51,42 +51,64 @@ const jsonLd = {
     {info && (
       <div class="medal-summary">
         {info.gold_count != null && (
-          <div class="medal-card">
-            <div class="medal-card-icon gold">G</div>
-            <div class="medal-card-info">
-              <span class="medal-card-count">{info.gold_count}</span>
+          <div class="medal-card gold">
+            <div class="medal-card-header">
+              <div class="medal-card-icon gold">G</div>
               <span class="medal-card-label">Gold</span>
-              {info.gold_cutoff != null && <span class="medal-card-cutoff">&ge; {info.gold_cutoff} pts</span>}
             </div>
+            <span class="medal-card-count">{info.gold_count}</span>
+            <span class="medal-card-sublabel">medals awarded</span>
+            {info.gold_cutoff != null && (
+              <div class="medal-card-cutoff gold">
+                <span class="cutoff-symbol">&ge;</span>
+                <span class="cutoff-value">{info.gold_cutoff}</span>
+                <span class="cutoff-unit">pts</span>
+              </div>
+            )}
           </div>
         )}
         {info.silver_count != null && (
-          <div class="medal-card">
-            <div class="medal-card-icon silver">S</div>
-            <div class="medal-card-info">
-              <span class="medal-card-count">{info.silver_count}</span>
+          <div class="medal-card silver">
+            <div class="medal-card-header">
+              <div class="medal-card-icon silver">S</div>
               <span class="medal-card-label">Silver</span>
-              {info.silver_cutoff != null && <span class="medal-card-cutoff">&ge; {info.silver_cutoff} pts</span>}
             </div>
+            <span class="medal-card-count">{info.silver_count}</span>
+            <span class="medal-card-sublabel">medals awarded</span>
+            {info.silver_cutoff != null && (
+              <div class="medal-card-cutoff silver">
+                <span class="cutoff-symbol">&ge;</span>
+                <span class="cutoff-value">{info.silver_cutoff}</span>
+                <span class="cutoff-unit">pts</span>
+              </div>
+            )}
           </div>
         )}
         {info.bronze_count != null && (
-          <div class="medal-card">
-            <div class="medal-card-icon bronze">B</div>
-            <div class="medal-card-info">
-              <span class="medal-card-count">{info.bronze_count}</span>
+          <div class="medal-card bronze">
+            <div class="medal-card-header">
+              <div class="medal-card-icon bronze">B</div>
               <span class="medal-card-label">Bronze</span>
-              {info.bronze_cutoff != null && <span class="medal-card-cutoff">&ge; {info.bronze_cutoff} pts</span>}
             </div>
+            <span class="medal-card-count">{info.bronze_count}</span>
+            <span class="medal-card-sublabel">medals awarded</span>
+            {info.bronze_cutoff != null && (
+              <div class="medal-card-cutoff bronze">
+                <span class="cutoff-symbol">&ge;</span>
+                <span class="cutoff-value">{info.bronze_cutoff}</span>
+                <span class="cutoff-unit">pts</span>
+              </div>
+            )}
           </div>
         )}
         {info.hm_count != null && (
-          <div class="medal-card">
-            <div class="medal-card-icon hm">HM</div>
-            <div class="medal-card-info">
-              <span class="medal-card-count">{info.hm_count}</span>
+          <div class="medal-card hm">
+            <div class="medal-card-header">
+              <div class="medal-card-icon hm">HM</div>
               <span class="medal-card-label">Hon. Mention</span>
             </div>
+            <span class="medal-card-count">{info.hm_count}</span>
+            <span class="medal-card-sublabel">mentions awarded</span>
           </div>
         )}
       </div>

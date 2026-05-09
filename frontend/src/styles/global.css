@@ -216,25 +216,61 @@ a:hover { color: var(--link-hover); }
 .info-value { color: var(--text); }
 
 /* Medal cards */
-.medal-summary { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+.medal-summary {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px; margin: 24px 0;
+}
 .medal-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; background: var(--surface);
-  border: 1px solid var(--border); border-radius: var(--radius); min-width: 140px;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 24px 20px 20px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px;
+  border-top: 4px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: all 200ms ease;
+  text-align: center;
+  position: relative;
+}
+.medal-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.medal-card.gold { border-top-color: #d4a017; background: linear-gradient(180deg, #fffdf5 0%, var(--surface) 40%); }
+.medal-card.silver { border-top-color: #9ca3af; background: linear-gradient(180deg, #f8f9fb 0%, var(--surface) 40%); }
+.medal-card.bronze { border-top-color: #c47a2e; background: linear-gradient(180deg, #fdf8f3 0%, var(--surface) 40%); }
+.medal-card.hm { border-top-color: #34d399; background: linear-gradient(180deg, #f0fdf8 0%, var(--surface) 40%); }
+.medal-card-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
 }
 .medal-card-icon {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 700; font-size: 14px;
+  font-weight: 700; font-size: 14px; flex-shrink: 0;
 }
-.medal-card-icon.gold { background: #fef3c7; color: #92400e; }
-.medal-card-icon.silver { background: #f1f5f9; color: #475569; }
-.medal-card-icon.bronze { background: #fef2e8; color: #9a3412; }
-.medal-card-icon.hm { background: #ecfdf5; color: #065f46; }
-.medal-card-info { display: flex; flex-direction: column; }
-.medal-card-count { font-weight: 700; font-size: 18px; line-height: 1.2; }
-.medal-card-label { font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
-.medal-card-cutoff { font-size: 11px; color: var(--text-muted); }
+.medal-card-icon.gold { background: #fef3c7; color: #92400e; box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.15); }
+.medal-card-icon.silver { background: #f1f5f9; color: #475569; box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.15); }
+.medal-card-icon.bronze { background: #fef2e8; color: #9a3412; box-shadow: 0 0 0 3px rgba(196, 122, 46, 0.15); }
+.medal-card-icon.hm { background: #ecfdf5; color: #065f46; box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.15); }
+.medal-card-label {
+  font-size: 14px; font-weight: 600; color: var(--navy);
+  letter-spacing: 0.01em;
+}
+.medal-card-count {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 36px; line-height: 1.1; color: var(--navy);
+}
+.medal-card-sublabel {
+  font-size: 11px; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.06em; margin-bottom: 14px;
+}
+.medal-card-cutoff {
+  display: flex; align-items: baseline; gap: 4px;
+  padding: 6px 16px; border-radius: 20px;
+  font-weight: 600; margin-top: auto;
+}
+.medal-card-cutoff.gold { background: #fef3c7; color: #92400e; }
+.medal-card-cutoff.silver { background: #f1f5f9; color: #475569; }
+.medal-card-cutoff.bronze { background: #fef2e8; color: #9a3412; }
+.medal-card-cutoff.hm { background: #ecfdf5; color: #065f46; }
+.cutoff-symbol { font-size: 13px; font-weight: 500; opacity: 0.7; }
+.cutoff-value { font-size: 18px; font-weight: 800; }
+.cutoff-unit { font-size: 12px; font-weight: 500; opacity: 0.7; }
 
 /* Participant */
 .participant-header { margin-bottom: 24px; }
@@ -316,6 +352,7 @@ thead .sticky-col { background: var(--navy); z-index: 2; }
   .home-hero h2 { font-size: 26px; }
   .home-grid { grid-template-columns: 1fr; }
   .footer-inner { flex-direction: column; }
-  .medal-summary { flex-direction: column; }
+  .medal-summary { grid-template-columns: repeat(2, 1fr); }
+  .medal-card-count { font-size: 28px; }
   .search-form { flex-direction: column; }
 }
