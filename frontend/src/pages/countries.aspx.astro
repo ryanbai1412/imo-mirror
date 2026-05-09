@@ -35,7 +35,7 @@ const cols = [
             <tr class={idx % 2 === 0 ? "even" : "odd"}>
               <td><a href={`/country_info.aspx?code=${c.code}`}>{c.code}</a></td>
               <td><a href={`/country_info.aspx?code=${c.code}`}>{c.name}</a></td>
-              <td>{c.flag_url ? <img src={`https://www.imo-official.org/${c.flag_url}`} alt={c.code} class="country-flag" /> : ""}</td>
+              <td>{c.flag_url ? <img src={c.flag_url} alt={c.code} class="country-flag" /> : ""}</td>
               <td>{c.website ? <a href={c.website} target="_blank" rel="noopener noreferrer">Link</a> : ""}</td>
             </tr>
           ))}

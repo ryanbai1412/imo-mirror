@@ -41,7 +41,7 @@ if (column) rows = sortData(rows, column, order);
 <Layout title={`${country?.name || code} — Hall of Fame`} description={`Top IMO performers from ${country?.name || code}. Medal counts and participation history for all contestants.`} path={`/country_hall.aspx?code=${code}`}>
   <div class="page-content">
     <h2>
-      {country?.flag_url && <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} class="country-flag-large" />}
+      {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
       {country?.name || code} &mdash; Hall of Fame
     </h2>
     <p class="page-subtitle">{rows.length} participants with awards</p>

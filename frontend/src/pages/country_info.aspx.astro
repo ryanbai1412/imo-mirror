@@ -63,7 +63,7 @@ const hostYears = timeline.filter(t => country.host_years.includes(t.year));
 <Layout title={country.name} description={`${country.name} at the International Mathematical Olympiad. Competition history, results by year, and individual contestant performances.`} path={`/country_info.aspx?code=${code}`}>
   <div class="page-content">
     <h2>
-      {country.flag_url && <img src={`https://www.imo-official.org/${country.flag_url}`} alt={code} class="country-flag-large" />}
+      {country.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
       {country.name}
     </h2>
 
