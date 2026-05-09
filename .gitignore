@@ -2,16 +2,16 @@
 node_modules/
 
 # Build output
+.svelte-kit/
+build/
 dist/
 *.tsbuildinfo
-frontend/public/sitemap.xml
 
 # Cache
 .cache/
 .vite/
 
-# Astro
-.astro/
+# SvelteKit / Cloudflare
 .wrangler/
 
 # Python
@@ -39,3 +39,4 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+pnpm-debug.log*

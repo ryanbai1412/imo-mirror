@@ -1,0 +1,301 @@
+import { awardType } from "./awardClass";
+
+export interface TimelineEntry {
+  edition: number;
+  year: number;
+  country: string;
+  city: string;
+  date: string;
+  num_countries: number | null;
+  contestants_all: number | null;
+  contestants_male: number | null;
+  contestants_female: number | null;
+  homepage: string;
+}
+
+export interface Country {
+  code: string;
+  name: string;
+  contact: string;
+  website: string;
+  host_years: number[];
+  flag_url: string;
+}
+
+export interface CountryResult {
+  country: string;
+  code: string;
+  team_size_all: number | null;
+  team_size_male: number | null;
+  team_size_female: number | null;
+  p1: number | null;
+  p2: number | null;
+  p3: number | null;
+  p4: number | null;
+  p5: number | null;
+  p6: number | null;
+  p7: number | null;
+  total: number | null;
+  rank: number | null;
+  awards_gold: number | null;
+  awards_silver: number | null;
+  awards_bronze: number | null;
+  awards_hm: number | null;
+  leader: string;
+  deputy_leader: string;
+}
+
+export interface IndividualResult {
+  name: string;
+  participant_id: number | null;
+  gender: string | null;
+  country: string;
+  country_code: string;
+  p1: number | null;
+  p2: number | null;
+  p3: number | null;
+  p4: number | null;
+  p5: number | null;
+  p6: number | null;
+  p7: number | null;
+  total: number | null;
+  rank: number | null;
+  award: string;
+}
+
+export interface YearInfo {
+  year: number;
+  num_countries: number | null;
+  num_contestants: number | null;
+  gold_count: number | null;
+  gold_cutoff: number | null;
+  silver_count: number | null;
+  silver_cutoff: number | null;
+  bronze_count: number | null;
+  bronze_cutoff: number | null;
+  hm_count: number | null;
+  homepage: string;
+  problem_languages: string[];
+}
+
+export interface YearStatistics {
+  year: number;
+  problems: Record<string, Record<string, string>>;
+}
+
+export interface HallOfFameEntry {
+  name: string;
+  participant_id: number | null;
+  country_code: string;
+  gold: number;
+  silver: number;
+  bronze: number;
+  hm: number;
+  special_prizes: number;
+  perfect_scores: number;
+  participations: number;
+}
+
+
+export interface ParticipantInfo {
+  id: number;
+  name: string;
+  results: ParticipantResult[];
+}
+
+export interface ParticipantResult {
+  year: number;
+  country: string;
+  country_code: string;
+  p1: number | null;
+  p2: number | null;
+  p3: number | null;
+  p4: number | null;
+  p5: number | null;
+  p6: number | null;
+  p7: number | null;
+  total: number | null;
+  rank: number | null;
+  award: string;
+}
+
+export interface ResultsCountryEntry {
+  code: string;
+  country: string;
+  first_participation: number | null;
+  participations: number;
+  contestants_all: number;
+  contestants_male: number;
+  contestants_female: number;
+  distinct_contestants: number | null;
+  avg_persistence: number | null;
+  gold: number;
+  silver: number;
+  bronze: number;
+  hm: number;
+}
+
+export interface ResultsYearEntry {
+  year: number;
+  host_country: string;
+  num_countries: number | null;
+  contestants_all: number | null;
+  contestants_male: number | null;
+  contestants_female: number | null;
+  gold: number;
+  silver: number;
+  bronze: number;
+  hm: number;
+  max_points: number | null;
+  efficiency: number | null;
+  gold_cutoff: number | null;
+  silver_cutoff: number | null;
+  bronze_cutoff: number | null;
+}
+
+export interface ResultsMatrixData {
+  [countryCode: string]: Record<string, number>;
+}
+
+export interface CountryTeamRow {
+  year: number;
+  team_size_all: number | null;
+  p1: number | null; p2: number | null; p3: number | null;
+  p4: number | null; p5: number | null; p6: number | null;
+  p7: number | null;
+  total: number | null;
+  rank: number | null;
+  awards_gold: number | null;
+  awards_silver: number | null;
+  awards_bronze: number | null;
+  awards_hm: number | null;
+  leader: string;
+  deputy_leader: string;
+}
+
+export interface CountryIndivRow {
+  year: number;
+  name: string;
+  participant_id: number | null;
+  p1: number | null; p2: number | null; p3: number | null;
+  p4: number | null; p5: number | null; p6: number | null;
+  p7: number | null;
+  total: number | null;
+  rank: number | null;
+  award: string;
+}
+
+/**
+ * Format a date string like "10.7. - 20.7." into
+ * locale-specific format without the year, e.g.
+ * "Jul 10 – Jul 20" in en-US.
+ * Uses a fixed reference year internally for parsing.
+ */
+export function formatDate(
+  raw: string,
+  locale?: string,
+): string {
+  if (!raw) return "";
+  const fmt = (d: number, m: number) => {
+    const date = new Date(2000, m - 1, d);
+    return date.toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+    });
+  };
+  // pattern: "10.7. - 20.7." or "10.7."
+  const parts = raw.split("-").map(s => s.trim());
+  const parse = (s: string) => {
+    const m = s.match(/^(\d+)\.(\d+)\./);
+    return m ? [Number(m[1]), Number(m[2])] as const : null;
+  };
+  const a = parse(parts[0]);
+  if (!a) return raw;
+  if (parts.length === 2) {
+    const b = parse(parts[1]);
+    if (b) return `${fmt(a[0], a[1])} – ${fmt(b[0], b[1])}`;
+  }
+  return fmt(a[0], a[1]);
+}
+
+export function isIndividualContestant(code: string): boolean {
+  return /^C\d+$/.test(code);
+}
+
+export interface DistBucket {
+  score: number;
+  gold: number;
+  silver: number;
+  bronze: number;
+  hm: number;
+  none: number;
+  rankMin: number | null;
+  rankMax: number | null;
+}
+
+export function buildDistBuckets(
+  results: IndividualResult[],
+  maxScore = 42,
+): DistBucket[] {
+  const buckets: DistBucket[] = [];
+  for (let s = 0; s <= maxScore; s++) {
+    buckets.push({
+      score: s,
+      gold: 0, silver: 0, bronze: 0,
+      hm: 0, none: 0,
+      rankMin: null, rankMax: null,
+    });
+  }
+  for (const r of results) {
+    if (r.total == null || r.total < 0
+      || r.total > maxScore) continue;
+    const bucket = buckets[r.total];
+    const t = awardType(r.award);
+    if (t === "gold") bucket.gold++;
+    else if (t === "silver") bucket.silver++;
+    else if (t === "bronze") bucket.bronze++;
+    else if (t === "hm") bucket.hm++;
+    else bucket.none++;
+    if (r.rank != null) {
+      bucket.rankMin = bucket.rankMin == null
+        ? r.rank : Math.min(bucket.rankMin, r.rank);
+      bucket.rankMax = bucket.rankMax == null
+        ? r.rank : Math.max(bucket.rankMax, r.rank);
+    }
+  }
+  return buckets;
+}
+
+export type AssetFetcher = (req: Request) => Promise<Response>;
+
+let _assetFetcher: AssetFetcher | undefined;
+
+try {
+  const mod = await import("cloudflare:workers");
+  if (mod.env?.ASSETS?.fetch) {
+    _assetFetcher = mod.env.ASSETS.fetch.bind(mod.env.ASSETS);
+  }
+} catch {
+  // Not running on Cloudflare Workers — use global fetch
+}
+
+async function fetchJson<T>(filename: string, origin: string): Promise<T> {
+  const url = new URL(`/data/${filename}`, origin);
+  const resp = _assetFetcher
+    ? await _assetFetcher(new Request(url))
+    : await fetch(url);
+  if (!resp.ok) throw new Error(`Failed to load ${filename}: ${resp.status}`);
+  return resp.json() as Promise<T>;
+}
+
+export const loadTimeline = (o: string) => fetchJson<TimelineEntry[]>("timeline.json", o);
+export const loadCountries = (o: string) => fetchJson<Country[]>("countries.json", o);
+export const loadCountryResultsByYear = (o: string) => fetchJson<Record<string, CountryResult[]>>("country_results_by_year.json", o);
+export const loadIndividualResultsByYear = (o: string) => fetchJson<Record<string, IndividualResult[]>>("individual_results_by_year.json", o);
+export const loadYearInfo = (o: string) => fetchJson<Record<string, YearInfo>>("year_info.json", o);
+export const loadYearStatistics = (o: string) => fetchJson<Record<string, YearStatistics>>("year_statistics.json", o);
+export const loadHallOfFame = (o: string) => fetchJson<HallOfFameEntry[]>("hall_of_fame.json", o);
+export const loadParticipants = (o: string) => fetchJson<Record<string, ParticipantInfo>>("participants.json", o);
+export const loadResultsCountry = (o: string) => fetchJson<ResultsCountryEntry[]>("results_country.json", o);
+export const loadResultsYear = (o: string) => fetchJson<ResultsYearEntry[]>("results_year.json", o);
+export const loadResultsMatrix = (o: string) => fetchJson<ResultsMatrixData>("results_matrix.json", o);

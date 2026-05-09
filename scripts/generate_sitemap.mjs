@@ -1,29 +1,26 @@
 #!/usr/bin/env node
 /**
- * Generates public/sitemap.xml from page files + data JSON.
- * Run via: npm run sitemap  (or automatically via prebuild)
+ * Generates static/sitemap.xml from route dirs + data JSON.
+ * Run via: pnpm run sitemap
  */
-import { readFileSync, writeFileSync, readdirSync } from "fs";
+import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FRONTEND = join(__dirname, "..", "frontend");
-const DATA_DIR = join(FRONTEND, "public", "data");
-const PAGES_DIR = join(FRONTEND, "src", "pages");
-const OUT = join(FRONTEND, "public", "sitemap.xml");
+const ROOT = join(__dirname, "..");
+const DATA_DIR = join(ROOT, "src", "lib", "data");
+const ROUTES_DIR = join(ROOT, "src", "routes");
+const OUT = join(ROOT, "static", "sitemap.xml");
 const BASE = "https://imo-mirror.org";
 const TODAY = new Date().toISOString().slice(0, 10);
 
-// --- Detect redirect-only pages (entire frontmatter is a redirect) ---
-function isRedirectOnly(file) {
-  const src = readFileSync(join(PAGES_DIR, file), "utf-8");
-  // Extract frontmatter between first pair of ---
-  const match = src.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return false;
-  const fm = match[1].trim();
-  // Redirect-only: frontmatter is just `return Astro.redirect(...)`
-  return /^return\s+Astro\.redirect\(/.test(fm);
+// --- Detect redirect-only routes (+page.server.ts with redirect) ---
+function isRedirectOnly(routeDir) {
+  const serverFile = join(ROUTES_DIR, routeDir, "+page.server.ts");
+  if (!existsSync(serverFile)) return false;
+  const src = readFileSync(serverFile, "utf-8");
+  return /redirect\(/.test(src);
 }
 
 // Pages that require query params to show content;
@@ -44,19 +41,19 @@ const DYNAMIC_PAGES = new Set([
 
 // --- Collect static page routes ---
 function staticRoutes() {
-  const files = readdirSync(PAGES_DIR).filter(
-    (f) => f.endsWith(".astro") && f !== "404.astro"
-  );
+  const dirs = readdirSync(ROUTES_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
   const routes = [];
-  for (const f of files) {
-    if (isRedirectOnly(f)) continue;
-    const page = f.replace(".astro", "");
+  // Root page
+  if (existsSync(join(ROUTES_DIR, "+page.svelte"))) {
+    routes.push({ loc: "/", priority: "1.0", changefreq: "monthly" });
+  }
+  for (const dir of dirs) {
+    if (isRedirectOnly(dir)) continue;
+    const page = dir; // e.g. "countries.aspx"
     if (DYNAMIC_PAGES.has(page)) continue;
-    if (f === "index.astro") {
-      routes.push({ loc: "/", priority: "1.0", changefreq: "monthly" });
-    } else {
-      routes.push({ loc: "/" + page, priority: "0.8", changefreq: "monthly" });
-    }
+    routes.push({ loc: "/" + page, priority: "0.8", changefreq: "monthly" });
   }
   return routes;
 }
@@ -80,10 +77,8 @@ function dynamicRoutes() {
     "country_team_r.aspx",
   ];
   for (const page of countryPages) {
-    // Only include if the .astro file exists
-    const astroFile = page + ".astro";
-    const files = readdirSync(PAGES_DIR);
-    if (!files.includes(astroFile)) continue;
+    // Only include if the route dir exists
+    if (!existsSync(join(ROUTES_DIR, page))) continue;
     for (const code of codes) {
       routes.push({
         loc: `/${page}?code=${code}`,
@@ -105,9 +100,7 @@ function dynamicRoutes() {
     "year_statistics.aspx",
   ];
   for (const page of yearPages) {
-    const astroFile = page + ".astro";
-    const files = readdirSync(PAGES_DIR);
-    if (!files.includes(astroFile)) continue;
+    if (!existsSync(join(ROUTES_DIR, page))) continue;
     for (const year of years) {
       routes.push({
         loc: `/${page}?year=${year}`,

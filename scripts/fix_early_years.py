@@ -52,19 +52,27 @@ INDIVIDUAL RESULTS (individual_results_by_year.json):
 import json
 from pathlib import Path
 
-DATA_SRC = Path(__file__).parent.parent / "data"
-DATA_DST = Path(__file__).parent.parent / "frontend" / "public" / "data"
+DATA_DIR = Path(__file__).parent.parent / "src" / "lib" / "data"
+MASSIVE_DIR = DATA_DIR / "massive"
 
 
 def load(name):
-    with open(DATA_SRC / name) as f:
+    path = MASSIVE_DIR / name if name in (
+        "country_results_by_year.json",
+        "individual_results_by_year.json",
+    ) else DATA_DIR / name
+    with open(path) as f:
         return json.load(f)
 
 
 def save(name, data):
-    with open(DATA_DST / name, "w") as f:
+    path = MASSIVE_DIR / name if name in (
+        "country_results_by_year.json",
+        "individual_results_by_year.json",
+    ) else DATA_DIR / name
+    with open(path, "w") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-    print(f"  Saved {name}")
+    print(f"  Saved {path}")
 
 
 def assign_ranks(entries, score_key="total"):

@@ -19,7 +19,8 @@ import sys
 from pathlib import Path
 from collections import Counter
 
-DATA = Path(__file__).parent.parent / "data"
+DATA = Path(__file__).parent.parent / "src" / "lib" / "data"
+MASSIVE = DATA / "massive"
 ISSUES = []
 
 
@@ -28,7 +29,11 @@ def warn(category, msg):
 
 
 def load(name):
-    with open(DATA / name) as f:
+    path = MASSIVE / name if name in (
+        "country_results_by_year.json",
+        "individual_results_by_year.json",
+    ) else DATA / name
+    with open(path) as f:
         return json.load(f)
 
 

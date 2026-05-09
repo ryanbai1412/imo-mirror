@@ -1,0 +1,83 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import { loadParticipants, loadCountries } from "../utils/data";
+import { sortData, parseSortParams } from "../utils/sort";
+import SortableTableHead from "../components/SortableTableHead.astro";
+import { awardType } from "../utils/awardClass";
+import { countryNavItems } from "../utils/nav";
+
+const origin = Astro.url.origin;
+const code = Astro.url.searchParams.get("code") || "";
+if (!code) return Astro.redirect("/countries.aspx");
+
+const [participants, countries] = await Promise.all([
+  loadParticipants(origin),
+  loadCountries(origin),
+]);
+
+const country = countries.find(c => c.code === code);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+
+interface HallRow { id: number; name: string; participations: number; gold: number; silver: number; bronze: number; hm: number; total_medals: number; }
+const hallMap = new Map<number, HallRow>();
+for (const p of Object.values(participants)) {
+  for (const r of p.results) {
+    if (r.country_code !== code) continue;
+    let entry = hallMap.get(p.id);
+    if (!entry) {
+      entry = { id: p.id, name: p.name, participations: 0, gold: 0, silver: 0, bronze: 0, hm: 0, total_medals: 0 };
+      hallMap.set(p.id, entry);
+    }
+    entry.participations++;
+    const t = awardType(r.award);
+    if (t === "gold") entry.gold++;
+    else if (t === "silver") entry.silver++;
+    else if (t === "bronze") entry.bronze++;
+    else if (t === "hm") entry.hm++;
+    entry.total_medals = entry.gold + entry.silver + entry.bronze + entry.hm;
+  }
+}
+let rows = Array.from(hallMap.values()).sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze);
+if (column) rows = sortData(rows, column, order);
+
+const cols = [
+  { key: "name", label: "Name" },
+  { key: "participations", label: "Part.", title: "Participations", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", title: "Gold medals", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", title: "Silver medals", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", title: "Bronze medals", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", title: "Honourable Mention", align: "center", defaultOrder: "desc" as const },
+  { key: "total_medals", label: "Total", align: "center", defaultOrder: "desc" as const },
+];
+---
+
+<Layout title={`${country?.name || code} — Hall of Fame`} description={`Top IMO performers from ${country?.name || code}. Medal counts and participation history for all contestants.`} path={`/country_hall.aspx?code=${code}`}>
+  <div class="page-content">
+    <PageHeader title={`${country?.name || code} — Hall of Fame`} navItems={countryNavItems(code)} currentPath={`/country_hall.aspx?code=${code}`}>
+      <Fragment slot="title">
+        {country?.flag_url && <img src={country.flag_url} alt={code} class="country-flag-large" />}
+        {country?.name || code} &mdash; Hall of Fame
+      </Fragment>
+    </PageHeader>
+
+    <div class="table-container">
+      <table class="data-table">
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
+        <tbody>
+          {rows.map((row) => (
+            <tr>
+              <td><a href={`/participant_r.aspx?id=${row.id}`}>{row.name}</a></td>
+              <td class="text-center">{row.participations}</td>
+              <td class="text-center">{row.gold > 0 ? <span class="award-gold-medal">{row.gold}</span> : ""}</td>
+              <td class="text-center">{row.silver > 0 ? <span class="award-silver-medal">{row.silver}</span> : ""}</td>
+              <td class="text-center">{row.bronze > 0 ? <span class="award-bronze-medal">{row.bronze}</span> : ""}</td>
+              <td class="text-center">{row.hm > 0 ? <span class="award-honourable-mention">{row.hm}</span> : ""}</td>
+              <td class="text-center">{row.total_medals}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

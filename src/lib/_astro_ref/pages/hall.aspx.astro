@@ -1,0 +1,50 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CountryLink from "../components/CountryLink.astro";
+import { loadHallOfFame } from "../utils/data";
+import { sortData, parseSortParams } from "../utils/sort";
+import SortableTableHead from "../components/SortableTableHead.astro";
+
+const origin = Astro.url.origin;
+const hallOfFame = await loadHallOfFame(origin);
+const { column, order } = parseSortParams(Astro.url.searchParams);
+const sorted = column ? sortData(hallOfFame, column, order) : hallOfFame;
+
+const cols = [
+  { key: "name", label: "Name" },
+  { key: "country_code", label: "Country" },
+  { key: "participations", label: "Part.", title: "Participations", align: "center", defaultOrder: "desc" as const },
+  { key: "gold", label: "G", title: "Gold medals", align: "center", defaultOrder: "desc" as const },
+  { key: "silver", label: "S", title: "Silver medals", align: "center", defaultOrder: "desc" as const },
+  { key: "bronze", label: "B", title: "Bronze medals", align: "center", defaultOrder: "desc" as const },
+  { key: "hm", label: "HM", title: "Honourable Mention", align: "center", defaultOrder: "desc" as const },
+  { key: "special_prizes", label: "Special Prizes", align: "center", defaultOrder: "desc" as const },
+  { key: "perfect_scores", label: "Perfect Scores", align: "center", defaultOrder: "desc" as const },
+];
+---
+
+<Layout title="Hall of Fame" description="Top performers at the International Mathematical Olympiad. Gold medalists, perfect scorers, and record holders across all years." path="/hall.aspx">
+  <div class="page-content">
+    <h2>Hall of Fame</h2>
+    <div class="table-container">
+      <table class="data-table">
+        <SortableTableHead cols={cols} url={Astro.url} column={column} order={order} />
+        <tbody>
+          {sorted.map((entry) => (
+            <tr>
+              <td>{entry.participant_id ? <a href={`/participant_r.aspx?id=${entry.participant_id}`}>{entry.name}</a> : entry.name}</td>
+              <td><CountryLink code={entry.country_code} /></td>
+              <td class="text-center">{entry.participations}</td>
+              <td class="text-center">{entry.gold > 0 ? <span class="award-gold-medal">{entry.gold}</span> : ""}</td>
+              <td class="text-center">{entry.silver > 0 ? <span class="award-silver-medal">{entry.silver}</span> : ""}</td>
+              <td class="text-center">{entry.bronze > 0 ? <span class="award-bronze-medal">{entry.bronze}</span> : ""}</td>
+              <td class="text-center">{entry.hm > 0 ? <span class="award-honourable-mention">{entry.hm}</span> : ""}</td>
+              <td class="text-center">{entry.special_prizes || ""}</td>
+              <td class="text-center">{entry.perfect_scores || ""}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

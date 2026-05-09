@@ -19,10 +19,12 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://www.imo-official.org"
 WAYBACK_PREFIX = "https://web.archive.org/web/2025"
-DATA_DIR = Path(__file__).parent.parent / "data"
+DATA_DIR = Path(__file__).parent.parent / "src" / "lib" / "data"
+MASSIVE_DIR = DATA_DIR / "massive"
 CACHE_DIR = Path(__file__).parent.parent / ".cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+MASSIVE_DIR.mkdir(parents=True, exist_ok=True)
 
 SESSION = requests.Session()
 SESSION.headers.update({
@@ -956,6 +958,15 @@ def save_json(data, filename):
     print(f"  Saved {filepath}")
 
 
+def save_massive(data, filename):
+    """Save large data file to massive/ subdirectory."""
+    filepath = MASSIVE_DIR / filename
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"  Saved {filepath}")
+
+
 def main():
     print("=" * 60)
     print("IMO Data Scraper")
@@ -1041,9 +1052,9 @@ def main():
         if ys:
             all_year_stats[str(year)] = ys
 
-    # Save per-year data
-    save_json(all_country_results, "country_results_by_year.json")
-    save_json(all_individual_results, "individual_results_by_year.json")
+    # Save per-year data (large files → massive/)
+    save_massive(all_country_results, "country_results_by_year.json")
+    save_massive(all_individual_results, "individual_results_by_year.json")
     save_json(all_year_info, "year_info.json")
     save_json(all_year_stats, "year_statistics.json")
 
