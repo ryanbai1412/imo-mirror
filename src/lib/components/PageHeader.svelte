@@ -12,7 +12,11 @@
     right,
   }: {
     title: string;
-    navItems: { label: string; href: string }[];
+    navItems: {
+      label: string;
+      shortLabel?: string;
+      href: string;
+    }[];
     currentPath: string;
     prevHref?: string | undefined;
     nextHref?: string | undefined;
@@ -42,9 +46,14 @@
       <div class="pill-nav-scroll">
         <nav class="pill-nav">
           {#each navItems as item (item.href)}
-            <a href={item.href} class:active={currentPath === item.href}
-              >{item.label}</a
-            >
+            <a href={item.href} class:active={currentPath === item.href}>
+              {#if item.shortLabel}
+                <span class="label-short">{item.shortLabel}</span>
+                <span class="label-full">{item.label}</span>
+              {:else}
+                {item.label}
+              {/if}
+            </a>
           {/each}
         </nav>
       </div>
@@ -93,10 +102,21 @@
     background: var(--color-navy);
     color: var(--color-surface);
   }
+  .label-full {
+    display: none;
+  }
   @media (max-width: 767px) {
     .pill-nav a {
       padding: 7px 14px;
       font-size: 12px;
+    }
+  }
+  @media (min-width: 768px) {
+    .label-short {
+      display: none;
+    }
+    .label-full {
+      display: inline;
     }
   }
 </style>

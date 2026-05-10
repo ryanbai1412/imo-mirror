@@ -5,7 +5,7 @@
     "contact": "Onder Akkusci <onderakkuscu@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/AFG.webp"
   },
   {
     "code": "ALB",
@@ -13,7 +13,7 @@
     "contact": "Adrian Naço <nacosotir@gmail.com>",
     "website": "https://www.ama.org.al/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ALB.webp"
   },
   {
     "code": "ALG",
@@ -21,7 +21,7 @@
     "contact": "Abdelhafid Hadjsadok - Abdallah Rahmani <olympiades@education.gov.dz>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ALG.webp"
   },
   {
     "code": "AGO",
@@ -29,7 +29,7 @@
     "contact": "Gabriel Boaventura <gabrielboaventura1968@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/AGO.webp"
   },
   {
     "code": "ARG",
@@ -40,7 +40,7 @@
       1997,
       2012
     ],
-    "flag_url": ""
+    "flag_url": "/flags/ARG.webp"
   },
   {
     "code": "ARM",
@@ -48,7 +48,7 @@
     "contact": "Gurgen Asatryan <asatryangurgen21@gmail.com>",
     "website": "http://www.olymp.am/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ARM.webp"
   },
   {
     "code": "AUS",
@@ -59,7 +59,7 @@
       1988,
       2025
     ],
-    "flag_url": ""
+    "flag_url": "/flags/AUS.webp"
   },
   {
     "code": "AUT",
@@ -69,7 +69,7 @@
     "host_years": [
       1976
     ],
-    "flag_url": ""
+    "flag_url": "/flags/AUT.webp"
   },
   {
     "code": "AZE",
@@ -77,7 +77,7 @@
     "contact": "Fuad Garayev <fuad.qarayev@edu.gov.az>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/AZE.webp"
   },
   {
     "code": "BAH",
@@ -85,7 +85,7 @@
     "contact": "",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BAH.webp"
   },
   {
     "code": "BGD",
@@ -93,7 +93,7 @@
     "contact": "Mahbub Majumdar <where.is.mahbub@gmail.com>",
     "website": "http://www.matholympiad.org.bd/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BGD.webp"
   },
   {
     "code": "BLR",
@@ -101,7 +101,7 @@
     "contact": "David Zmiaikou <david.zmiaikou@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BLR.webp"
   },
   {
     "code": "BEL",
@@ -109,7 +109,7 @@
     "contact": "Bart Windels <bart.windels@telenet.be>",
     "website": "https://www.vwo.be/vwo/belgianmatholympiads",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BEL.webp"
   },
   {
     "code": "BEN",
@@ -117,7 +117,7 @@
     "contact": "Leonard Todjihounde <leonardt67@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BEN.webp"
   },
   {
     "code": "BTN",
@@ -125,7 +125,7 @@
     "contact": "Yeshey Lhendup <yesheylhendup@moe.gov.bt>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BTN.webp"
   },
   {
     "code": "BOL",
@@ -133,7 +133,7 @@
     "contact": "Sonia Cordero Cárdenas <soniacordero3r@gmail.com>",
     "website": "https://www.omatbol.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BOL.webp"
   },
   {
     "code": "BIH",
@@ -141,7 +141,7 @@
     "contact": "Muharem Avdispahić <mavdispa@pmf.unsa.ba>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BIH.webp"
   },
   {
     "code": "BWA",
@@ -149,7 +149,7 @@
     "contact": "Mmoloki Lekhutlile <mlekhutlile@gmail.com>",
     "website": "https://mabtrust.co.bw/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BWA.webp"
   },
   {
     "code": "BRA",
@@ -159,7 +159,7 @@
     "host_years": [
       2017
     ],
-    "flag_url": ""
+    "flag_url": "/flags/BRA.webp"
   },
   {
     "code": "BRU",
@@ -167,7 +167,7 @@
     "contact": "Syed Rozman bin Haji Syed Abd Rahim <rozmansr@hotmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BRU.webp"
   },
   {
     "code": "BGR",
@@ -178,7 +178,7 @@
       1966,
       1975
     ],
-    "flag_url": ""
+    "flag_url": "/flags/BGR.webp"
   },
   {
     "code": "BFA",
@@ -186,7 +186,7 @@
     "contact": "Antonio Kambiré <antoniokambire@gmail.com>",
     "website": "https://cmathburkina.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/BFA.webp"
   },
   {
     "code": "KHM",
@@ -194,7 +194,7 @@
     "contact": "Seam Ngonn <seamngonn@yahoo.fr>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/KHM.webp"
   },
   {
     "code": "CMR",
@@ -202,7 +202,7 @@
     "contact": "Joseph Domguia <imocmr@gmail.com>",
     "website": "https://olympiad.cm/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/CMR.webp"
   },
   {
     "code": "CAN",
@@ -212,7 +212,7 @@
     "host_years": [
       1995
     ],
-    "flag_url": ""
+    "flag_url": "/flags/CAN.webp"
   },
   {
     "code": "CHI",
@@ -220,7 +220,7 @@
     "contact": "Hernan Burgos <hernan.burgos@ufrontera.cl>",
     "website": "http://www.olimpiadadematematica.cl/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/CHI.webp"
   },
   {
     "code": "CHN",
@@ -231,7 +231,7 @@
       1990,
       2026
     ],
-    "flag_url": ""
+    "flag_url": "/flags/CHN.webp"
   },
   {
     "code": "COL",
@@ -241,7 +241,7 @@
     "host_years": [
       2013
     ],
-    "flag_url": ""
+    "flag_url": "/flags/COL.webp"
   },
   {
     "code": "CIS",
@@ -257,7 +257,7 @@
     "contact": "Comisión de las Olimpiadas Costarricenses de Matemáticas <olcoma@ucr.ac.cr>",
     "website": "http://olcoma.ac.cr/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/CRI.webp"
   },
   {
     "code": "HRV",
@@ -265,7 +265,7 @@
     "contact": "Matija Bašić <mbasic@math.hr>",
     "website": "http://www.matematika.hr/index.php/natjecanja/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/HRV.webp"
   },
   {
     "code": "CUB",
@@ -275,7 +275,7 @@
     "host_years": [
       1987
     ],
-    "flag_url": ""
+    "flag_url": "/flags/CUB.webp"
   },
   {
     "code": "CYP",
@@ -283,7 +283,7 @@
     "contact": "Gregory Makrides <makrides.g@eaecnet.com>",
     "website": "http://www.cms.org.cy/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/CYP.webp"
   },
   {
     "code": "CZE",
@@ -291,7 +291,7 @@
     "contact": "Pavel Calábek <pavel.calabek@upol.cz>",
     "website": "http://www.matematickaolympiada.cz/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/CZE.webp"
   },
   {
     "code": "CZS",
@@ -311,7 +311,7 @@
     "contact": "Kirsten Rosenkilde <kr@georgmohr.dk>",
     "website": "http://www.georgmohr.dk/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/DEN.webp"
   },
   {
     "code": "DOM",
@@ -319,7 +319,7 @@
     "contact": "Zulaicka M. Guzmán G. <zulaicka.guzman@minerd.gob.do>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/DOM.webp"
   },
   {
     "code": "ECU",
@@ -327,7 +327,7 @@
     "contact": "Jorge Chamaidan <jchamaidan@yahoo.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ECU.webp"
   },
   {
     "code": "EGY",
@@ -335,7 +335,7 @@
     "contact": "",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/EGY.webp"
   },
   {
     "code": "EST",
@@ -343,7 +343,7 @@
     "contact": "Oleg Košik <oleg.koshik@ut.ee>",
     "website": "http://www.math.olympiaadid.ut.ee/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/EST.webp"
   },
   {
     "code": "FIN",
@@ -353,7 +353,7 @@
     "host_years": [
       1985
     ],
-    "flag_url": ""
+    "flag_url": "/flags/FIN.webp"
   },
   {
     "code": "FRA",
@@ -363,7 +363,7 @@
     "host_years": [
       1983
     ],
-    "flag_url": ""
+    "flag_url": "/flags/FRA.webp"
   },
   {
     "code": "GMB",
@@ -371,7 +371,7 @@
     "contact": "Kolapo I. Abdul <youthcarefd@yahoo.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/GMB.webp"
   },
   {
     "code": "GEO",
@@ -379,7 +379,7 @@
     "contact": "George Chelidze <giorgi.chelidze@kiu.edu.ge>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/GEO.webp"
   },
   {
     "code": "GDR",
@@ -401,7 +401,7 @@
       1989,
       2009
     ],
-    "flag_url": ""
+    "flag_url": "/flags/GER.webp"
   },
   {
     "code": "GHA",
@@ -409,7 +409,7 @@
     "contact": "Joel M. Dogoe <admin@misemaths.org>",
     "website": "http://www.misemaths.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/GHA.webp"
   },
   {
     "code": "HEL",
@@ -419,7 +419,7 @@
     "host_years": [
       2004
     ],
-    "flag_url": ""
+    "flag_url": "/flags/HEL.webp"
   },
   {
     "code": "GTM",
@@ -427,7 +427,7 @@
     "contact": "José Carlos Bonilla <jcbonilla14@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/GTM.webp"
   },
   {
     "code": "HND",
@@ -435,7 +435,7 @@
     "contact": "Comité Hondureño de Olimpiadas Matemáticas <olimpiadamatematica.honduras@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/HND.webp"
   },
   {
     "code": "HKG",
@@ -446,7 +446,7 @@
       1994,
       2016
     ],
-    "flag_url": ""
+    "flag_url": "/flags/HKG.webp"
   },
   {
     "code": "HUN",
@@ -459,7 +459,7 @@
       1982,
       2027
     ],
-    "flag_url": ""
+    "flag_url": "/flags/HUN.webp"
   },
   {
     "code": "ISL",
@@ -467,7 +467,7 @@
     "contact": "Friđrik Diego <fd@hi.is>",
     "website": "http://stae.is/stak/keppnin",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ISL.webp"
   },
   {
     "code": "IND",
@@ -477,7 +477,7 @@
     "host_years": [
       1996
     ],
-    "flag_url": ""
+    "flag_url": "/flags/IND.webp"
   },
   {
     "code": "IDN",
@@ -485,7 +485,7 @@
     "contact": "Aleams Barra <aleamsbarra@gmail.com>",
     "website": "http://www.tomi.or.id/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/IDN.webp"
   },
   {
     "code": "IRQ",
@@ -493,7 +493,7 @@
     "contact": "Miri Tas <miritas2011@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/IRQ.webp"
   },
   {
     "code": "IRN",
@@ -501,7 +501,7 @@
     "contact": "Ali Partofard <alipartofard@ipm.ir>",
     "website": "http://www.mathysc.ir/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/IRN.webp"
   },
   {
     "code": "IRL",
@@ -509,7 +509,7 @@
     "contact": "Bernd Kreussler <bernd.kreussler@mic.ul.ie>",
     "website": "http://www.irmo.ie/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/IRL.webp"
   },
   {
     "code": "ISR",
@@ -517,7 +517,7 @@
     "contact": "Lev Radzivilovsky <levr78@hotmail.com>",
     "website": "http://www.weizmann.ac.il/zemed/gillis",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ISR.webp"
   },
   {
     "code": "ITA",
@@ -525,7 +525,7 @@
     "contact": "Massimo Gobbino <massimo.gobbino@unipi.it>",
     "website": "http://olimpiadi.dm.unibo.it/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ITA.webp"
   },
   {
     "code": "CIV",
@@ -533,7 +533,7 @@
     "contact": "Adama Coulibaly <couliba@yahoo.fr>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/CIV.webp"
   },
   {
     "code": "JAM",
@@ -541,7 +541,7 @@
     "contact": "Raymond McEachin <rmceachin@hotmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/JAM.webp"
   },
   {
     "code": "JPN",
@@ -552,7 +552,7 @@
       2003,
       2023
     ],
-    "flag_url": ""
+    "flag_url": "/flags/JPN.webp"
   },
   {
     "code": "KAZ",
@@ -562,7 +562,7 @@
     "host_years": [
       2010
     ],
-    "flag_url": ""
+    "flag_url": "/flags/KAZ.webp"
   },
   {
     "code": "KEN",
@@ -570,7 +570,7 @@
     "contact": "James Kiwanuka Katende <jkatende@uonbi.ac.ke>",
     "website": "http://kkmo-official.com/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/KEN.webp"
   },
   {
     "code": "PRK",
@@ -578,7 +578,7 @@
     "contact": "GI CHAN KIM <drkedu@163.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PRK.webp"
   },
   {
     "code": "KOR",
@@ -588,7 +588,7 @@
     "host_years": [
       2000
     ],
-    "flag_url": ""
+    "flag_url": "/flags/KOR.webp"
   },
   {
     "code": "KSV",
@@ -596,7 +596,7 @@
     "contact": "Armend Shabani <shoqata.matematikaneve@gmail.com>",
     "website": "http://www.kms-ks.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/KSV.webp"
   },
   {
     "code": "KWT",
@@ -604,7 +604,7 @@
     "contact": "Adnan Abdulmuhsen <Cjakmian@kfas.org.kw>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/KWT.webp"
   },
   {
     "code": "KGZ",
@@ -612,7 +612,7 @@
     "contact": "Ishmatov Makhamadkhan <matematikLL@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/KGZ.webp"
   },
   {
     "code": "LAO",
@@ -620,7 +620,7 @@
     "contact": "Sackmone Sirisack <ssirisack2000@yahoo.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/LAO.webp"
   },
   {
     "code": "LVA",
@@ -628,7 +628,7 @@
     "contact": "Maruta Avotiņa <nms@lu.lv>",
     "website": "http://nms.lu.lv/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/LVA.webp"
   },
   {
     "code": "LBY",
@@ -636,7 +636,7 @@
     "contact": "",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/LBY.webp"
   },
   {
     "code": "LIE",
@@ -644,7 +644,7 @@
     "contact": "Arnaud Maret <a.maret@mathematical.olympiad.ch>",
     "website": "https://mathematical.olympiad.ch/en/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/LIE.webp"
   },
   {
     "code": "LTU",
@@ -652,7 +652,7 @@
     "contact": "Aivaras Novikas <aivaras.novikas@mif.vu.lt>",
     "website": "https://mif.vu.lt/matematikos-olimpiados/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/LTU.webp"
   },
   {
     "code": "LUX",
@@ -660,7 +660,7 @@
     "contact": "Mike Dostert <mike.dostert@education.lu>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/LUX.webp"
   },
   {
     "code": "MAC",
@@ -668,7 +668,7 @@
     "contact": "Ieng Tak Long <itleong@um.edu.mo>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MAC.webp"
   },
   {
     "code": "MDG",
@@ -676,7 +676,7 @@
     "contact": "Fanja Rakotondrajao <frakoton@yahoo.fr>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MDG.webp"
   },
   {
     "code": "MAS",
@@ -684,7 +684,7 @@
     "contact": "M. Suhaimi Ramly <contact@imo-malaysia.org>",
     "website": "https://imo-malaysia.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MAS.webp"
   },
   {
     "code": "MRT",
@@ -692,7 +692,7 @@
     "contact": "Horma Ould HAMOUD <horma04@yahoo.fr>",
     "website": "https://maurimath.net/Olympiades.php",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MRT.webp"
   },
   {
     "code": "MEX",
@@ -702,7 +702,7 @@
     "host_years": [
       2005
     ],
-    "flag_url": ""
+    "flag_url": "/flags/MEX.webp"
   },
   {
     "code": "MDA",
@@ -710,7 +710,7 @@
     "contact": "Anatolie Topala <anatoltop@yahoo.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MDA.webp"
   },
   {
     "code": "MNG",
@@ -720,7 +720,7 @@
     "host_years": [
       2029
     ],
-    "flag_url": ""
+    "flag_url": "/flags/MNG.webp"
   },
   {
     "code": "MNE",
@@ -728,7 +728,7 @@
     "contact": "Tatjana Vujosevic <tatjana.vujosevic@iccg.edu.me>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MNE.webp"
   },
   {
     "code": "MAR",
@@ -736,7 +736,7 @@
     "contact": "ASENSOUYIS Hassan <hassan_asensouyis@yahoo.fr>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MAR.webp"
   },
   {
     "code": "MOZ",
@@ -744,7 +744,7 @@
     "contact": "Luis de Nascimento Paulo <nascimento@mined.gov.mz>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MOZ.webp"
   },
   {
     "code": "MMR",
@@ -752,7 +752,7 @@
     "contact": "HTIN AUNG <grandpahtinaung@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MMR.webp"
   },
   {
     "code": "NAM",
@@ -760,7 +760,7 @@
     "contact": "Martin Mugochi <mmugochi@unam.na>",
     "website": "https://nmo.ncrst.na/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/NAM.webp"
   },
   {
     "code": "NPL",
@@ -768,7 +768,7 @@
     "contact": "Binod Prasad Pant <binod@kusoed.edu.np>",
     "website": "https://www.mathassociationnepal.org.np/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/NPL.webp"
   },
   {
     "code": "NLD",
@@ -778,7 +778,7 @@
     "host_years": [
       2011
     ],
-    "flag_url": ""
+    "flag_url": "/flags/NLD.webp"
   },
   {
     "code": "NZL",
@@ -786,7 +786,7 @@
     "contact": "Kevin Shen <info@mathsolympiad.org.nz>",
     "website": "https://www.mathsolympiad.org.nz/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/NZL.webp"
   },
   {
     "code": "NIC",
@@ -794,7 +794,7 @@
     "contact": "Hank de Jesús Espinoza Serrano <hankchuus@yahoo.com>",
     "website": "http://www.asjtnic.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/NIC.webp"
   },
   {
     "code": "NGA",
@@ -802,7 +802,7 @@
     "contact": "Promise Mebine <p.mebine@yahoo.com>",
     "website": "http://www.nmcabuja.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/NGA.webp"
   },
   {
     "code": "MKD",
@@ -810,7 +810,7 @@
     "contact": "Gjorgji Markoski <gorgi.markoski@gmail.com>",
     "website": "https://smm.org.mk/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/MKD.webp"
   },
   {
     "code": "NOR",
@@ -820,7 +820,7 @@
     "host_years": [
       2022
     ],
-    "flag_url": ""
+    "flag_url": "/flags/NOR.webp"
   },
   {
     "code": "OMN",
@@ -828,7 +828,7 @@
     "contact": "Maya Al Azri <mayaalazri@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/OMN.webp"
   },
   {
     "code": "PAK",
@@ -836,7 +836,7 @@
     "contact": "Sarfraz Ahmad <sarfrazahmad@cuilahore.edu.pk>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PAK.webp"
   },
   {
     "code": "PSE",
@@ -844,7 +844,7 @@
     "contact": "Dr. Mohamed Khalil <imo.palestine@moe.edu.ps>",
     "website": "https://moe.edu.ps/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PSE.webp"
   },
   {
     "code": "PAN",
@@ -852,7 +852,7 @@
     "contact": "Pedro A. Marrone G. <pmarrone@opm.org.pa>",
     "website": "http://www.opm.org.pa/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PAN.webp"
   },
   {
     "code": "PAR",
@@ -860,7 +860,7 @@
     "contact": "Gabriela Gómez Pasquali <gabriela@omapa.org.py>",
     "website": "http://www.omapa.org.py/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PAR.webp"
   },
   {
     "code": "PER",
@@ -868,7 +868,7 @@
     "contact": "Comisión de Olimpiadas de la Sociedad Matemática Peruana <olimpiadas.matematicas@pucp.pe>",
     "website": "https://selectivos-peru.blogspot.com/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PER.webp"
   },
   {
     "code": "PHI",
@@ -876,7 +876,7 @@
     "contact": "Hazel Joy Shi <hgshi@up.edu.ph>",
     "website": "https://pmo.ph/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PHI.webp"
   },
   {
     "code": "POL",
@@ -888,7 +888,7 @@
       1972,
       1986
     ],
-    "flag_url": ""
+    "flag_url": "/flags/POL.webp"
   },
   {
     "code": "POR",
@@ -896,7 +896,7 @@
     "contact": "Joana Teles <jteles@mat.uc.pt>",
     "website": "http://www.spm.pt/olimpiadas",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/POR.webp"
   },
   {
     "code": "PRI",
@@ -904,7 +904,7 @@
     "contact": "Luis F. Cáceres <luis.caceres1@upr.edu>",
     "website": "http://om.pr/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/PRI.webp"
   },
   {
     "code": "QAT",
@@ -912,7 +912,7 @@
     "contact": "",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/QAT.webp"
   },
   {
     "code": "ROU",
@@ -927,7 +927,7 @@
       1999,
       2018
     ],
-    "flag_url": ""
+    "flag_url": "/flags/ROU.webp"
   },
   {
     "code": "RUS",
@@ -939,7 +939,7 @@
       2020,
       2021
     ],
-    "flag_url": ""
+    "flag_url": "/flags/RUS.webp"
   },
   {
     "code": "RWA",
@@ -947,7 +947,7 @@
     "contact": "Arun Shanmuganathan <shan.arun@gmail.com>",
     "website": "https://rwandamatholympiad.com/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/RWA.webp"
   },
   {
     "code": "SLV",
@@ -955,7 +955,7 @@
     "contact": "Riquelmi Salvador Cardona Fuentes <riquelmi.cardona@jovenestalento.edu.sv>",
     "website": "https://www.jovenestalento.edu.sv/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/SLV.webp"
   },
   {
     "code": "SAU",
@@ -965,7 +965,7 @@
     "host_years": [
       2028
     ],
-    "flag_url": ""
+    "flag_url": "/flags/SAU.webp"
   },
   {
     "code": "SEN",
@@ -973,7 +973,7 @@
     "contact": "Samba Dabo <sdabo345@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/SEN.webp"
   },
   {
     "code": "SRB",
@@ -981,7 +981,7 @@
     "contact": "Miljan Knežević <kmiljan@matf.bg.ac.rs>",
     "website": "https://dms.rs/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/SRB.webp"
   },
   {
     "code": "SCG",
@@ -997,7 +997,7 @@
     "contact": "Yong Sheng Soh <matsys@nus.edu.sg>",
     "website": "http://sms.math.nus.edu.sg/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/SGP.webp"
   },
   {
     "code": "SVK",
@@ -1005,7 +1005,7 @@
     "contact": "Stanislav Krajči <stanislav.krajci@upjs.sk>",
     "website": "http://skmo.sk/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/SVK.webp"
   },
   {
     "code": "SVN",
@@ -1015,7 +1015,7 @@
     "host_years": [
       2006
     ],
-    "flag_url": ""
+    "flag_url": "/flags/SVN.webp"
   },
   {
     "code": "SAF",
@@ -1025,7 +1025,7 @@
     "host_years": [
       2014
     ],
-    "flag_url": ""
+    "flag_url": "/flags/SAF.webp"
   },
   {
     "code": "ESP",
@@ -1035,7 +1035,7 @@
     "host_years": [
       2008
     ],
-    "flag_url": ""
+    "flag_url": "/flags/ESP.webp"
   },
   {
     "code": "LKA",
@@ -1043,7 +1043,7 @@
     "contact": "Chanakya J. Wijeratne <chanakya_wijeratne@yahoo.com>",
     "website": "http://www.slmathsolympiad.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/LKA.webp"
   },
   {
     "code": "SWE",
@@ -1053,7 +1053,7 @@
     "host_years": [
       1991
     ],
-    "flag_url": ""
+    "flag_url": "/flags/SWE.webp"
   },
   {
     "code": "SUI",
@@ -1061,7 +1061,7 @@
     "contact": "Arnaud Maret <a.maret@mathematical.olympiad.ch>",
     "website": "https://mathematical.olympiad.ch/en/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/SUI.webp"
   },
   {
     "code": "SYR",
@@ -1069,7 +1069,7 @@
     "contact": "Hala Al Dakkak <dca.olympiad@gmail.com>",
     "website": "https://dca-net.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/SYR.webp"
   },
   {
     "code": "TWN",
@@ -1079,7 +1079,7 @@
     "host_years": [
       1998
     ],
-    "flag_url": ""
+    "flag_url": "/flags/TWN.webp"
   },
   {
     "code": "TJK",
@@ -1087,7 +1087,7 @@
     "contact": "Umed Karimov <u.h.karimov@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/TJK.webp"
   },
   {
     "code": "TZA",
@@ -1095,7 +1095,7 @@
     "contact": "Ertugrul Tarhan <ertugrultarhan72@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/TZA.webp"
   },
   {
     "code": "THA",
@@ -1105,7 +1105,7 @@
     "host_years": [
       2015
     ],
-    "flag_url": ""
+    "flag_url": "/flags/THA.webp"
   },
   {
     "code": "TTO",
@@ -1113,7 +1113,7 @@
     "contact": "Indra Haraksingh <iharaksingh@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/TTO.webp"
   },
   {
     "code": "TUN",
@@ -1121,7 +1121,7 @@
     "contact": "Taoufik Charrada <tawfik.charrada@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/TUN.webp"
   },
   {
     "code": "TUR",
@@ -1131,7 +1131,7 @@
     "host_years": [
       1993
     ],
-    "flag_url": ""
+    "flag_url": "/flags/TUR.webp"
   },
   {
     "code": "NCY",
@@ -1147,7 +1147,7 @@
     "contact": "Pirmyrat Gurbanov <pirgurban@gmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/TKM.webp"
   },
   {
     "code": "UGA",
@@ -1155,7 +1155,7 @@
     "contact": "Joseph Ssebuliba <ssebulibaa@gmail.com>",
     "website": "https://ums.ug/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/UGA.webp"
   },
   {
     "code": "UKR",
@@ -1163,7 +1163,7 @@
     "contact": "Bogdan Rublov <rublyovbv@gmail.com>",
     "website": "http://matholymp.com.ua/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/UKR.webp"
   },
   {
     "code": "UAE",
@@ -1171,7 +1171,7 @@
     "contact": "Ministry of Education <masterminds@moe.gov.ae>",
     "website": "http://competitions.ae/masterminds/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/UAE.webp"
   },
   {
     "code": "UNK",
@@ -1184,7 +1184,7 @@
       2019,
       2024
     ],
-    "flag_url": ""
+    "flag_url": "/flags/UNK.webp"
   },
   {
     "code": "USA",
@@ -1195,7 +1195,7 @@
       1981,
       2001
     ],
-    "flag_url": ""
+    "flag_url": "/flags/USA.webp"
   },
   {
     "code": "URY",
@@ -1203,7 +1203,7 @@
     "contact": "Nelson Chocca <nchocca@gmail.com>",
     "website": "http://com-partidauruguay.weebly.com/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/URY.webp"
   },
   {
     "code": "USS",
@@ -1223,7 +1223,7 @@
     "contact": "Science Olympiad Center <info@olympcenter.uz>",
     "website": "http://olympiad.uzedu.uz/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/UZB.webp"
   },
   {
     "code": "VEN",
@@ -1231,7 +1231,7 @@
     "contact": "Rafael Sánchez <lamonedar@gmail.com>",
     "website": "https://www.acmven.org/",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/VEN.webp"
   },
   {
     "code": "VNM",
@@ -1241,7 +1241,7 @@
     "host_years": [
       2007
     ],
-    "flag_url": ""
+    "flag_url": "/flags/VNM.webp"
   },
   {
     "code": "YEM",
@@ -1249,7 +1249,7 @@
     "contact": "Munaf Abood <munafabood@hotmail.com>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/YEM.webp"
   },
   {
     "code": "YUG",
@@ -1268,6 +1268,6 @@
     "contact": "A Stewart <stewarta@maths.uz.ac.zw>",
     "website": "",
     "host_years": [],
-    "flag_url": ""
+    "flag_url": "/flags/ZWE.webp"
   }
 ]
