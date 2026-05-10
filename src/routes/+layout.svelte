@@ -1,5 +1,4 @@
 <script lang="ts">
-  import "$lib/data-store";
   import "../app.css";
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
