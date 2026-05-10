@@ -122,16 +122,16 @@
         <img
           src="/imo-logo.webp"
           alt="IMO Logo"
-          class="h-9 w-auto shrink-0 rounded-sm"
+          class="h-6 w-auto shrink-0 rounded-sm"
           width="106"
           height="73"
         />
         <span
-          class="hidden font-display text-xl font-normal tracking-[0.01em] whitespace-nowrap sm:block"
+          class="hidden font-display text-xl font-normal tracking-[0.01em] whitespace-nowrap lg:block"
         >
           International Mathematical Olympiad
         </span>
-        <span class="font-display text-base font-normal sm:hidden">IMO</span>
+        <span class="font-display text-xl font-normal lg:hidden">IMO</span>
       </a>
 
       <!-- Desktop nav -->
