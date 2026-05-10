@@ -46,15 +46,23 @@
   let tableEl = $state<HTMLTableElement | undefined>(undefined);
 
   onMount(() => {
-    if (freezeCols >= 2 && tableEl) {
-      const firstTh = tableEl.querySelector("th:first-child");
-      if (firstTh) {
-        tableEl.style.setProperty(
-          "--freeze-col1-w",
-          firstTh.getBoundingClientRect().width + "px"
-        );
-      }
-    }
+    if (freezeCols < 2 || !tableEl) return;
+    const firstTh = tableEl.querySelector(
+      "th:first-child"
+    ) as HTMLElement | null;
+    if (!firstTh) return;
+
+    const update = () => {
+      tableEl!.style.setProperty(
+        "--freeze-col1-w",
+        firstTh.getBoundingClientRect().width + "px"
+      );
+    };
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(firstTh);
+    return () => ro.disconnect();
   });
 </script>
 
