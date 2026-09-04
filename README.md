@@ -120,7 +120,7 @@ never count against the Workers request quota.
 `not_found_handling: "single-page-application"`:
 
 ```bash
-pnpm build && pnpm dlx wrangler deploy
+pnpm build && pnpm dlx wrangler pages deploy
 ```
 
 ## License
