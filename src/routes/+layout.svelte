@@ -2,7 +2,9 @@
   import "../app.css";
   import type { Snippet } from "svelte";
   import { page } from "$app/state";
+  import { invalidateAll } from "$app/navigation";
   import { onMount } from "svelte";
+  import { markHydrated } from "$lib/utils/hydration";
 
   import Icon from "$lib/components/Icon.svelte";
   import CommandPalette from "$lib/components/CommandPalette.svelte";
@@ -71,6 +73,11 @@
   });
 
   onMount(() => {
+    // Prerendered pages hydrate without their query string;
+    // re-run load() now that the real URL can be applied.
+    markHydrated();
+    if (page.url.search) invalidateAll();
+
     function updateHeaderH() {
       if (headerEl) {
         document.documentElement.style.setProperty(

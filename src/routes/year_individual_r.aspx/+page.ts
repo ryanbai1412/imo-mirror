@@ -6,6 +6,9 @@ import {
 } from "$lib/utils/data";
 import { sortData, parseSortParams } from "$lib/utils/sort";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 export async function load({ url }) {
   const year = url.searchParams.get("year") || "";
   if (!year) redirect(302, "/results_year.aspx");

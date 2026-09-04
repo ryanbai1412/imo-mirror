@@ -3,8 +3,10 @@ import {
   loadTimeline,
   isIndividualContestant,
 } from "$lib/utils/data";
+import { pageUrl } from "$lib/utils/sort";
 
-export function load({ url }) {
+export function load({ url: rawUrl }) {
+  const url = pageUrl(rawUrl);
   const matrix = loadResultsMatrix();
   const timeline = loadTimeline();
 

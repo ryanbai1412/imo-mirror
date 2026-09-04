@@ -1,0 +1,13 @@
+// Cloudflare Workers "static assets only" deployment: no Worker
+// script is defined, so requests never count against the Workers
+// request quota. Not needed for Cloudflare Pages deploys.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "imo-mirror",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./build",
+    "not_found_handling": "single-page-application",
+    "html_handling": "auto-trailing-slash"
+  }
+}

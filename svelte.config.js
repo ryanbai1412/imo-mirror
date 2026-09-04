@@ -1,4 +1,4 @@
-import adapter from "@sveltejs/adapter-cloudflare";
+import adapter from "@sveltejs/adapter-static";
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -6,21 +6,13 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({
-      routes: {
-        include: ["/*"],
-        exclude: [
-          "/_app/immutable/*",
-          "/_app/version.json",
-          "/flags/*",
-          "/favicon.ico",
-          "/favicon-16.png",
-          "/favicon-32.png",
-          "/apple-touch-icon.png",
-          "/imo-logo.webp",
-          "/robots.txt",
-          "/sitemap.xml",
-        ],
-      },
+      // Query-param pages (?year=, ?code=, ?id=) cannot be
+      // prerendered. Cloudflare serves index.html for any
+      // path that has no static asset, and the client
+      // router renders the requested page.
+      fallback: "index.html",
+      precompress: false,
+      strict: true,
     }),
     alias: {
       $lib: "./src/lib",

@@ -8,6 +8,9 @@ import {
 import { sortData, parseSortParams } from "$lib/utils/sort";
 import type { AwardType } from "$lib/utils/awardClass";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 interface CountryYearRow {
   year: number;
   rank: number | null;

@@ -10,6 +10,9 @@ import type {
 } from "$lib/utils/data";
 import { awardType } from "$lib/utils/awardClass";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 export async function load({ url }) {
   const id = url.searchParams.get("id") || "";
   if (!id) redirect(302, "/");

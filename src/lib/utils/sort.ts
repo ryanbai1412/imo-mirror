@@ -1,4 +1,17 @@
+import { isStaticRender } from "./hydration";
+
 export type SortDirection = "asc" | "desc";
+
+/**
+ * Prerendered pages can't read the query string at build
+ * time (SvelteKit throws), and the hydration pass must
+ * render the same markup. Return a query-less URL in those
+ * cases; the root layout re-runs `load` with the real URL
+ * once hydration has finished.
+ */
+export function pageUrl(url: URL): URL {
+  return isStaticRender() ? new URL(url.pathname, url.origin) : url;
+}
 
 export function sortData<T>(
   data: T[],

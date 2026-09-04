@@ -1,6 +1,7 @@
 import { loadTimeline, loadCountries } from "$lib/utils/data";
-import { sortData, parseSortParams } from "$lib/utils/sort";
-export function load({ url }) {
+import { sortData, parseSortParams, pageUrl } from "$lib/utils/sort";
+export function load({ url: rawUrl }) {
+  const url = pageUrl(rawUrl);
   const timeline = loadTimeline();
   const countries = loadCountries();
   const nameToCode = Object.fromEntries(countries.map((c) => [c.name, c.code]));

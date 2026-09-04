@@ -7,6 +7,9 @@ import {
 import type { CountryTeamRow } from "$lib/utils/data";
 import { sortData, parseSortParams } from "$lib/utils/sort";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 export async function load({ url }) {
   const code = url.searchParams.get("code") || "";
   if (!code) redirect(302, "/countries.aspx");

@@ -7,6 +7,9 @@ import {
 } from "$lib/utils/data";
 import type { AwardType } from "$lib/utils/awardClass";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 export interface DayPoint {
   name: string;
   award: AwardType[];
