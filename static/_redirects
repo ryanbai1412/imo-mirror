@@ -1,0 +1,7 @@
+# Legacy imo-official.org URLs that just alias another page.
+# Resolved at the Cloudflare edge; the matching +page.ts
+# redirects also cover client-side navigation.
+/default.aspx /  301
+/hall_of_fame.aspx /hall.aspx  301
+/results.aspx /results_country.aspx  301
+/timeline.aspx /organizers.aspx  301

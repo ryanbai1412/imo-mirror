@@ -1,6 +1,9 @@
 import { redirect } from "@sveltejs/kit";
 import { loadYearInfo, loadTimeline } from "$lib/utils/data";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 export function load({ url }) {
   const year = url.searchParams.get("year") || "";
   if (!year) redirect(302, "/organizers.aspx");

@@ -1,7 +1,8 @@
 import { loadResultsYear } from "$lib/utils/data";
-import { sortData, parseSortParams } from "$lib/utils/sort";
+import { sortData, parseSortParams, pageUrl } from "$lib/utils/sort";
 
-export function load({ url }) {
+export function load({ url: rawUrl }) {
+  const url = pageUrl(rawUrl);
   const yearData = loadResultsYear();
   const { column, order } = parseSortParams(url.searchParams);
   const sorted = column ? sortData(yearData, column, order) : yearData;

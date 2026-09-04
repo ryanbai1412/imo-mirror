@@ -2,9 +2,10 @@
 
 ## Project Overview
 
-A fast, server-rendered mirror of
+A fast, fully static mirror of
 [imo-official.org](https://www.imo-official.org/)
-built with **SvelteKit** + **Cloudflare Workers**.
+built with **SvelteKit** and served as plain
+Cloudflare static assets (no Worker script).
 All IMO data (1959–present) is bundled as
 static JSON — no external API calls at runtime.
 
@@ -17,8 +18,9 @@ static JSON — no external API calls at runtime.
   external deps) in `src/lib/charts/`
 - **Icons:** `lucide-static` — raw SVG strings,
   rendered via `Icon.svelte` + `resizeSvg()`
-- **Deployment:** Cloudflare Workers
-  (`@sveltejs/adapter-cloudflare`)
+- **Deployment:** Cloudflare static assets
+  (`@sveltejs/adapter-static`, SPA fallback
+  `index.html`, `_redirects` / `_headers`)
 - **Package manager:** pnpm (monorepo with
   `pnpm-workspace.yaml`)
 - **TypeScript:** enabled, non-strict
@@ -144,9 +146,29 @@ Every original `imo-official.org` URL must work:
 - Query params (`?year=`, `?code=`, `?id=`, etc.)
   are read via `url.searchParams` in `load()`
 - Redirects (e.g. `default.aspx` → `/`) use
-  `redirect()` in `+page.server.ts`
+  `redirect()` in `+page.ts` and are mirrored in
+  `static/_redirects` so the edge answers them
 - **Never rename or restructure route folders**
   without preserving URL compatibility
+
+## Static Rendering
+
+The root `+layout.ts` sets `prerender = true`.
+
+- Pages that need a query param (`?year=`,
+  `?code=`, `?id=`) set `prerender = false` in
+  their `+page.ts`; they are rendered on the
+  client from the `index.html` fallback
+- Prerendered pages that *optionally* read the
+  query string (sorting, `?code=` filter) must
+  wrap `url` with `pageUrl()` from
+  `$lib/utils/sort` — it hides the query string
+  at build time and during the hydration pass
+  so the client markup matches the static HTML;
+  the root layout then calls `invalidateAll()`
+  to apply the real URL
+- Never use `+page.server.ts` — there is no
+  server at runtime
 
 ## IMO Country Code "C01" (Individual Participants)
 

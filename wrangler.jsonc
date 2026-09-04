@@ -1,0 +1,10 @@
+// Cloudflare Pages static deployment: no Functions, no Worker script,
+// so requests never count against the Workers request quota. Pages
+// serves `build/index.html` for unmatched paths (SPA fallback) and
+// applies `_redirects` / `_headers` from the output directory.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "imo-mirror",
+  "compatibility_date": "2026-09-01",
+  "pages_build_output_dir": "./build"
+}

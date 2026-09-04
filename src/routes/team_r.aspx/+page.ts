@@ -8,6 +8,9 @@ import {
 } from "$lib/utils/data";
 import type { CountryDistBucket } from "$lib/utils/data";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 export async function load({ url }) {
   const code = url.searchParams.get("code") || "";
   const year = url.searchParams.get("year") || "";

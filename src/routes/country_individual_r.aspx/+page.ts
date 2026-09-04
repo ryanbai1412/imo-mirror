@@ -9,6 +9,9 @@ import type { CountryIndivRow, RankChartEntry } from "$lib/utils/data";
 import { sortData, parseSortParams } from "$lib/utils/sort";
 import { awardType } from "$lib/utils/awardClass";
 
+// Depends on query params → client-rendered via fallback
+export const prerender = false;
+
 export async function load({ url }) {
   const code = url.searchParams.get("code") || "";
   if (!code) redirect(302, "/countries.aspx");
