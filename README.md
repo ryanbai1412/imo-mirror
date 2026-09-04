@@ -110,14 +110,12 @@ never count against the Workers request quota.
 
 ### Cloudflare Pages
 
-1. Connect the repository to Cloudflare Pages
-2. Build command: `pnpm install && pnpm build`, output directory: `build`
-3. Pages serves `index.html` for unknown paths automatically (there is no `404.html`)
+Connect the repository to Cloudflare Pages with build command
+`pnpm install && pnpm build`. `wrangler.jsonc` sets the output directory
+(`pages_build_output_dir: ./build`). Pages serves `index.html` for unknown
+paths automatically (there is no `404.html`).
 
-### Cloudflare Workers (static assets only)
-
-`wrangler.jsonc` configures an assets-only Worker with
-`not_found_handling: "single-page-application"`:
+Manual deploy:
 
 ```bash
 pnpm build && pnpm dlx wrangler pages deploy
