@@ -534,7 +534,6 @@
               class="cmd-row"
               class:active={i === activeIndex}
               onclick={(e) => {
-                // ⌘/Ctrl/Shift/Alt and middle clicks stay with the browser (new tab/window).
                 if (
                   e.button !== 0 ||
                   e.metaKey ||
