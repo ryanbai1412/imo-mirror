@@ -416,7 +416,9 @@
       if (showTips && activeIndex >= 0 && activeIndex < TIPS.length) {
         selectTip(TIPS[activeIndex].prefix);
       } else if (activeIndex >= 0 && activeIndex < results.length) {
-        navigate(results[activeIndex].href);
+        if (e.metaKey || e.ctrlKey)
+          window.open(results[activeIndex].href, "_blank");
+        else navigate(results[activeIndex].href);
       }
     }
   }
@@ -532,6 +534,15 @@
               class="cmd-row"
               class:active={i === activeIndex}
               onclick={(e) => {
+                // ⌘/Ctrl/Shift/Alt and middle clicks stay with the browser (new tab/window).
+                if (
+                  e.button !== 0 ||
+                  e.metaKey ||
+                  e.ctrlKey ||
+                  e.shiftKey ||
+                  e.altKey
+                )
+                  return;
                 e.preventDefault();
                 navigate(item.href);
               }}
